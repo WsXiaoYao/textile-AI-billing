@@ -1,0 +1,50 @@
+.order-composer {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  min-height: 108rpx;
+  padding: 14rpx 24rpx;
+  border-top: 1rpx solid #e8edf5;
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.composer-inner {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.composer-input {
+  height: 72rpx;
+  min-width: 0;
+  flex: 1;
+  padding: 0 22rpx;
+  border: 1rpx solid #e1e8f2;
+  border-radius: 12rpx;
+  background: #f8fafc;
+  color: #172033;
+  font-size: 26rpx;
+  line-height: 72rpx;
+}
+
+.composer-placeholder {
+  color: #98a2b3;
+}
+
+.recognize-button {
+  width: 102rpx;
+  height: 80rpx;
+  border-radius: 16rpx;
+  background: #2f7df6;
+  color: #ffffff;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 80rpx;
+  text-align: center;
+}
+
+.recognize-hover {
+  background: #0f5ed7;
+}

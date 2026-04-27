@@ -1,0 +1,17 @@
+.chat-bubble {
+  min-height: 164rpx;
+  margin: 16rpx 0 44rpx 60rpx;
+  padding: 22rpx 24rpx;
+  display: flex;
+  align-items: flex-start;
+  border-radius: 16rpx;
+  background: #87ceeb;
+  color: #ffffff;
+  box-shadow: 0 10rpx 22rpx rgba(43, 142, 209, 0.14);
+}
+
+.chat-text {
+  color: #ffffff;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}

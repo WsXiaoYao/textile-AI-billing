@@ -1,0 +1,13 @@
+<view class="order-composer safe-bottom">
+  <view class="composer-inner">
+    <input
+      class="composer-input"
+      value="{{value}}"
+      placeholder="输入客户、商品、数量"
+      placeholder-class="composer-placeholder"
+      confirm-type="send"
+      bindinput="onInput"
+    />
+    <button class="recognize-button" hover-class="recognize-hover" bindtap="onRecognize">识别</button>
+  </view>
+</view>

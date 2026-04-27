@@ -1,0 +1,100 @@
+.recognized-card {
+  width: 702rpx;
+  min-height: 356rpx;
+  padding: 22rpx 26rpx 20rpx;
+  display: block;
+  border: 1rpx solid #e6ecf5;
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-shadow: 0 6rpx 10rpx rgba(13, 31, 61, 0.05);
+  text-align: left;
+}
+
+.recognized-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.recognized-title {
+  min-width: 0;
+  color: #1d2129;
+  font-size: 30rpx;
+  line-height: 44rpx;
+}
+
+.recognized-link {
+  color: #0e8a62;
+  font-size: 22rpx;
+  line-height: 36rpx;
+  white-space: nowrap;
+}
+
+.recognized-table-head,
+.recognized-row {
+  display: grid;
+  grid-template-columns: 176rpx 168rpx 76rpx 1fr;
+  column-gap: 24rpx;
+}
+
+.recognized-table-head {
+  margin-top: 12rpx;
+  color: #98a2b3;
+  font-size: 22rpx;
+  line-height: 36rpx;
+}
+
+.recognized-row {
+  min-height: 62rpx;
+  align-items: center;
+  border-bottom: 1rpx solid #e6ecf5;
+  color: #1d2129;
+  font-size: 26rpx;
+  line-height: 36rpx;
+}
+
+.recognized-row.is-last {
+  border-bottom: 0;
+}
+
+.goods-name,
+.goods-spec,
+.goods-quantity,
+.goods-amount {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goods-spec {
+  color: #667085;
+  font-size: 24rpx;
+}
+
+.cell-center,
+.goods-quantity {
+  text-align: center;
+}
+
+.cell-right,
+.goods-amount {
+  text-align: right;
+}
+
+.goods-amount,
+.recognized-total {
+  color: #d94a55;
+}
+
+.recognized-total {
+  margin-top: 8rpx;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  text-align: right;
+}
+
+.card-hover {
+  background: #f8fafc;
+}

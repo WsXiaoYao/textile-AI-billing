@@ -11,6 +11,7 @@ const issues = []
 
 checkJsonFiles()
 checkPages()
+checkComponents()
 checkTabBar()
 checkProjectPackaging()
 checkNavigationPatterns()
@@ -44,6 +45,46 @@ function checkPages() {
     for (const ext of requiredPageExts) {
       const file = `${pagePath}${ext}`
       if (!exists(file)) issues.push(`页面文件缺失: ${file}`)
+    }
+  }
+}
+
+function checkComponents() {
+  const jsonFiles = walk(projectRoot).filter(file => relative(file).endsWith('.json'))
+
+  for (const file of jsonFiles) {
+    const rel = relative(file)
+    if (rel.startsWith('.git/') || rel === 'project.private.config.json') continue
+    const json = readJson(rel)
+    if (!json) continue
+
+    if (json.component === true) {
+      const base = rel.replace(/\.json$/, '')
+      for (const ext of requiredPageExts) {
+        const componentFile = `${base}${ext}`
+        if (!exists(componentFile)) issues.push(`组件文件缺失: ${componentFile}`)
+      }
+    }
+
+    if (json.usingComponents && typeof json.usingComponents === 'object') {
+      const ownerDir = path.dirname(rel)
+      for (const [name, componentPath] of Object.entries(json.usingComponents)) {
+        if (!componentPath) {
+          issues.push(`usingComponents.${name} 路径为空: ${rel}`)
+          continue
+        }
+
+        const componentJson = resolveComponentJson(ownerDir, componentPath)
+        if (!componentJson) {
+          issues.push(`usingComponents.${name} 指向的组件不存在: ${componentPath} (${rel})`)
+          continue
+        }
+
+        const componentConfig = readJson(componentJson)
+        if (componentConfig && componentConfig.component !== true) {
+          issues.push(`usingComponents.${name} 不是小程序组件: ${componentJson}`)
+        }
+      }
     }
   }
 }
@@ -156,4 +197,12 @@ function walk(dir) {
 
 function relative(file) {
   return path.relative(projectRoot, file).replace(/\\/g, '/')
+}
+
+function resolveComponentJson(ownerDir, componentPath) {
+  const normalized = componentPath.startsWith('/')
+    ? componentPath.slice(1)
+    : path.posix.normalize(path.posix.join(ownerDir, componentPath))
+  const candidate = `${normalized}.json`
+  return exists(candidate) ? candidate : null
 }

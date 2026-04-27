@@ -1,0 +1,13 @@
+<view class="customer-switcher">
+  <block wx:for="{{customers}}" wx:key="id">
+    <button
+      class="customer-chip {{index == activeIndex ? 'is-active' : ''}} {{item.wide ? 'is-wide' : ''}}"
+      data-index="{{index}}"
+      hover-class="chip-hover"
+      bindtap="onSelect"
+    >
+      {{item.name}}
+    </button>
+  </block>
+  <button class="customer-chip is-more" hover-class="chip-hover" bindtap="onMore">更多</button>
+</view>

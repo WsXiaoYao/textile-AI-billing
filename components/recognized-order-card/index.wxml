@@ -1,0 +1,24 @@
+<button class="recognized-card" hover-class="card-hover" bindtap="onOpen">
+  <view class="recognized-header">
+    <view class="recognized-title">已识别并加入购物车</view>
+    <view class="recognized-link">点击卡片进入购物车</view>
+  </view>
+
+  <view class="recognized-table-head">
+    <view>品名</view>
+    <view>规格/颜色</view>
+    <view class="cell-center">数量</view>
+    <view class="cell-right">金额</view>
+  </view>
+
+  <block wx:for="{{items}}" wx:key="id">
+    <view class="recognized-row {{item.isLast ? 'is-last' : ''}}">
+      <view class="goods-name">{{item.name}}</view>
+      <view class="goods-spec">{{item.spec}}</view>
+      <view class="goods-quantity">{{item.quantity}}</view>
+      <view class="goods-amount">{{item.amount}}</view>
+    </view>
+  </block>
+
+  <view class="recognized-total">合计 {{total}}</view>
+</button>

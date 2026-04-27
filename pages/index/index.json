@@ -1,4 +1,12 @@
 {
   "navigationBarTitleText": "聚云掌柜",
-  "usingComponents": {}
+  "navigationBarBackgroundColor": "#2F7DF6",
+  "navigationBarTextStyle": "white",
+  "usingComponents": {
+    "customer-summary-card": "/components/customer-summary-card/index",
+    "customer-switcher": "/components/customer-switcher/index",
+    "chat-bubble": "/components/chat-bubble/index",
+    "recognized-order-card": "/components/recognized-order-card/index",
+    "order-composer": "/components/order-composer/index"
+  }
 }
