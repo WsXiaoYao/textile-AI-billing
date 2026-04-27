@@ -11,7 +11,8 @@
     <view class="amount-label">合同金额</view>
     <view class="amount-value">{{customer.contractAmount}}</view>
     <view class="receivable-link" hover-class="link-hover" bindtap="onReceivableTap">
-      累计欠款 {{customer.receivable}} &gt;
+      <text>累计欠款 {{customer.receivable}}</text>
+      <text class="receivable-arrow">›</text>
     </view>
   </view>
 </view>

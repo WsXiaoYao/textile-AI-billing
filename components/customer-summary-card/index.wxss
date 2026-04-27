@@ -99,6 +99,10 @@
 .receivable-link {
   min-height: 36rpx;
   margin-top: 8rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4rpx;
   color: #2e7bef;
   font-size: 20rpx;
   font-weight: 800;
@@ -107,6 +111,12 @@
   white-space: nowrap;
   max-width: 100%;
   overflow: visible;
+}
+
+.receivable-arrow {
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 30rpx;
 }
 
 .link-hover {

@@ -9,7 +9,7 @@
   position: relative;
   height: 176rpx;
   overflow: hidden;
-  background: #2f7df6;
+  background: #367ff3;
   color: #ffffff;
 }
 
@@ -19,8 +19,18 @@
   right: 0;
   top: 0;
   height: 60rpx;
-  background: #3c8bff;
-  opacity: 0.72;
+  background: #3b86f7;
+  opacity: 1;
+}
+
+.hero-accent::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1rpx;
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .hero-content {
