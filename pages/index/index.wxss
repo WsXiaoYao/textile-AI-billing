@@ -7,7 +7,7 @@
 
 .order-hero {
   position: relative;
-  height: 152rpx;
+  height: 176rpx;
   overflow: hidden;
   background: #2f7df6;
   color: #ffffff;
@@ -26,10 +26,10 @@
 .hero-content {
   position: relative;
   z-index: 1;
-  min-height: 152rpx;
-  padding: 28rpx 28rpx 30rpx 32rpx;
+  min-height: 176rpx;
+  padding: 52rpx 28rpx 28rpx 32rpx;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 20rpx;
 }
@@ -59,7 +59,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 20rpx;
+  gap: 8rpx;
+  padding-top: 10rpx;
 }
 
 .reset-button {
@@ -112,7 +113,7 @@
 
 .order-content {
   position: relative;
-  margin-top: -32rpx;
+  margin-top: -28rpx;
   padding: 0 24rpx 48rpx;
 }
 
