@@ -1,6 +1,32 @@
-<view class="app-page placeholder-page">
-  <view class="app-card placeholder-card">
-    <view class="app-section-title">{{title}}</view>
-    <view class="text-secondary description">{{description}}</view>
+<view class="orders-page">
+  <order-filter-bar
+    tabs="{{statusTabs}}"
+    active-status="{{activeStatus}}"
+    keyword="{{keyword}}"
+    bind:keywordinput="onKeywordInput"
+    bind:keywordconfirm="onKeywordConfirm"
+    bind:filtertap="onFilterTap"
+    bind:statuschange="onStatusChange"
+  />
+
+  <view class="summary-section">
+    <order-summary-card summary="{{summary}}" />
+  </view>
+
+  <view class="order-list" wx:if="{{filteredOrders.length}}">
+    <block wx:for="{{filteredOrders}}" wx:key="id">
+      <view class="order-card-item">
+        <sales-order-card
+          order="{{item}}"
+          bind:open="onOpenOrder"
+          bind:action="onOrderAction"
+        />
+      </view>
+    </block>
+  </view>
+
+  <view class="empty-state" wx:else>
+    <view class="empty-title">没有匹配的订单</view>
+    <view class="empty-desc">换个客户、单号或状态再试试。</view>
   </view>
 </view>

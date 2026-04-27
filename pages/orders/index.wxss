@@ -1,15 +1,44 @@
-.placeholder-page {
+.orders-page {
+  min-height: 100vh;
+  padding: 32rpx 24rpx 40rpx;
+  background: #f4f7fb;
+}
+
+.summary-section {
+  margin-top: 24rpx;
+}
+
+.order-list {
+  margin-top: 28rpx;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  gap: 28rpx;
 }
 
-.placeholder-card {
+.order-card-item {
+  display: block;
   width: 100%;
-  padding: 40rpx;
 }
 
-.description {
-  margin-top: 16rpx;
-  font-size: 28rpx;
+.empty-state {
+  margin-top: 56rpx;
+  padding: 52rpx 32rpx;
+  border: 1rpx dashed #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+  text-align: center;
+}
+
+.empty-title {
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.empty-desc {
+  margin-top: 10rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
 }

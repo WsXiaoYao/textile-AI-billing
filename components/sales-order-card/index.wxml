@@ -1,0 +1,25 @@
+<view class="sales-order-card" bindtap="onOpen">
+  <view class="order-main">
+    <view class="order-info">
+      <view class="order-no">{{order.no}}</view>
+      <view class="order-desc">{{order.customer}} · {{order.goodsSummary}} · {{order.printText}}</view>
+    </view>
+
+    <view class="order-money">
+      <view class="status-pill status-{{order.statusTone}}">{{order.statusText}}</view>
+      <view class="receivable receivable-{{order.amountTone}}">{{order.receivableText}}</view>
+    </view>
+  </view>
+
+  <view class="order-actions" wx:if="{{order.actions.length}}">
+    <block wx:for="{{order.actions}}" wx:key="type">
+      <button
+        class="action-pill action-{{item.tone}}"
+        data-action="{{item.type}}"
+        catchtap="onActionTap"
+      >
+        {{item.text}}
+      </button>
+    </block>
+  </view>
+</view>

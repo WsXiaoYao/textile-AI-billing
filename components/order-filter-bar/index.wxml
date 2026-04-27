@@ -1,0 +1,26 @@
+<view class="order-filter-bar">
+  <view class="search-row">
+    <input
+      class="search-input"
+      value="{{keyword}}"
+      placeholder="搜索客户、单号、商品"
+      placeholder-class="search-placeholder"
+      confirm-type="search"
+      bindinput="onKeywordInput"
+      bindconfirm="onKeywordConfirm"
+    />
+    <button class="filter-button" bindtap="onFilterTap">筛选</button>
+  </view>
+
+  <view class="status-tabs">
+    <block wx:for="{{tabs}}" wx:key="value">
+      <button
+        class="status-tab {{item.value == activeStatus ? 'status-tab-active' : ''}}"
+        data-value="{{item.value}}"
+        bindtap="onTabTap"
+      >
+        {{item.label}}
+      </button>
+    </block>
+  </view>
+</view>

@@ -1,0 +1,11 @@
+<view class="order-summary-card">
+  <view class="summary-title">{{summary.title}}</view>
+  <view class="summary-metrics">
+    <block wx:for="{{summary.metrics}}" wx:key="key">
+      <view class="summary-metric">
+        <view class="metric-label">{{item.label}}</view>
+        <view class="metric-value metric-{{item.tone}}">{{item.value}}</view>
+      </view>
+    </block>
+  </view>
+</view>
