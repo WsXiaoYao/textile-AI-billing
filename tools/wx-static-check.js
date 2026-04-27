@@ -16,6 +16,7 @@ checkTabBar()
 checkProjectPackaging()
 checkNavigationPatterns()
 checkBusinessScaffold()
+checkGeneratedArtifacts()
 checkJavaScriptSyntax()
 
 if (issues.length) {
@@ -109,6 +110,12 @@ function checkTabBar() {
     if (!pages.has(item.pagePath)) issues.push(`tabBar.pagePath 未在 pages 中声明: ${item.pagePath}`)
     for (const key of ['iconPath', 'selectedIconPath']) {
       if (!item[key]) continue
+      if (!/\.(png|jpg|jpeg)$/i.test(item[key])) {
+        issues.push(`tabBar.${key} 必须使用 PNG/JPG 本地图片: ${item[key]}`)
+      }
+      if (item[key].includes('/svg/') || item[key].endsWith('.svg.png')) {
+        issues.push(`tabBar.${key} 不应指向 SVG 源目录或临时缩略图: ${item[key]}`)
+      }
       const iconFullPath = path.join(projectRoot, item[key])
       if (!fs.existsSync(iconFullPath)) {
         issues.push(`tabBar.${key} 文件不存在: ${item[key]}`)
@@ -124,7 +131,15 @@ function checkProjectPackaging() {
   const config = readJson('project.config.json')
   if (!config) return
   const ignores = new Set((config.packOptions && config.packOptions.ignore || []).map(item => `${item.type}:${item.value}`))
-  for (const entry of ['folder:artifacts', 'folder:tools', 'folder:docs', 'file:package.json']) {
+  for (const entry of [
+    'folder:artifacts',
+    'folder:tools',
+    'folder:docs',
+    'folder:assets/tabbar/svg',
+    'folder:assets/icons/lucide/source',
+    'file:assets/icons/lucide/manifest.json',
+    'file:package.json',
+  ]) {
     if (!ignores.has(entry)) issues.push(`packOptions.ignore 缺少 ${entry}`)
   }
 }
@@ -149,6 +164,15 @@ function checkNavigationPatterns() {
 function checkBusinessScaffold() {
   for (const stalePath of ['utils/mock.js', 'utils/util.js', 'pages/home/home.js', 'pages/orders/orders.js']) {
     if (exists(stalePath)) issues.push(`应清理临时业务文件: ${stalePath}`)
+  }
+}
+
+function checkGeneratedArtifacts() {
+  for (const file of walk(projectRoot)) {
+    const rel = relative(file)
+    if (rel.endsWith('.svg.png') || rel.endsWith('.render.html')) {
+      issues.push(`不应提交或保留图标渲染临时文件: ${rel}`)
+    }
   }
 }
 
