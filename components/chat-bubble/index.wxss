@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .chat-bubble {
   min-height: 164rpx;
   margin: 16rpx 0 44rpx 60rpx;

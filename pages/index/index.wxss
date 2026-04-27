@@ -1,13 +1,13 @@
 .order-page {
   min-height: 100vh;
-  padding-bottom: 132rpx;
+  padding-bottom: 128rpx;
   background: #f5f8fc;
   color: #172033;
 }
 
 .order-hero {
   position: relative;
-  height: 204rpx;
+  height: 152rpx;
   overflow: hidden;
   background: #2f7df6;
   color: #ffffff;
@@ -26,22 +26,24 @@
 .hero-content {
   position: relative;
   z-index: 1;
-  min-height: 204rpx;
-  padding: 52rpx 28rpx 40rpx 32rpx;
+  min-height: 152rpx;
+  padding: 28rpx 28rpx 30rpx 32rpx;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 20rpx;
 }
 
 .hero-copy {
   min-width: 0;
+  flex: 0 0 220rpx;
 }
 
 .hero-title {
   font-size: 36rpx;
   font-weight: 800;
   line-height: 44rpx;
+  white-space: nowrap;
 }
 
 .hero-subtitle {
@@ -52,14 +54,17 @@
 }
 
 .hero-actions {
+  flex: 1;
+  min-width: 0;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 20rpx;
-  padding-top: 10rpx;
 }
 
 .reset-button {
   width: 144rpx;
+  min-width: 144rpx;
   height: 60rpx;
   border: 2rpx solid #bbd7ff;
   border-radius: 999rpx;
@@ -107,8 +112,16 @@
 
 .order-content {
   position: relative;
-  margin-top: -56rpx;
+  margin-top: -32rpx;
   padding: 0 24rpx 48rpx;
+}
+
+customer-summary-card,
+customer-switcher,
+chat-bubble,
+recognized-order-card,
+order-composer {
+  display: block;
 }
 
 .switch-tip {

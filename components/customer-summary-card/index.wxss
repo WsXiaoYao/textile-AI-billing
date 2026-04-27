@@ -1,5 +1,10 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .customer-summary-card {
-  width: 702rpx;
+  width: 100%;
   min-height: 192rpx;
   padding: 24rpx 28rpx;
   display: flex;
@@ -81,9 +86,10 @@
 .amount-value {
   margin-top: 4rpx;
   color: #d94a55;
-  font-size: 40rpx;
+  font-size: 38rpx;
   font-weight: 800;
   line-height: 48rpx;
+  white-space: nowrap;
 }
 
 .receivable-link {

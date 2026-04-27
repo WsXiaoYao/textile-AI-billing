@@ -1,5 +1,10 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .recognized-card {
-  width: 702rpx;
+  width: 100%;
   min-height: 356rpx;
   padding: 22rpx 26rpx 20rpx;
   display: block;
@@ -22,6 +27,7 @@
   color: #1d2129;
   font-size: 30rpx;
   line-height: 44rpx;
+  white-space: nowrap;
 }
 
 .recognized-link {
@@ -34,8 +40,8 @@
 .recognized-table-head,
 .recognized-row {
   display: grid;
-  grid-template-columns: 176rpx 168rpx 76rpx 1fr;
-  column-gap: 24rpx;
+  grid-template-columns: minmax(128rpx, 1fr) minmax(150rpx, 1.05fr) 72rpx 104rpx;
+  column-gap: 18rpx;
 }
 
 .recognized-table-head {

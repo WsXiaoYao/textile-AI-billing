@@ -64,6 +64,7 @@ function checkComponents() {
         const componentFile = `${base}${ext}`
         if (!exists(componentFile)) issues.push(`组件文件缺失: ${componentFile}`)
       }
+      checkComponentHostStyle(base)
     }
 
     if (json.usingComponents && typeof json.usingComponents === 'object') {
@@ -205,4 +206,18 @@ function resolveComponentJson(ownerDir, componentPath) {
     : path.posix.normalize(path.posix.join(ownerDir, componentPath))
   const candidate = `${normalized}.json`
   return exists(candidate) ? candidate : null
+}
+
+function checkComponentHostStyle(base) {
+  const wxssPath = `${base}.wxss`
+  if (!exists(wxssPath)) return
+
+  const content = readText(wxssPath)
+  if (!/:host\s*\{/.test(content)) {
+    issues.push(`组件缺少 :host 宿主样式，可能在页面中收缩错位: ${wxssPath}`)
+  }
+
+  if (/width\s*:\s*(702|750)rpx/.test(content)) {
+    issues.push(`组件内部不应写死整屏宽度，请使用 width: 100%: ${wxssPath}`)
+  }
 }

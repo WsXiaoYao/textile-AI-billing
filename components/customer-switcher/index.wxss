@@ -1,8 +1,13 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .customer-switcher {
   margin-top: 28rpx;
   display: flex;
   gap: 12rpx;
-  width: 702rpx;
+  width: 100%;
 }
 
 .customer-chip {
