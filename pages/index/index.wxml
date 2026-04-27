@@ -1,82 +1,41 @@
 <view class="order-page">
-  <view class="hero">
-    <view class="hero-main">
-      <view>
+  <view class="order-hero">
+    <view class="hero-accent"></view>
+    <view class="hero-content">
+      <view class="hero-copy">
         <view class="hero-title">聚云掌柜</view>
         <view class="hero-subtitle">销售助手</view>
       </view>
       <view class="hero-actions">
-        <button class="reset-btn">重置会话</button>
-        <view class="cart-entry">
+        <button class="reset-button" hover-class="button-hover" bindtap="onResetSession">重置会话</button>
+        <button class="cart-shortcut" hover-class="button-hover" bindtap="onOpenCart" aria-label="打开购物车">
           <image class="cart-icon" src="/assets/icons/lucide/ui/shopping-cart-white.svg" mode="aspectFit" />
           <view class="cart-badge">3</view>
-        </view>
-      </view>
-    </view>
-  </view>
-
-  <view class="content">
-    <view class="customer-card app-card">
-      <view class="customer-left">
-        <view class="card-label">当前客户</view>
-        <view class="customer-name-row">
-          <text class="customer-name">{{currentCustomer.name}}</text>
-          <text class="tag tag-primary">{{currentCustomer.tag}}</text>
-        </view>
-        <view class="customer-code">测试客户 · {{currentCustomer.code}}</view>
-      </view>
-      <view class="customer-money">
-        <view class="money-label">合同金额</view>
-        <view class="amount-strong">{{currentCustomer.contractAmount}}</view>
-        <view class="receivable">累计欠款 {{currentCustomer.receivable}} &gt;</view>
-      </view>
-    </view>
-
-    <view class="customer-tabs">
-      <block wx:for="{{customers}}" wx:key="*this">
-        <button class="customer-tab {{index == activeCustomer ? 'customer-tab-active' : ''}} {{index == 1 ? 'customer-tab-wide' : ''}}">
-          {{item}}
         </button>
-      </block>
-      <button class="customer-tab customer-tab-more">更多</button>
-    </view>
-
-    <view class="toast">客户切换完成</view>
-
-    <view class="message-bubble">
-      {{inputText}}
-    </view>
-
-    <view class="cart-card app-card">
-      <view class="cart-header">
-        <view class="cart-title">已识别并加入购物车</view>
-        <view class="cart-link">点击卡片进入购物车</view>
       </view>
-
-      <view class="cart-table-head">
-        <view>品名</view>
-        <view>规格/颜色</view>
-        <view>数量</view>
-        <view class="amount-head">金额</view>
-      </view>
-
-      <block wx:for="{{cartItems}}" wx:key="id">
-        <view class="cart-row {{item.isLast ? 'cart-row-last' : ''}}">
-          <view class="item-name">{{item.name}}</view>
-          <view class="item-spec">{{item.spec}}</view>
-          <view class="item-quantity">{{item.quantity}}</view>
-          <view class="item-amount">{{item.amount}}</view>
-        </view>
-      </block>
-
-      <view class="cart-total">合计 {{totalAmount}}</view>
     </view>
   </view>
 
-  <view class="composer safe-bottom">
-    <view class="composer-inner">
-      <input class="composer-input" placeholder="输入客户、商品、数量" placeholder-class="composer-placeholder" />
-      <button class="recognize-btn">识别</button>
-    </view>
+  <view class="order-content">
+    <customer-summary-card customer="{{currentCustomer}}" />
+    <customer-switcher
+      customers="{{customers}}"
+      active-index="{{activeCustomer}}"
+      bindselect="onCustomerSelect"
+      bindmore="onMoreCustomers"
+    />
+    <view class="switch-tip">{{switchMessage}}</view>
+    <chat-bubble text="{{inputText}}" />
+    <recognized-order-card
+      items="{{cartItems}}"
+      total="{{totalAmount}}"
+      bindopen="onOpenCart"
+    />
   </view>
+
+  <order-composer
+    value="{{draftText}}"
+    bindinputchange="onDraftChange"
+    bindrecognize="onRecognize"
+  />
 </view>

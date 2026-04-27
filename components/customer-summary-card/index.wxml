@@ -1,0 +1,18 @@
+<view class="customer-summary-card">
+  <view class="customer-main">
+    <view class="customer-label">当前客户</view>
+    <view class="customer-name-line">
+      <text class="customer-name">{{customer.name}}</text>
+      <text class="customer-tag">{{customer.tag}}</text>
+    </view>
+    <view class="customer-code">测试客户 · {{customer.code}}</view>
+  </view>
+  <view class="customer-amount">
+    <view class="amount-label">合同金额</view>
+    <view class="amount-value">{{customer.contractAmount}}</view>
+    <view class="receivable-link" hover-class="link-hover" bindtap="onReceivableTap">
+      <text>累计欠款 {{customer.receivable}}</text>
+      <text class="receivable-arrow">›</text>
+    </view>
+  </view>
+</view>

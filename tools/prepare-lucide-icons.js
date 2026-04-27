@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const https = require('node:https');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
+const { pathToFileURL } = require('node:url');
 
 const rootDir = path.resolve(__dirname, '..');
 const sourceDir = path.join(rootDir, 'assets/icons/lucide/source');
@@ -12,7 +13,9 @@ const tabbarSvgDir = path.join(tabbarDir, 'svg');
 
 const lucideBaseUrl = 'https://raw.githubusercontent.com/lucide-icons/lucide/main/icons';
 const normalColor = '#7A869A';
-const selectedColor = '#1677FF';
+const selectedColor = '#2F6FE4';
+const tabbarCanvasSize = 81;
+const tabbarGlyphSize = 58;
 const maxTabbarBytes = 40 * 1024;
 
 const icons = [
@@ -70,10 +73,32 @@ function download(url) {
 }
 
 function tintSvg(svg, color) {
-  return svg
-    .replace(/width="24"/, 'width="81"')
-    .replace(/height="24"/, 'height="81"')
-    .replace(/stroke="currentColor"/g, `stroke="${color}"`);
+  return svg.replace(/stroke="currentColor"/g, `stroke="${color}"`);
+}
+
+function createTabbarSvg(svg, color) {
+  const tinted = tintSvg(svg, color);
+  const body = tinted
+    .replace(/<svg\b[^>]*>/, '')
+    .replace(/<\/svg>\s*$/, '')
+    .trim();
+  const scale = tabbarGlyphSize / 24;
+  const offset = (tabbarCanvasSize - tabbarGlyphSize) / 2;
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${tabbarCanvasSize}" height="${tabbarCanvasSize}" viewBox="0 0 ${tabbarCanvasSize} ${tabbarCanvasSize}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <g transform="translate(${offset} ${offset}) scale(${scale})">
+${indent(body, 4)}
+  </g>
+</svg>
+`;
+}
+
+function indent(text, spaces) {
+  const prefix = ' '.repeat(spaces);
+  return text
+    .split('\n')
+    .map((line) => `${prefix}${line}`)
+    .join('\n');
 }
 
 function hasCommand(command) {
@@ -82,8 +107,11 @@ function hasCommand(command) {
 }
 
 function renderPng(svgPath, outputPngPath) {
+  const chromeResult = renderPngWithChrome(svgPath, outputPngPath);
+  if (chromeResult.rendered) return chromeResult;
+
   if (!hasCommand('qlmanage')) {
-    return { rendered: false, reason: 'qlmanage not found' };
+    return { rendered: false, reason: chromeResult.reason || 'qlmanage not found' };
   }
 
   const outDir = path.dirname(svgPath);
@@ -102,6 +130,45 @@ function renderPng(svgPath, outputPngPath) {
   }
 
   fs.renameSync(thumbnailPath, outputPngPath);
+  return { rendered: true };
+}
+
+function renderPngWithChrome(svgPath, outputPngPath) {
+  const chromePath = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+  if (!fs.existsSync(chromePath)) {
+    return { rendered: false, reason: 'Google Chrome not found' };
+  }
+
+  const svg = fs.readFileSync(svgPath, 'utf8');
+  const htmlPath = `${svgPath}.render.html`;
+  fs.writeFileSync(
+    htmlPath,
+    `<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;width:${tabbarCanvasSize}px;height:${tabbarCanvasSize}px;background:transparent;overflow:hidden}svg{width:${tabbarCanvasSize}px;height:${tabbarCanvasSize}px;display:block}</style></head><body>${svg}</body></html>`,
+  );
+
+  fs.rmSync(outputPngPath, { force: true });
+  const result = spawnSync(
+    chromePath,
+    [
+      '--headless=new',
+      '--disable-gpu',
+      '--force-device-scale-factor=1',
+      `--window-size=${tabbarCanvasSize},${tabbarCanvasSize}`,
+      '--default-background-color=00000000',
+      `--screenshot=${outputPngPath}`,
+      pathToFileURL(htmlPath).href,
+    ],
+    { encoding: 'utf8' },
+  );
+  fs.rmSync(htmlPath, { force: true });
+
+  if (result.status !== 0 || !fs.existsSync(outputPngPath)) {
+    return {
+      rendered: false,
+      reason: (result.stderr || result.stdout || 'Chrome rendering failed').trim(),
+    };
+  }
+
   return { rendered: true };
 }
 
@@ -159,7 +226,7 @@ async function main() {
       const baseName = `${icon.output}${state.suffix}`;
       const svgPath = path.join(tabbarSvgDir, `${baseName}.svg`);
       const pngPath = path.join(tabbarDir, `${baseName}.png`);
-      fs.writeFileSync(svgPath, tintSvg(sourceSvg, state.color));
+      fs.writeFileSync(svgPath, createTabbarSvg(sourceSvg, state.color));
 
       const renderResult = renderPng(svgPath, pngPath);
       const verifyResult = renderResult.rendered ? verifyPng(pngPath) : null;
@@ -188,6 +255,10 @@ async function main() {
     colors: {
       normal: normalColor,
       selected: selectedColor,
+    },
+    tabbar: {
+      canvasSize: tabbarCanvasSize,
+      glyphSize: tabbarGlyphSize,
     },
     icons,
     tabbarIcons: tabbarManifest,

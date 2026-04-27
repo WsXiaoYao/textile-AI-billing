@@ -16,6 +16,18 @@
         "value": "docs"
       },
       {
+        "type": "folder",
+        "value": "assets/tabbar/svg"
+      },
+      {
+        "type": "folder",
+        "value": "assets/icons/lucide/source"
+      },
+      {
+        "type": "file",
+        "value": "assets/icons/lucide/manifest.json"
+      },
+      {
         "type": "file",
         "value": "package.json"
       },

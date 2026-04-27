@@ -11,10 +11,13 @@ const issues = []
 
 checkJsonFiles()
 checkPages()
+checkComponents()
 checkTabBar()
 checkProjectPackaging()
 checkNavigationPatterns()
 checkBusinessScaffold()
+checkGeneratedArtifacts()
+checkWxssCompatibility()
 checkJavaScriptSyntax()
 
 if (issues.length) {
@@ -48,6 +51,47 @@ function checkPages() {
   }
 }
 
+function checkComponents() {
+  const jsonFiles = walk(projectRoot).filter(file => relative(file).endsWith('.json'))
+
+  for (const file of jsonFiles) {
+    const rel = relative(file)
+    if (rel.startsWith('.git/') || rel === 'project.private.config.json') continue
+    const json = readJson(rel)
+    if (!json) continue
+
+    if (json.component === true) {
+      const base = rel.replace(/\.json$/, '')
+      for (const ext of requiredPageExts) {
+        const componentFile = `${base}${ext}`
+        if (!exists(componentFile)) issues.push(`组件文件缺失: ${componentFile}`)
+      }
+      checkComponentHostStyle(base)
+    }
+
+    if (json.usingComponents && typeof json.usingComponents === 'object') {
+      const ownerDir = path.dirname(rel)
+      for (const [name, componentPath] of Object.entries(json.usingComponents)) {
+        if (!componentPath) {
+          issues.push(`usingComponents.${name} 路径为空: ${rel}`)
+          continue
+        }
+
+        const componentJson = resolveComponentJson(ownerDir, componentPath)
+        if (!componentJson) {
+          issues.push(`usingComponents.${name} 指向的组件不存在: ${componentPath} (${rel})`)
+          continue
+        }
+
+        const componentConfig = readJson(componentJson)
+        if (componentConfig && componentConfig.component !== true) {
+          issues.push(`usingComponents.${name} 不是小程序组件: ${componentJson}`)
+        }
+      }
+    }
+  }
+}
+
 function checkTabBar() {
   const app = readJson('app.json')
   if (!app || !app.tabBar) return
@@ -67,6 +111,12 @@ function checkTabBar() {
     if (!pages.has(item.pagePath)) issues.push(`tabBar.pagePath 未在 pages 中声明: ${item.pagePath}`)
     for (const key of ['iconPath', 'selectedIconPath']) {
       if (!item[key]) continue
+      if (!/\.(png|jpg|jpeg)$/i.test(item[key])) {
+        issues.push(`tabBar.${key} 必须使用 PNG/JPG 本地图片: ${item[key]}`)
+      }
+      if (item[key].includes('/svg/') || item[key].endsWith('.svg.png')) {
+        issues.push(`tabBar.${key} 不应指向 SVG 源目录或临时缩略图: ${item[key]}`)
+      }
       const iconFullPath = path.join(projectRoot, item[key])
       if (!fs.existsSync(iconFullPath)) {
         issues.push(`tabBar.${key} 文件不存在: ${item[key]}`)
@@ -82,7 +132,15 @@ function checkProjectPackaging() {
   const config = readJson('project.config.json')
   if (!config) return
   const ignores = new Set((config.packOptions && config.packOptions.ignore || []).map(item => `${item.type}:${item.value}`))
-  for (const entry of ['folder:artifacts', 'folder:tools', 'folder:docs', 'file:package.json']) {
+  for (const entry of [
+    'folder:artifacts',
+    'folder:tools',
+    'folder:docs',
+    'folder:assets/tabbar/svg',
+    'folder:assets/icons/lucide/source',
+    'file:assets/icons/lucide/manifest.json',
+    'file:package.json',
+  ]) {
     if (!ignores.has(entry)) issues.push(`packOptions.ignore 缺少 ${entry}`)
   }
 }
@@ -107,6 +165,26 @@ function checkNavigationPatterns() {
 function checkBusinessScaffold() {
   for (const stalePath of ['utils/mock.js', 'utils/util.js', 'pages/home/home.js', 'pages/orders/orders.js']) {
     if (exists(stalePath)) issues.push(`应清理临时业务文件: ${stalePath}`)
+  }
+}
+
+function checkGeneratedArtifacts() {
+  for (const file of walk(projectRoot)) {
+    const rel = relative(file)
+    if (rel.endsWith('.svg.png') || rel.endsWith('.render.html')) {
+      issues.push(`不应提交或保留图标渲染临时文件: ${rel}`)
+    }
+  }
+}
+
+function checkWxssCompatibility() {
+  for (const file of walk(projectRoot)) {
+    const rel = relative(file)
+    if (!rel.endsWith('.wxss')) continue
+    const content = readText(rel)
+    if (/display\s*:\s*grid|grid-template|minmax\(/.test(content)) {
+      issues.push(`WXSS 不应使用 CSS Grid/minmax，业务布局请改用 flex: ${rel}`)
+    }
   }
 }
 
@@ -156,4 +234,26 @@ function walk(dir) {
 
 function relative(file) {
   return path.relative(projectRoot, file).replace(/\\/g, '/')
+}
+
+function resolveComponentJson(ownerDir, componentPath) {
+  const normalized = componentPath.startsWith('/')
+    ? componentPath.slice(1)
+    : path.posix.normalize(path.posix.join(ownerDir, componentPath))
+  const candidate = `${normalized}.json`
+  return exists(candidate) ? candidate : null
+}
+
+function checkComponentHostStyle(base) {
+  const wxssPath = `${base}.wxss`
+  if (!exists(wxssPath)) return
+
+  const content = readText(wxssPath)
+  if (!/:host\s*\{/.test(content)) {
+    issues.push(`组件缺少 :host 宿主样式，可能在页面中收缩错位: ${wxssPath}`)
+  }
+
+  if (/width\s*:\s*(702|750)rpx/.test(content)) {
+    issues.push(`组件内部不应写死整屏宽度，请使用 width: 100%: ${wxssPath}`)
+  }
 }

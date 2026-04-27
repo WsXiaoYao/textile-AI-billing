@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-27T06:23:55.169Z",
+  "generatedAt": "2026-04-27T07:51:43.367Z",
   "source": {
     "name": "Lucide Icons",
     "url": "https://github.com/lucide-icons/lucide",
@@ -8,7 +8,11 @@
   },
   "colors": {
     "normal": "#7A869A",
-    "selected": "#1677FF"
+    "selected": "#2F6FE4"
+  },
+  "tabbar": {
+    "canvasSize": 81,
+    "glyphSize": 58
   },
   "icons": [
     {
@@ -76,7 +80,7 @@
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1084,
+        "bytes": 1494,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -87,14 +91,14 @@
       "label": "开单",
       "source": "house",
       "selected": true,
-      "color": "#1677FF",
+      "color": "#2F6FE4",
       "svg": "assets/tabbar/svg/home-active.svg",
       "png": "assets/tabbar/home-active.png",
       "renderResult": {
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1045,
+        "bytes": 1547,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -112,7 +116,7 @@
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1108,
+        "bytes": 1831,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -123,14 +127,14 @@
       "label": "订单",
       "source": "receipt-text",
       "selected": true,
-      "color": "#1677FF",
+      "color": "#2F6FE4",
       "svg": "assets/tabbar/svg/orders-active.svg",
       "png": "assets/tabbar/orders-active.png",
       "renderResult": {
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1055,
+        "bytes": 1828,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -148,7 +152,7 @@
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1264,
+        "bytes": 2314,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -159,14 +163,14 @@
       "label": "客户",
       "source": "users",
       "selected": true,
-      "color": "#1677FF",
+      "color": "#2F6FE4",
       "svg": "assets/tabbar/svg/customers-active.svg",
       "png": "assets/tabbar/customers-active.png",
       "renderResult": {
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1187,
+        "bytes": 2319,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -184,7 +188,7 @@
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 689,
+        "bytes": 886,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -195,14 +199,14 @@
       "label": "更多",
       "source": "ellipsis",
       "selected": true,
-      "color": "#1677FF",
+      "color": "#2F6FE4",
       "svg": "assets/tabbar/svg/more-active.svg",
       "png": "assets/tabbar/more-active.png",
       "renderResult": {
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 640,
+        "bytes": 879,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -220,7 +224,7 @@
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1065,
+        "bytes": 1606,
         "width": 81,
         "height": 81,
         "okSize": true,
@@ -231,14 +235,14 @@
       "label": "我的",
       "source": "user",
       "selected": true,
-      "color": "#1677FF",
+      "color": "#2F6FE4",
       "svg": "assets/tabbar/svg/profile-active.svg",
       "png": "assets/tabbar/profile-active.png",
       "renderResult": {
         "rendered": true
       },
       "verifyResult": {
-        "bytes": 1001,
+        "bytes": 1618,
         "width": 81,
         "height": 81,
         "okSize": true,

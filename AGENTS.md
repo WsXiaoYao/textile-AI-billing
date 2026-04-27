@@ -30,5 +30,6 @@ This repository is the WeChat Mini Program implementation for the textile order 
 
 - Bottom tabs are `首页 / 订单 / 客户 / 更多 / 我的`.
 - Root tab pages should feel like native WeChat business tools: dense but readable, restrained, and focused on the task.
+- The homepage task is `选客户 -> 输入 -> 识别 -> 确认购物车`.
 - The order page target is Figma `V1.31` frame `07 销售单列表页 V1.31`, node `289:30934`, under canvas node `289:30169`.
 - Do not automate or script-control WeChat DevTools GUI unless explicitly requested.

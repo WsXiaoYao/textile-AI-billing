@@ -1,0 +1,3 @@
+<view class="chat-bubble">
+  <text class="chat-text">{{text}}</text>
+</view>
