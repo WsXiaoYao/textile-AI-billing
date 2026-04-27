@@ -1,0 +1,249 @@
+{
+  "generatedAt": "2026-04-27T06:23:55.169Z",
+  "source": {
+    "name": "Lucide Icons",
+    "url": "https://github.com/lucide-icons/lucide",
+    "rawBaseUrl": "https://raw.githubusercontent.com/lucide-icons/lucide/main/icons",
+    "license": "ISC"
+  },
+  "colors": {
+    "normal": "#7A869A",
+    "selected": "#1677FF"
+  },
+  "icons": [
+    {
+      "name": "house",
+      "usage": "首页 / 开单入口"
+    },
+    {
+      "name": "receipt-text",
+      "usage": "订单"
+    },
+    {
+      "name": "clipboard-list",
+      "usage": "订单备选"
+    },
+    {
+      "name": "users",
+      "usage": "客户"
+    },
+    {
+      "name": "user",
+      "usage": "我的"
+    },
+    {
+      "name": "shopping-cart",
+      "usage": "购物车"
+    },
+    {
+      "name": "search",
+      "usage": "搜索"
+    },
+    {
+      "name": "settings",
+      "usage": "设置"
+    },
+    {
+      "name": "ellipsis",
+      "usage": "更多"
+    },
+    {
+      "name": "package",
+      "usage": "商品"
+    },
+    {
+      "name": "trash-2",
+      "usage": "删除"
+    },
+    {
+      "name": "plus",
+      "usage": "新增"
+    },
+    {
+      "name": "chevron-right",
+      "usage": "进入详情"
+    }
+  ],
+  "tabbarIcons": [
+    {
+      "label": "开单",
+      "source": "house",
+      "selected": false,
+      "color": "#7A869A",
+      "svg": "assets/tabbar/svg/home.svg",
+      "png": "assets/tabbar/home.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1084,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "开单",
+      "source": "house",
+      "selected": true,
+      "color": "#1677FF",
+      "svg": "assets/tabbar/svg/home-active.svg",
+      "png": "assets/tabbar/home-active.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1045,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "订单",
+      "source": "receipt-text",
+      "selected": false,
+      "color": "#7A869A",
+      "svg": "assets/tabbar/svg/orders.svg",
+      "png": "assets/tabbar/orders.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1108,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "订单",
+      "source": "receipt-text",
+      "selected": true,
+      "color": "#1677FF",
+      "svg": "assets/tabbar/svg/orders-active.svg",
+      "png": "assets/tabbar/orders-active.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1055,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "客户",
+      "source": "users",
+      "selected": false,
+      "color": "#7A869A",
+      "svg": "assets/tabbar/svg/customers.svg",
+      "png": "assets/tabbar/customers.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1264,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "客户",
+      "source": "users",
+      "selected": true,
+      "color": "#1677FF",
+      "svg": "assets/tabbar/svg/customers-active.svg",
+      "png": "assets/tabbar/customers-active.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1187,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "更多",
+      "source": "ellipsis",
+      "selected": false,
+      "color": "#7A869A",
+      "svg": "assets/tabbar/svg/more.svg",
+      "png": "assets/tabbar/more.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 689,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "更多",
+      "source": "ellipsis",
+      "selected": true,
+      "color": "#1677FF",
+      "svg": "assets/tabbar/svg/more-active.svg",
+      "png": "assets/tabbar/more-active.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 640,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "我的",
+      "source": "user",
+      "selected": false,
+      "color": "#7A869A",
+      "svg": "assets/tabbar/svg/profile.svg",
+      "png": "assets/tabbar/profile.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1065,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    },
+    {
+      "label": "我的",
+      "source": "user",
+      "selected": true,
+      "color": "#1677FF",
+      "svg": "assets/tabbar/svg/profile-active.svg",
+      "png": "assets/tabbar/profile-active.png",
+      "renderResult": {
+        "rendered": true
+      },
+      "verifyResult": {
+        "bytes": 1001,
+        "width": 81,
+        "height": 81,
+        "okSize": true,
+        "okDimensions": true
+      }
+    }
+  ]
+}

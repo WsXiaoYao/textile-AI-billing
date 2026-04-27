@@ -1,0 +1,141 @@
+/* Design foundations for the textile order mini program. */
+
+.app-page {
+  min-height: 100vh;
+  background: #f6f7f9;
+  color: #172033;
+  padding: 32rpx;
+}
+
+.app-card {
+  background: #ffffff;
+  border: 1rpx solid #e3e8ef;
+  border-radius: 16rpx;
+  box-shadow: 0 8rpx 24rpx rgba(23, 32, 51, 0.06);
+}
+
+.app-panel {
+  background: #f8fafc;
+  border: 1rpx solid #edf1f5;
+  border-radius: 16rpx;
+}
+
+.app-section-title {
+  color: #172033;
+  font-size: 32rpx;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.text-primary {
+  color: #172033;
+}
+
+.text-secondary {
+  color: #667085;
+}
+
+.text-muted {
+  color: #98a2b3;
+}
+
+.text-inverse {
+  color: #ffffff;
+}
+
+.amount-strong {
+  color: #e5484d;
+  font-size: 44rpx;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.btn {
+  min-height: 80rpx;
+  padding: 0 32rpx;
+  border-radius: 12rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.btn-primary {
+  background: #1677ff;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: #1677ff;
+  border: 1rpx solid #b9d7ff;
+}
+
+.btn-danger {
+  background: #ffecee;
+  color: #e5484d;
+}
+
+.tag {
+  min-height: 40rpx;
+  padding: 0 16rpx;
+  border-radius: 999rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.tag-primary {
+  background: #eaf3ff;
+  color: #1677ff;
+}
+
+.tag-success {
+  background: #eaf8f0;
+  color: #12b76a;
+}
+
+.tag-warning {
+  background: #fff6e5;
+  color: #f79009;
+}
+
+.tag-danger {
+  background: #ffecee;
+  color: #e5484d;
+}
+
+.tag-neutral {
+  background: #f8fafc;
+  color: #667085;
+}
+
+.icon-sm {
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.icon-md {
+  width: 40rpx;
+  height: 40rpx;
+}
+
+.icon-lg {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.divider {
+  height: 1rpx;
+  background: #edf1f5;
+}
+
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}

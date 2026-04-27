@@ -1,0 +1,6 @@
+<view class="app-page placeholder-page">
+  <view class="app-card placeholder-card">
+    <view class="app-section-title">{{title}}</view>
+    <view class="text-secondary description">{{description}}</view>
+  </view>
+</view>

@@ -1,0 +1,15 @@
+.placeholder-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.placeholder-card {
+  width: 100%;
+  padding: 40rpx;
+}
+
+.description {
+  margin-top: 16rpx;
+  font-size: 28rpx;
+}
