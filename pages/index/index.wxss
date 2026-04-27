@@ -27,16 +27,14 @@
   position: relative;
   z-index: 1;
   min-height: 176rpx;
-  padding: 52rpx 28rpx 28rpx 32rpx;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
+  padding: 0;
 }
 
 .hero-copy {
-  min-width: 0;
-  flex: 0 0 220rpx;
+  position: absolute;
+  left: 32rpx;
+  top: 52rpx;
+  width: 240rpx;
 }
 
 .hero-title {
@@ -54,13 +52,14 @@
 }
 
 .hero-actions {
-  flex: 1;
-  min-width: 0;
+  position: absolute;
+  right: 28rpx;
+  top: 62rpx;
+  width: 220rpx;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 8rpx;
-  padding-top: 10rpx;
 }
 
 .reset-button {
