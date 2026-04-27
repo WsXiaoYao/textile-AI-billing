@@ -17,6 +17,7 @@ checkProjectPackaging()
 checkNavigationPatterns()
 checkBusinessScaffold()
 checkGeneratedArtifacts()
+checkWxssCompatibility()
 checkJavaScriptSyntax()
 
 if (issues.length) {
@@ -172,6 +173,17 @@ function checkGeneratedArtifacts() {
     const rel = relative(file)
     if (rel.endsWith('.svg.png') || rel.endsWith('.render.html')) {
       issues.push(`不应提交或保留图标渲染临时文件: ${rel}`)
+    }
+  }
+}
+
+function checkWxssCompatibility() {
+  for (const file of walk(projectRoot)) {
+    const rel = relative(file)
+    if (!rel.endsWith('.wxss')) continue
+    const content = readText(rel)
+    if (/display\s*:\s*grid|grid-template|minmax\(/.test(content)) {
+      issues.push(`WXSS 不应使用 CSS Grid/minmax，业务布局请改用 flex: ${rel}`)
     }
   }
 }

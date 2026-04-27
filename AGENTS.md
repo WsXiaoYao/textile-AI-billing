@@ -22,6 +22,7 @@ This repository is the WeChat Mini Program implementation for the textile order 
 ```
 
 - Do not rely on a component's internal fixed width such as `702rpx` to make it fill a page. Let the page provide horizontal padding and let the component fill `100%`.
+- Prefer flex layouts for mini-program UI. Do not use CSS Grid or `minmax()` for business rows because WeChat Mini Program rendering support is less predictable than browsers.
 - Cards must not shrink, clip, or overlap key business data. Customer names, amounts, product names, quantities, and totals are priority content.
 - Use `npm run wx:check` before reporting work as complete.
 
@@ -31,4 +32,3 @@ This repository is the WeChat Mini Program implementation for the textile order 
 - Root tab pages should feel like native WeChat business tools: dense but readable, restrained, and focused on the task.
 - The homepage task is `选客户 -> 输入 -> 识别 -> 确认购物车`.
 - Do not automate or script-control WeChat DevTools GUI unless explicitly requested.
-

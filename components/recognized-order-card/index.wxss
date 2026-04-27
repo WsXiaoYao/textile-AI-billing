@@ -13,6 +13,7 @@
   background: #ffffff;
   box-shadow: 0 6rpx 10rpx rgba(13, 31, 61, 0.05);
   text-align: left;
+  box-sizing: border-box;
 }
 
 .recognized-header {
@@ -24,24 +25,28 @@
 
 .recognized-title {
   min-width: 0;
+  flex: 1 1 auto;
   color: #1d2129;
   font-size: 30rpx;
   line-height: 44rpx;
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .recognized-link {
+  flex: 0 0 auto;
   color: #0e8a62;
-  font-size: 22rpx;
+  font-size: 21rpx;
   line-height: 36rpx;
   white-space: nowrap;
 }
 
 .recognized-table-head,
 .recognized-row {
-  display: grid;
-  grid-template-columns: minmax(128rpx, 1fr) minmax(150rpx, 1.05fr) 72rpx 104rpx;
-  column-gap: 18rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
 }
 
 .recognized-table-head {
@@ -53,7 +58,6 @@
 
 .recognized-row {
   min-height: 62rpx;
-  align-items: center;
   border-bottom: 1rpx solid #e6ecf5;
   color: #1d2129;
   font-size: 26rpx;
@@ -64,29 +68,37 @@
   border-bottom: 0;
 }
 
-.goods-name,
-.goods-spec,
-.goods-quantity,
-.goods-amount {
+.col-name,
+.col-spec,
+.col-qty,
+.col-amount {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.goods-spec {
-  color: #667085;
-  font-size: 24rpx;
+.col-name {
+  flex: 1 1 0;
 }
 
-.cell-center,
-.goods-quantity {
+.col-spec {
+  flex: 0 0 160rpx;
+}
+
+.col-qty {
+  flex: 0 0 72rpx;
   text-align: center;
 }
 
-.cell-right,
-.goods-amount {
+.col-amount {
+  flex: 0 0 104rpx;
   text-align: right;
+}
+
+.goods-spec {
+  color: #667085;
+  font-size: 24rpx;
 }
 
 .goods-amount,

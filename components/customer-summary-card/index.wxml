@@ -10,8 +10,8 @@
   <view class="customer-amount">
     <view class="amount-label">合同金额</view>
     <view class="amount-value">{{customer.contractAmount}}</view>
-    <button class="receivable-link" hover-class="link-hover" bindtap="onReceivableTap">
+    <view class="receivable-link" hover-class="link-hover" bindtap="onReceivableTap">
       累计欠款 {{customer.receivable}} &gt;
-    </button>
+    </view>
   </view>
 </view>
