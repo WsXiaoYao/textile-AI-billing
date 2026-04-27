@@ -7,43 +7,27 @@
 
 .order-hero {
   position: relative;
-  height: 176rpx;
+  height: 150rpx;
   overflow: hidden;
-  background: #367ff3;
+  background: #2f7df6;
   color: #ffffff;
 }
 
 .hero-accent {
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 60rpx;
-  background: #3b86f7;
-  opacity: 1;
-}
-
-.hero-accent::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 1rpx;
-  background: rgba(255, 255, 255, 0.12);
+  display: none;
 }
 
 .hero-content {
   position: relative;
   z-index: 1;
-  min-height: 176rpx;
+  min-height: 150rpx;
   padding: 0;
 }
 
 .hero-copy {
   position: absolute;
   left: 32rpx;
-  top: 52rpx;
+  top: 22rpx;
   width: 240rpx;
 }
 
@@ -64,7 +48,7 @@
 .hero-actions {
   position: absolute;
   right: 28rpx;
-  top: 62rpx;
+  top: 34rpx;
   width: 220rpx;
   display: flex;
   align-items: center;
@@ -122,7 +106,7 @@
 
 .order-content {
   position: relative;
-  margin-top: -28rpx;
+  margin-top: -26rpx;
   padding: 0 24rpx 48rpx;
 }
 
