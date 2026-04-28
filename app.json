@@ -2,6 +2,8 @@
   "pages": [
     "pages/index/index",
     "pages/orders/index",
+    "pages/order-detail/index",
+    "pages/order-receipt/index",
     "pages/customers/index",
     "pages/more/index",
     "pages/profile/index"

@@ -5,8 +5,8 @@
 
 .sales-order-card {
   width: 100%;
-  min-height: 224rpx;
-  padding: 30rpx;
+  min-height: 264rpx;
+  padding: 28rpx 30rpx;
   border: 1rpx solid #d8e5f6;
   border-radius: 24rpx;
   background: #ffffff;
@@ -32,7 +32,7 @@
 }
 
 .order-desc {
-  margin-top: 10rpx;
+  margin-top: 6rpx;
   max-width: 420rpx;
   color: #667085;
   font-size: 24rpx;
@@ -71,8 +71,26 @@
   color: #0e8a62;
 }
 
+.status-primary {
+  border: 1rpx solid #d8e5f6;
+  background: #f2f7ff;
+  color: #2e7bef;
+}
+
+.status-warning {
+  border: 1rpx solid #f4c28b;
+  background: #fff7e8;
+  color: #d77a00;
+}
+
+.status-muted {
+  border: 1rpx solid #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
+}
+
 .receivable {
-  margin-top: 16rpx;
+  margin-top: 12rpx;
   font-size: 34rpx;
   font-weight: 800;
   line-height: 44rpx;
@@ -87,17 +105,27 @@
   color: #0e8a62;
 }
 
-.order-actions {
-  margin-top: 18rpx;
+.receivable-primary {
+  color: #2e7bef;
+}
+
+.receivable-muted {
+  color: #667085;
+}
+
+.order-tags {
+  margin-top: 30rpx;
   display: flex;
   align-items: center;
-  gap: 12rpx;
+  gap: 10rpx;
   flex-wrap: wrap;
 }
 
-.action-pill {
+.order-tag {
+  box-sizing: border-box;
+  min-width: 112rpx;
   height: 48rpx;
-  padding: 0 22rpx;
+  padding: 0 18rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -105,22 +133,41 @@
   font-size: 22rpx;
   font-weight: 800;
   line-height: 1;
+  white-space: nowrap;
 }
 
-.action-success {
+.tag-success {
   border: 1rpx solid #b7e1cf;
   background: #ecfdf5;
   color: #0e8a62;
 }
 
-.action-primary {
+.tag-primary {
   border: 1rpx solid #d8e5f6;
   background: #f2f7ff;
   color: #2e7bef;
 }
 
-.action-warning {
+.tag-warning {
   border: 1rpx solid #f4c28b;
   background: #fff7e8;
   color: #d77a00;
+}
+
+.tag-danger {
+  border: 1rpx solid #f6b3bc;
+  background: #fff1f2;
+  color: #d94a55;
+}
+
+.tag-info {
+  border: 1rpx solid #a8e4f3;
+  background: #eafbff;
+  color: #0794b8;
+}
+
+.tag-muted {
+  border: 1rpx solid #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
 }

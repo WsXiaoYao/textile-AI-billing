@@ -6,7 +6,7 @@
 .order-summary-card {
   width: 100%;
   min-height: 192rpx;
-  padding: 30rpx 30rpx 26rpx;
+  padding: 26rpx 30rpx 22rpx;
   border: 1rpx solid #d8e5f6;
   border-radius: 24rpx;
   background: #ffffff;
@@ -20,7 +20,7 @@
 }
 
 .summary-metrics {
-  margin-top: 12rpx;
+  margin-top: 8rpx;
   display: flex;
   align-items: flex-start;
 }
@@ -55,4 +55,12 @@
 
 .metric-primary {
   color: #2e7bef;
+}
+
+.metric-info {
+  color: #0794b8;
+}
+
+.metric-warning {
+  color: #f79009;
 }

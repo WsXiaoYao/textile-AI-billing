@@ -1,16 +1,40 @@
 Component({
   properties: {
-    tabs: {
+    keyword: {
+      type: String,
+      value: ''
+    },
+    statusTabs: {
       type: Array,
       value: []
     },
     activeStatus: {
       type: String,
-      value: 'pending'
+      value: 'all'
     },
-    keyword: {
+    dateLabel: {
       type: String,
-      value: ''
+      value: '全部日期'
+    },
+    sortLabel: {
+      type: String,
+      value: '排序'
+    },
+    sortOptions: {
+      type: Array,
+      value: []
+    },
+    sortIndex: {
+      type: Number,
+      value: 0
+    },
+    filterLabel: {
+      type: String,
+      value: '筛选'
+    },
+    filterCount: {
+      type: Number,
+      value: 0
     }
   },
 
@@ -27,13 +51,24 @@ Component({
       })
     },
 
-    onFilterTap() {
-      this.triggerEvent('filtertap')
+    onStatusTap(event) {
+      this.triggerEvent('statuschange', {
+        value: event.currentTarget.dataset.value
+      })
     },
 
-    onTabTap(event) {
-      const value = event.currentTarget.dataset.value
-      this.triggerEvent('statuschange', { value })
+    onDateTap() {
+      this.triggerEvent('datetap')
+    },
+
+    onSortPickerChange(event) {
+      this.triggerEvent('sortchange', {
+        index: Number(event.detail.value)
+      })
+    },
+
+    onFilterTap() {
+      this.triggerEvent('filtertap')
     }
   }
 })

@@ -1,0 +1,533 @@
+.order-detail-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+}
+
+.detail-scroll {
+  height: 100vh;
+}
+
+.detail-content {
+  padding: 32rpx 24rpx 184rpx;
+}
+
+.status-card,
+.detail-card {
+  width: 100%;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+
+.status-card {
+  min-height: 116rpx;
+  padding: 20rpx 28rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+  border-color: #b7e1cf;
+  background: #ecfdf5;
+}
+
+.status-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.status-title {
+  color: #0e8a62;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+}
+
+.status-desc {
+  margin-top: 4rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  min-width: 128rpx;
+  height: 48rpx;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-warning {
+  border: 1rpx solid #f4c28b;
+  background: #fff7e8;
+  color: #d77a00;
+}
+
+.status-primary {
+  border: 1rpx solid #b9d7ff;
+  background: #f2f7ff;
+  color: #2e7bef;
+}
+
+.status-danger {
+  border: 1rpx solid #f6b3bc;
+  background: #fff1f2;
+  color: #d94a55;
+}
+
+.status-success {
+  border: 1rpx solid #b7e1cf;
+  background: #ecfdf5;
+  color: #0e8a62;
+}
+
+.status-muted {
+  border: 1rpx solid #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
+}
+
+.detail-card {
+  margin-top: 20rpx;
+  padding: 26rpx 28rpx;
+}
+
+.detail-content > .detail-card:first-child {
+  margin-top: 0;
+}
+
+.card-title {
+  color: #1d2129;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.card-desc {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.amount-card {
+  padding-bottom: 20rpx;
+}
+
+.amount-row {
+  min-height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24rpx;
+}
+
+.amount-row:first-of-type {
+  margin-top: 8rpx;
+}
+
+.amount-label {
+  color: #667085;
+  font-size: 26rpx;
+  line-height: 36rpx;
+}
+
+.amount-value {
+  color: #1d2129;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+  text-align: right;
+}
+
+.amount-primary {
+  color: #2e7bef;
+}
+
+.amount-danger {
+  color: #d94a55;
+}
+
+.amount-success {
+  color: #0e8a62;
+}
+
+.amount-divider {
+  height: 1rpx;
+  margin: 10rpx 0;
+  background: #e6ecf5;
+}
+
+.amount-note {
+  min-height: 44rpx;
+  margin-top: 10rpx;
+  padding: 10rpx 20rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 14rpx;
+  background: #f2f7ff;
+  color: #2e7bef;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.receipt-record {
+  margin-top: 20rpx;
+  padding: 20rpx 24rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 20rpx;
+  background: #ffffff;
+}
+
+.receipt-main {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.receipt-type {
+  flex: 0 0 auto;
+  height: 48rpx;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #b7e1cf;
+  border-radius: 999rpx;
+  background: #ecfdf5;
+  color: #0e8a62;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.receipt-type-primary {
+  border-color: #b9d7ff;
+  background: #eaf3ff;
+  color: #1677ff;
+}
+
+.receipt-type-danger {
+  border-color: #f6b3bc;
+  background: #ffecee;
+  color: #e5484d;
+}
+
+.receipt-type-success {
+  border-color: #b7e1cf;
+  background: #eaf8f0;
+  color: #12b76a;
+}
+
+.receipt-type-muted {
+  border-color: #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
+}
+
+.receipt-no {
+  min-width: 0;
+  flex: 1;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.receipt-amount {
+  flex: 0 0 auto;
+  color: #0e8a62;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.receipt-amount-primary {
+  color: #1677ff;
+}
+
+.receipt-amount-danger {
+  color: #e5484d;
+}
+
+.receipt-amount-success {
+  color: #12b76a;
+}
+
+.receipt-amount-muted {
+  color: #667085;
+}
+
+.receipt-rule {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.receipt-empty {
+  margin-top: 20rpx;
+  padding: 24rpx;
+  border: 1rpx dashed #d8e5f6;
+  border-radius: 20rpx;
+  background: #f8fafc;
+}
+
+.receipt-empty-title {
+  color: #172033;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 38rpx;
+}
+
+.receipt-empty-desc {
+  margin-top: 6rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.receipt-remain {
+  min-width: 176rpx;
+  height: 44rpx;
+  margin: 12rpx 0 0 auto;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #f6b3bc;
+  border-radius: 999rpx;
+  background: #fff1f2;
+  color: #d94a55;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.receipt-remain-primary {
+  border-color: #b9d7ff;
+  background: #eaf3ff;
+  color: #1677ff;
+}
+
+.receipt-remain-success {
+  border-color: #b7e1cf;
+  background: #eaf8f0;
+  color: #12b76a;
+}
+
+.receipt-remain-danger {
+  border-color: #f6b3bc;
+  background: #ffecee;
+  color: #e5484d;
+}
+
+.receipt-remain-muted {
+  border-color: #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
+}
+
+.info-row {
+  min-height: 72rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #e6ecf5;
+}
+
+.info-row:first-of-type {
+  margin-top: 8rpx;
+}
+
+.info-row-last {
+  border-bottom: 0;
+}
+
+.info-label {
+  flex: 0 0 156rpx;
+  color: #667085;
+  font-size: 26rpx;
+  line-height: 36rpx;
+}
+
+.info-value {
+  min-width: 0;
+  flex: 1;
+  color: #1d2129;
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.info-strong {
+  font-weight: 800;
+}
+
+.product-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.product-count {
+  color: #667085;
+  font-size: 24rpx;
+  font-weight: 500;
+  line-height: 34rpx;
+}
+
+.product-head,
+.product-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.product-head {
+  margin-top: 12rpx;
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.product-row {
+  min-height: 68rpx;
+  padding: 10rpx 0;
+  border-bottom: 1rpx solid #edf1f5;
+}
+
+.product-row:last-child {
+  border-bottom: 0;
+}
+
+.product-head-name,
+.product-name-cell {
+  min-width: 0;
+  flex: 1;
+}
+
+.product-head-qty,
+.product-qty {
+  width: 74rpx;
+  text-align: right;
+}
+
+.product-head-price,
+.product-price {
+  width: 74rpx;
+  text-align: right;
+}
+
+.product-head-amount,
+.product-amount {
+  width: 92rpx;
+  text-align: right;
+}
+
+.product-name {
+  color: #1d2129;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.product-color {
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.product-qty,
+.product-price {
+  color: #1d2129;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.product-amount {
+  color: #d94a55;
+  font-size: 26rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.print-card {
+  display: block;
+}
+
+.print-copy {
+  width: 100%;
+}
+
+.print-actions {
+  margin-top: 20rpx;
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.small-btn {
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.small-btn-secondary {
+  border: 1rpx solid #d8e5f6;
+  background: #ffffff;
+  color: #2e7bef;
+}
+
+.small-btn-primary {
+  background: #2e7bef;
+  color: #ffffff;
+}
+
+.bottom-actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  min-height: 104rpx;
+  padding: 16rpx 24rpx calc(16rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  border-top: 1rpx solid #e6ecf5;
+  background: #ffffff;
+}
+
+.bottom-btn {
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.bottom-btn-secondary {
+  flex: 0 0 160rpx;
+  border: 1rpx solid #d8e5f6;
+  background: #ffffff;
+  color: #2e7bef;
+}
+
+.bottom-actions-single .bottom-btn-secondary {
+  flex: 1;
+}
+
+.bottom-btn-primary {
+  flex: 1;
+  background: #2e7bef;
+  color: #ffffff;
+}

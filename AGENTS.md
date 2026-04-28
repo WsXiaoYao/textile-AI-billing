@@ -11,6 +11,9 @@ This repository is the WeChat Mini Program implementation for the textile order 
 
 - Do not implement the Figma screenshot's fake phone status bar, WeChat capsule, home indicator, or custom bottom navigation.
 - Use the native WeChat navigation bar and native `tabBar` from `app.json`.
+- For follow-up/detail/action pages, keep the native navigation bar title empty unless the user explicitly asks for a title.
+- When the user asks to add logic to an existing screen, preserve the current visual layout and component styling unless they explicitly ask for a visual change.
+- Sales order detail pages must show the order number in basic information. The "销售单已生成" success notice is only for the immediate create-order flow, e.g. route with `created=1`, and must be hidden for normal order-detail viewing.
 - Convert Figma dimensions into mini-program layouts carefully. Figma `375px` frames map to `750rpx`, but component roots must stay responsive.
 - Every custom component must define a `:host` style, normally:
 

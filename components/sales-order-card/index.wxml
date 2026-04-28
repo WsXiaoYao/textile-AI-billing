@@ -2,7 +2,7 @@
   <view class="order-main">
     <view class="order-info">
       <view class="order-no">{{order.no}}</view>
-      <view class="order-desc">{{order.customer}} · {{order.goodsSummary}} · {{order.printText}}</view>
+      <view class="order-desc">{{order.customer}} · {{order.goodsSummary}}</view>
     </view>
 
     <view class="order-money">
@@ -11,15 +11,11 @@
     </view>
   </view>
 
-  <view class="order-actions" wx:if="{{order.actions.length}}">
-    <block wx:for="{{order.actions}}" wx:key="type">
-      <button
-        class="action-pill action-{{item.tone}}"
-        data-action="{{item.type}}"
-        catchtap="onActionTap"
-      >
+  <view class="order-tags" wx:if="{{order.chips.length}}">
+    <block wx:for="{{order.chips}}" wx:key="text">
+      <view class="order-tag tag-{{item.tone}}">
         {{item.text}}
-      </button>
+      </view>
     </block>
   </view>
 </view>

@@ -1,0 +1,101 @@
+<view class="receipt-page">
+  <scroll-view class="receipt-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="receipt-content">
+      <view class="receipt-card order-card">
+        <view class="card-title">当前销售单</view>
+        <view class="info-row">
+          <view class="info-label">单号</view>
+          <view class="info-value">{{order.no}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">客户</view>
+          <view class="info-value info-strong">{{order.customer}}</view>
+        </view>
+        <view class="money-metrics">
+          <view class="money-metric">
+            <view class="metric-label">合同金额</view>
+            <view class="metric-value metric-normal">{{order.contractText}}</view>
+          </view>
+          <view class="money-metric">
+            <view class="metric-label">已收款</view>
+            <view class="metric-value metric-success">{{order.receivedText}}</view>
+          </view>
+          <view class="money-metric">
+            <view class="metric-label">本单未收</view>
+            <view class="metric-value metric-danger">{{order.unpaidText}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="receipt-card">
+        <view class="card-title">收款信息</view>
+        <view class="card-desc">仅处理当前销售单，不参与客户多单自动分摊。</view>
+
+        <view class="field-block">
+          <view class="field-label">收款金额</view>
+          <view class="amount-input-wrap {{amountError ? 'amount-input-error' : ''}}">
+            <view class="amount-prefix">¥</view>
+            <input
+              class="amount-input"
+              type="digit"
+              value="{{amountInput}}"
+              placeholder="请输入收款金额"
+              placeholder-class="amount-placeholder"
+              confirm-type="done"
+              cursor-spacing="120"
+              bindinput="onAmountInput"
+              bindblur="onAmountBlur"
+              bindconfirm="onAmountBlur"
+            />
+            <button class="fill-all-btn" bindtap="onFillAllTap">全部收款</button>
+          </view>
+          <view wx:if="{{amountError}}" class="field-error">{{amountError}}</view>
+        </view>
+
+        <picker mode="date" value="{{receiptDate}}" start="{{pickerStartDate}}" end="{{pickerEndDate}}" bindchange="onDateChange">
+          <view class="select-row">
+            <view class="select-label">收款日期</view>
+            <view class="select-value">{{receiptDate}}</view>
+            <view class="select-chevron">›</view>
+          </view>
+        </picker>
+
+        <view class="remark-row">
+          <view class="select-label">备注</view>
+          <input
+            class="remark-input"
+            value="{{remark}}"
+            placeholder="填写本单线下已收、补录收款等说明"
+            placeholder-class="input-placeholder"
+            bindinput="onRemarkInput"
+          />
+        </view>
+
+        <view class="form-note">保存后只更新当前销售单，后续可在收款记录中查看。</view>
+      </view>
+
+      <view class="receipt-card result-card">
+        <view class="card-title">收后结果</view>
+        <view class="result-row">
+          <view class="result-label">本单未收</view>
+          <view class="result-value result-danger">{{order.unpaidText}}</view>
+        </view>
+        <view class="result-row">
+          <view class="result-label">本次收款</view>
+          <view class="result-value result-success">{{receiptText}}</view>
+        </view>
+        <view class="result-divider"></view>
+        <view class="result-row result-row-final">
+          <view class="result-label">收后未收</view>
+          <view class="result-value result-normal">{{afterUnpaidText}}</view>
+        </view>
+        <view class="result-note result-note-{{resultTone}}">{{resultHint}}</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <button class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</button>
+    <button class="bottom-btn bottom-btn-primary {{canSubmit ? '' : 'bottom-btn-disabled'}}" bindtap="onConfirmTap">确认收款</button>
+  </view>
+</view>

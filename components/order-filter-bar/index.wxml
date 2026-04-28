@@ -3,24 +3,46 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="搜索客户、单号、商品"
+      placeholder="搜索客户、单号、制单人"
       placeholder-class="search-placeholder"
       confirm-type="search"
       bindinput="onKeywordInput"
       bindconfirm="onKeywordConfirm"
     />
-    <button class="filter-button" bindtap="onFilterTap">筛选</button>
   </view>
 
-  <view class="status-tabs">
-    <block wx:for="{{tabs}}" wx:key="value">
-      <button
-        class="status-tab {{item.value == activeStatus ? 'status-tab-active' : ''}}"
+  <view class="category-tabs">
+    <block wx:for="{{statusTabs}}" wx:key="value">
+      <view
+        class="category-tab {{item.value == activeStatus ? 'category-tab-active' : ''}}"
         data-value="{{item.value}}"
-        bindtap="onTabTap"
+        bindtap="onStatusTap"
       >
         {{item.label}}
-      </button>
+      </view>
     </block>
+  </view>
+
+  <view class="query-row">
+    <view class="date-trigger" bindtap="onDateTap">
+      <view class="date-label">销售日期</view>
+      <view class="date-value">{{dateLabel}}</view>
+    </view>
+    <view class="date-arrow">⌄</view>
+    <view class="query-divider"></view>
+    <picker
+      class="query-picker"
+      mode="selector"
+      range="{{sortOptions}}"
+      range-key="label"
+      value="{{sortIndex}}"
+      bindchange="onSortPickerChange"
+    >
+      <view class="query-action">{{sortLabel}}⌄</view>
+    </picker>
+    <view class="query-divider"></view>
+    <view class="query-action" bindtap="onFilterTap">
+      {{filterLabel}}<text wx:if="{{filterCount}}">·{{filterCount}}</text>⌄
+    </view>
   </view>
 </view>

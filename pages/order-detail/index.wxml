@@ -1,0 +1,115 @@
+<view class="order-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content">
+      <view wx:if="{{showCreatedNotice}}" class="status-card">
+        <view class="status-copy">
+          <view class="status-title">{{detail.successTitle}}</view>
+          <view class="status-desc">{{detail.successDesc}}</view>
+        </view>
+        <view class="status-pill status-{{detail.statusTone}}">{{detail.statusText}}</view>
+      </view>
+
+      <view class="detail-card amount-card">
+        <view class="card-title">金额与往来</view>
+        <block wx:for="{{detail.amounts}}" wx:key="key">
+          <view wx:if="{{item.divider}}" class="amount-divider"></view>
+          <view wx:else class="amount-row">
+            <view class="amount-label">{{item.label}}</view>
+            <view class="amount-value amount-{{item.tone}}">{{item.value}}</view>
+          </view>
+        </block>
+        <view class="amount-note">{{detail.amountNote}}</view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-title">收款信息</view>
+        <view class="card-desc">{{detail.receipt.desc}}</view>
+        <view wx:if="{{detail.receipt.no}}" class="receipt-record">
+          <view class="receipt-main">
+            <view class="receipt-type receipt-type-{{detail.receipt.tone}}">{{detail.receipt.type}}</view>
+            <view class="receipt-no">{{detail.receipt.no}}</view>
+            <view class="receipt-amount receipt-amount-{{detail.receipt.amountTone}}">{{detail.receipt.amount}}</view>
+          </view>
+          <view class="receipt-rule">{{detail.receipt.rule}}</view>
+        </view>
+        <view wx:else class="receipt-empty">
+          <view class="receipt-empty-title">{{detail.receipt.emptyText}}</view>
+          <view class="receipt-empty-desc">{{detail.receipt.emptyHint}}</view>
+        </view>
+        <view class="receipt-remain receipt-remain-{{detail.receipt.tone}}">{{detail.receipt.remaining}}</view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-title">基础信息</view>
+        <view class="info-row">
+          <view class="info-label">单号</view>
+          <view class="info-value info-strong">{{detail.no}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">客户</view>
+          <view class="info-value info-strong">{{detail.customer.name}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">电话</view>
+          <view class="info-value">{{detail.customer.phone}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">地址</view>
+          <view class="info-value">{{detail.customer.address}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">日期</view>
+          <view class="info-value">{{detail.customer.date}}</view>
+        </view>
+        <view class="info-row">
+          <view class="info-label">仓库</view>
+          <view class="info-value">{{detail.customer.warehouse}}</view>
+        </view>
+        <view class="info-row info-row-last">
+          <view class="info-label">打印状态</view>
+          <view class="info-value">{{detail.customer.printStatus}}</view>
+        </view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-title product-title">
+          <text>产品明细</text>
+          <text class="product-count">{{detail.products.length}} 项</text>
+        </view>
+        <view class="product-head">
+          <view class="product-head-name">品名 / 颜色</view>
+          <view class="product-head-qty">数量</view>
+          <view class="product-head-price">单价</view>
+          <view class="product-head-amount">金额</view>
+        </view>
+        <block wx:for="{{detail.products}}" wx:key="id">
+          <view class="product-row">
+            <view class="product-name-cell">
+              <view class="product-name">{{item.name}}</view>
+              <view class="product-color">{{item.color}}</view>
+            </view>
+            <view class="product-qty">{{item.qty}}</view>
+            <view class="product-price">{{item.price}}</view>
+            <view class="product-amount">{{item.amount}}</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="detail-card print-card">
+        <view class="print-copy">
+          <view class="card-title">打印与分享</view>
+          <view class="card-desc">{{detail.printDesc}}</view>
+        </view>
+        <view class="print-actions">
+          <button class="small-btn small-btn-secondary" open-type="share">分享</button>
+          <button class="small-btn small-btn-primary" bindtap="onPrintTap">{{detail.printActionText}}</button>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions {{detail.canReceive ? '' : 'bottom-actions-single'}}">
+    <button class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</button>
+    <button wx:if="{{detail.canReceive}}" class="bottom-btn bottom-btn-primary" bindtap="onReceiptTap">去收款</button>
+  </view>
+</view>
