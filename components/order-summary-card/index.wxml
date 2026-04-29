@@ -1,5 +1,5 @@
 <view class="order-summary-card">
-  <view class="summary-title">{{summary.title}}</view>
+  <view class="summary-title" wx:if="{{summary.title}}">{{summary.title}}</view>
   <view class="summary-metrics">
     <block wx:for="{{summary.metrics}}" wx:key="key">
       <view class="summary-metric">

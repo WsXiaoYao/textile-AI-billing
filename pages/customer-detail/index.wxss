@@ -1,0 +1,441 @@
+.customer-detail-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+}
+
+.detail-scroll {
+  height: 100vh;
+}
+
+.detail-content {
+  padding: 24rpx 24rpx 48rpx;
+}
+
+.customer-card,
+.sales-record,
+.fund-record,
+.empty-state {
+  width: 100%;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+}
+
+.customer-card {
+  padding: 26rpx 28rpx 22rpx;
+}
+
+.customer-head {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  padding-right: 188rpx;
+  padding-bottom: 20rpx;
+  border-bottom: 1rpx solid #edf1f5;
+}
+
+.customer-copy {
+  min-width: 0;
+  flex: 1;
+}
+
+.customer-title-row {
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.customer-name {
+  max-width: 360rpx;
+  color: #1d2129;
+  font-size: 34rpx;
+  font-weight: 900;
+  line-height: 46rpx;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.customer-tag {
+  height: 40rpx;
+  padding: 0 16rpx;
+  display: flex;
+  align-items: center;
+  border-radius: 999rpx;
+  background: #eaf3ff;
+  color: #2e7bef;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.customer-phone,
+.customer-address {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.customer-address {
+  max-width: 470rpx;
+}
+
+.customer-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 176rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12rpx;
+}
+
+.call-btn,
+.edit-btn,
+.start-order-btn,
+.record-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  background: #2e7bef;
+  color: #ffffff;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.call-btn {
+  width: 82rpx;
+  height: 56rpx;
+  border-radius: 12rpx;
+  font-size: 24rpx;
+  box-sizing: border-box;
+}
+
+.edit-btn {
+  width: 82rpx;
+  height: 56rpx;
+  border: 1rpx solid #b9d7ff;
+  border-radius: 12rpx;
+  background: #ffffff;
+  color: #2e7bef;
+  font-size: 24rpx;
+  box-sizing: border-box;
+}
+
+.amount-area {
+  position: relative;
+  padding-top: 18rpx;
+  padding-right: 116rpx;
+}
+
+.amount-grid {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 8rpx;
+}
+
+.amount-item {
+  width: 50%;
+  min-height: 76rpx;
+  padding: 6rpx 12rpx 6rpx 0;
+}
+
+.amount-label {
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.amount-value {
+  margin-top: 4rpx;
+  min-width: 0;
+  max-width: 210rpx;
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 40rpx;
+  overflow-wrap: break-word;
+}
+
+.amount-receipt-btn {
+  position: absolute;
+  right: 0;
+  bottom: 8rpx;
+  width: 96rpx;
+  height: 64rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12rpx;
+  background: #2e7bef;
+  color: #ffffff;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.amount-normal {
+  color: #172033;
+}
+
+.amount-success {
+  color: #0e8a62;
+}
+
+.amount-danger {
+  color: #d94a55;
+}
+
+.amount-primary {
+  color: #2e7bef;
+}
+
+.detail-tabs {
+  margin-top: 42rpx;
+  height: 86rpx;
+  display: flex;
+  align-items: center;
+  border-bottom: 1rpx solid #d8e5f6;
+  background: transparent;
+}
+
+.detail-tab {
+  position: relative;
+  flex: 1;
+  height: 86rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.detail-tab-active {
+  color: #2e7bef;
+  font-weight: 900;
+}
+
+.detail-tab-active::after {
+  position: absolute;
+  width: 74rpx;
+  bottom: -1rpx;
+  left: 50%;
+  height: 7rpx;
+  border-radius: 999rpx;
+  background: #2e7bef;
+  content: "";
+  transform: translateX(-50%);
+}
+
+.sales-section,
+.fund-section {
+  margin-top: 0;
+  padding: 24rpx 0 0;
+  background: transparent;
+}
+
+.record-filters {
+  margin: 0 0 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 20rpx;
+}
+
+.record-filter-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 22rpx;
+}
+
+.record-filter {
+  min-width: 128rpx;
+  height: 72rpx;
+  padding: 0 28rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 18rpx;
+  background: #ffffff;
+  color: #667085;
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.record-filter-active {
+  border-color: #2e7bef;
+  background: #eaf3ff;
+  color: #2e7bef;
+}
+
+.record-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.sales-record {
+  padding: 24rpx;
+}
+
+.record-head,
+.fund-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.record-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.record-no,
+.fund-type {
+  color: #172033;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 38rpx;
+}
+
+.record-desc,
+.record-date,
+.fund-meta,
+.fund-rule {
+  color: #667085;
+  font-size: 23rpx;
+  line-height: 34rpx;
+}
+
+.record-desc {
+  margin-top: 4rpx;
+}
+
+.record-date {
+  flex: 0 0 auto;
+}
+
+.record-badges {
+  margin-top: 16rpx;
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.record-badge {
+  min-width: 108rpx;
+  height: 44rpx;
+  padding: 0 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.badge-primary {
+  border: 1rpx solid #b9d7ff;
+  background: #eaf3ff;
+  color: #1677ff;
+}
+
+.badge-warning {
+  border: 1rpx solid #f4c28b;
+  background: #fff7e8;
+  color: #d77a00;
+}
+
+.badge-danger {
+  border: 1rpx solid #f6b3bc;
+  background: #fff1f2;
+  color: #d94a55;
+}
+
+.badge-success {
+  border: 1rpx solid #b7e1cf;
+  background: #eaf8f0;
+  color: #0e8a62;
+}
+
+.badge-muted {
+  border: 1rpx solid #d8e5f6;
+  background: #f6f7f9;
+  color: #667085;
+}
+
+.record-amounts {
+  margin-top: 18rpx;
+  display: flex;
+  align-items: flex-end;
+  gap: 18rpx;
+}
+
+.record-amount {
+  min-width: 0;
+  flex: 1;
+}
+
+.record-amount-label {
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 30rpx;
+}
+
+.record-amount-value {
+  margin-top: 4rpx;
+  font-size: 26rpx;
+  font-weight: 900;
+  line-height: 36rpx;
+}
+
+.record-action {
+  flex: 0 0 112rpx;
+  height: 60rpx;
+  font-size: 24rpx;
+}
+
+.fund-record {
+  padding: 24rpx 26rpx;
+}
+
+.fund-amount {
+  flex: 0 0 auto;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 40rpx;
+}
+
+.fund-meta,
+.fund-rule {
+  margin-top: 8rpx;
+}
+
+.empty-state {
+  margin-top: 20rpx;
+  padding: 52rpx 32rpx;
+  text-align: center;
+}
+
+.empty-title {
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.empty-desc {
+  margin-top: 10rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}

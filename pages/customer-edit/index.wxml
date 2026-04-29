@@ -1,0 +1,99 @@
+<view class="customer-edit-page">
+  <scroll-view class="edit-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="edit-content">
+      <view class="edit-action-row">
+        <view class="edit-title">{{modeTitle}}</view>
+        <view class="import-btn" bindtap="onImportTap">导入</view>
+      </view>
+
+      <view class="edit-card">
+        <view class="card-title">基础信息</view>
+        <view class="card-desc">维护客户基础资料、地址和期初欠款；支持单个新增，也支持通过右上角导入批量建档。</view>
+
+        <view class="form-list">
+          <view class="form-row">
+            <view class="form-label">客户名称</view>
+            <input
+              class="form-input"
+              value="{{form.name}}"
+              placeholder="请输入客户名称"
+              placeholder-class="input-placeholder"
+              bindinput="onNameInput"
+            />
+          </view>
+
+          <view class="form-row">
+            <view class="form-label">联系电话</view>
+            <input
+              class="form-input"
+              type="number"
+              value="{{form.phone}}"
+              placeholder="请输入手机号"
+              placeholder-class="input-placeholder"
+              bindinput="onPhoneInput"
+            />
+          </view>
+
+          <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="form-row">
+              <view class="form-label">客户分类</view>
+              <view class="form-picker-value {{form.category ? '' : 'input-placeholder'}}">{{form.category ? form.category : '请选择客户分类'}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <view class="form-row">
+            <view class="form-label">详细地址</view>
+            <input
+              class="form-input"
+              value="{{form.address}}"
+              placeholder="请输入客户地址"
+              placeholder-class="input-placeholder"
+              bindinput="onAddressInput"
+            />
+          </view>
+
+          <view class="form-row">
+            <view class="form-label">期初欠款</view>
+            <input
+              class="form-input"
+              type="digit"
+              value="{{form.openingReceivable}}"
+              placeholder="输入历史应收金额"
+              placeholder-class="input-placeholder"
+              bindinput="onOpeningInput"
+            />
+          </view>
+
+          <view class="form-row form-row-tall">
+            <view class="form-label">备注</view>
+            <textarea
+              class="form-textarea"
+              value="{{form.remark}}"
+              placeholder="补充客户习惯、门店说明等"
+              placeholder-class="input-placeholder"
+              maxlength="120"
+              bindinput="onRemarkInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <view class="edit-card">
+        <view class="card-title">业务说明</view>
+        <view class="card-desc">期初欠款用于历史应收初始化，保存后可在客户详情查看合同金额、已收和未收汇总。</view>
+        <view class="rule-tags">
+          <view class="rule-tag rule-tag-primary">按组织权限导入</view>
+          <view class="rule-tag rule-tag-warning">期初欠款可为空</view>
+        </view>
+        <view class="rule-copy">1. 客户名称为主识别字段。</view>
+        <view class="rule-copy">2. 电话重复时导入任务会提示人工确认。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存客户</view>
+  </view>
+</view>

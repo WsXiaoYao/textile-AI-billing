@@ -45,6 +45,21 @@ Page({
     totalAmount: '¥472.50'
   },
 
+  onShow() {
+    const app = getApp()
+    const selectedCustomer = app.globalData.selectedCustomer
+    if (!selectedCustomer) return
+
+    app.globalData.selectedCustomer = null
+    this.setData({
+      currentCustomer: selectedCustomer,
+      customers: this.mergeQuickCustomers(selectedCustomer),
+      activeCustomer: 0,
+      switchMessage: '客户切换完成',
+      inputText: `给客户${selectedCustomer.name}开个单子，要25玛寸布米色20米、25玛寸布深灰15米、280祥云H513-米10米`
+    })
+  },
+
   onCustomerSelect(event) {
     const index = event.detail.index
     this.setData({
@@ -85,5 +100,13 @@ Page({
       title: '识别逻辑待接入',
       icon: 'none'
     })
+  },
+
+  mergeQuickCustomers(customer) {
+    const nextCustomers = this.data.customers.filter(item => item.name !== customer.name)
+    return [
+      { id: customer.code, name: customer.name, wide: customer.name.length > 4 },
+      ...nextCustomers
+    ].slice(0, 3)
   }
 })

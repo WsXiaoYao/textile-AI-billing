@@ -1,0 +1,178 @@
+<view class="receipt-page">
+  <scroll-view class="receipt-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="receipt-content">
+      <view class="receipt-card overview-card">
+        <view class="overview-head">
+          <view class="overview-customer">
+            <view class="overview-label">客户</view>
+            <view class="overview-name">{{receipt.customer.name}}</view>
+          </view>
+          <view class="overview-count">可收 {{receipt.orderCount}} 张</view>
+        </view>
+
+        <view class="overview-metrics">
+          <view class="overview-metric">
+            <view class="metric-label">累计欠款</view>
+            <view class="metric-value metric-danger">{{receipt.totalUnpaidText}}</view>
+          </view>
+          <view class="overview-metric overview-metric-center">
+            <view class="metric-label">预收款项</view>
+            <view class="metric-value metric-success">{{receipt.availablePrepaidText}}</view>
+          </view>
+        </view>
+
+        <view class="overview-note note-{{prepayMode ? 'warning' : 'primary'}}">{{modeNote}}</view>
+      </view>
+
+      <view class="receipt-card process-card">
+        <view class="field-block">
+          <view class="field-label">收款金额</view>
+          <view class="amount-input-wrap {{amountError ? 'amount-input-error' : ''}}">
+            <view class="amount-prefix">¥</view>
+            <input
+              class="amount-input"
+              type="digit"
+              value="{{amountInput}}"
+              placeholder="请输入金额"
+              placeholder-class="amount-placeholder"
+              confirm-type="done"
+              cursor-spacing="120"
+              bindinput="onAmountInput"
+              bindblur="onAmountBlur"
+              bindconfirm="onAmountBlur"
+            />
+            <view class="amount-quick-btn" bindtap="onFillAllTap">{{fillActionText}}</view>
+          </view>
+          <view class="field-error {{amountError ? '' : 'field-error-empty'}}">{{amountError || '占位'}}</view>
+        </view>
+
+        <view class="switch-row">
+          <view class="switch-copy">
+            <view class="switch-title">使用预收款</view>
+            <view class="switch-desc">开启后优先从客户已有预收款中抵扣欠款。</view>
+          </view>
+          <view class="switch-action">
+            <view class="switch-amount">{{receipt.availablePrepaidText}}</view>
+            <switch class="receipt-switch" checked="{{usePrepaid}}" color="#2E7BEF" bindchange="onUsePrepaidChange" />
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{!prepayMode}}" class="receipt-card allocation-card">
+        <view class="card-head">
+          <view class="card-title">收款分摊明细</view>
+          <view class="card-side">已分摊 {{receipt.allocatedCount}} 笔</view>
+        </view>
+        <view class="warning-note">输入收款金额后自动分摊，优惠金额可改。</view>
+
+        <view class="allocation-list" wx:if="{{receipt.displayAllocation.length}}">
+          <block wx:for="{{receipt.displayAllocation}}" wx:key="id">
+            <view class="allocation-card-item">
+              <view class="allocation-head">
+                <view>
+                  <view class="allocation-no">{{item.no}}</view>
+                  <view class="allocation-date">{{item.date}} · {{item.goodsSummary}}</view>
+                </view>
+                <view class="status-pill status-{{item.statusTone}}">
+                  <view class="status-check {{item.isAllocated ? 'status-check-on' : ''}}">{{item.isAllocated ? '✓' : ''}}</view>
+                  <view>{{item.statusText}}</view>
+                </view>
+              </view>
+
+              <view class="allocation-metrics">
+                <view class="allocation-metric">
+                  <view class="mini-label">合同</view>
+                  <view class="mini-value">{{item.contractText}}</view>
+                </view>
+                <view class="allocation-metric allocation-center">
+                  <view class="mini-label">已收</view>
+                  <view class="mini-value value-success">{{item.receivedText}}</view>
+                </view>
+                <view class="allocation-metric allocation-center">
+                  <view class="mini-label">未收</view>
+                  <view class="mini-value value-danger">{{item.unpaidText}}</view>
+                </view>
+                <view class="allocation-metric allocation-right">
+                  <view class="mini-label">本次</view>
+                  <view class="mini-value value-{{item.allocatedTone}}">{{item.allocatedText}}</view>
+                </view>
+              </view>
+
+              <view class="allocation-result result-{{item.resultTone}}">{{item.resultText}}</view>
+            </view>
+          </block>
+        </view>
+
+        <view wx:else class="allocation-empty">当前客户没有待收销售单。</view>
+      </view>
+
+      <view wx:if="{{prepayMode}}" class="receipt-card prepay-card">
+        <view class="card-head">
+          <view class="card-title">预收处理说明</view>
+          <view class="prepay-mode-pill">预收款模式</view>
+        </view>
+        <view class="prepay-note">
+          <view>已切换为预收款，本次金额不再自动分摊到销售单。</view>
+          <view wx:if="{{receipt.usePrepaidCents > 0}}">使用预收款：-{{receipt.usePrepaidText}}，优先冲抵历史欠款。</view>
+          <view>本次收款：+{{receipt.receiptText}}，保存后记入客户预收款余额。</view>
+        </view>
+        <view class="prepay-desc">关闭预收款后，恢复按销售单顺序自动分摊。</view>
+      </view>
+
+      <view class="receipt-card settings-card">
+        <picker mode="date" value="{{receiptDate}}" start="{{pickerStartDate}}" end="{{pickerEndDate}}" bindchange="onDateChange">
+          <view class="form-row form-row-date">
+            <view class="row-label">收款日期</view>
+            <view class="row-value">{{receiptDate}}</view>
+            <view class="row-chevron">›</view>
+          </view>
+        </picker>
+
+        <view class="switch-row switch-row-last">
+          <view class="switch-copy">
+            <view class="switch-title">预收款</view>
+            <view class="switch-desc">{{prepayMode ? '本次金额转入客户预收款，不自动分摊销售单。' : '开启后本次金额转入客户预收款，分摊列表自动隐藏。'}}</view>
+          </view>
+          <view class="switch-action switch-action-single">
+            <switch class="receipt-switch" checked="{{prepayMode}}" color="#2E7BEF" bindchange="onPrepayModeChange" />
+          </view>
+        </view>
+      </view>
+
+      <view class="receipt-card preview-card">
+        <view class="card-head">
+          <view class="card-title">客户往来预览</view>
+          <view class="card-side">保存后更新往来</view>
+        </view>
+        <view class="preview-list">
+          <block wx:for="{{receipt.previewRows}}" wx:key="label">
+            <view class="preview-row">
+              <view class="preview-label">{{item.label}}</view>
+              <view class="preview-value value-{{item.tone}}">{{item.value}}</view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="receipt-card remark-card">
+        <view class="card-title">备注</view>
+        <input
+          class="remark-input"
+          value="{{remark}}"
+          placeholder="{{prepayMode ? '填写预收说明，例如客户转账备注' : '填写收款说明，例如线下补录收款'}}"
+          placeholder-class="input-placeholder"
+          bindinput="onRemarkInput"
+        />
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-amount">
+      <view class="bottom-label">{{bottomAmountLabel}}</view>
+      <view class="bottom-value">{{receipt.receiptText}}</view>
+    </view>
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary {{canSubmit ? '' : 'bottom-btn-disabled'}}" bindtap="onConfirmTap">{{saveActionText}}</view>
+  </view>
+</view>

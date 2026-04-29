@@ -168,6 +168,7 @@ Page({
   },
 
   onShow() {
+    this.consumePendingKeyword()
     this.loadOrders()
   },
 
@@ -340,6 +341,29 @@ Page({
   },
 
   noop() {},
+
+  consumePendingKeyword() {
+    const app = getApp()
+    const keyword = app.globalData.orderKeyword
+    if (!keyword) return
+
+    app.globalData.orderKeyword = ''
+    const filters = cloneFilters(emptyFilters)
+    this.setData({
+      keyword,
+      activeStatus: 'all',
+      filters,
+      filterDraft: cloneFilters(filters),
+      filterViewSections: buildFilterSections(filters),
+      filterDraftCount: 0,
+      filterCount: 0,
+      dateRange: { ...defaultDateRange },
+      dateDraft: { ...defaultDateRange },
+      dateLabel: formatDateLabel(defaultDateRange),
+      sortValue: 'dateDesc',
+      sortIndex: 0
+    })
+  },
 
   loadOrders(callback) {
     this.setData({

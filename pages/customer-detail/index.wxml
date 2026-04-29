@@ -1,0 +1,140 @@
+<view class="customer-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content">
+      <view class="customer-card">
+        <view class="customer-head">
+          <view class="customer-copy">
+            <view class="customer-title-row">
+              <view class="customer-name">{{detail.customer.name}}</view>
+              <view class="customer-tag">{{detail.customer.tag}}</view>
+            </view>
+            <view class="customer-phone">{{detail.customer.phone}}</view>
+            <view class="customer-address">{{detail.customer.address}}</view>
+          </view>
+          <view class="customer-actions">
+            <view class="edit-btn" bindtap="onEditTap">编辑</view>
+            <view class="call-btn" bindtap="onCallTap">拨打</view>
+          </view>
+        </view>
+
+        <view class="amount-area">
+          <view class="amount-grid">
+            <block wx:for="{{detail.amountMetrics}}" wx:key="label">
+              <view class="amount-item">
+                <view class="amount-label">{{item.label}}</view>
+                <view class="amount-value amount-{{item.tone}}">{{item.value}}</view>
+              </view>
+            </block>
+          </view>
+          <view wx:if="{{detail.customer.receivableCents > 0}}" class="amount-receipt-btn" bindtap="onCustomerReceiptTap">收款</view>
+        </view>
+      </view>
+
+      <view class="detail-tabs">
+        <block wx:for="{{detail.tabs}}" wx:key="value">
+          <view
+            class="detail-tab {{activeTab == item.value ? 'detail-tab-active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onTabTap"
+          >
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+
+      <view wx:if="{{activeTab == 'sales'}}" class="sales-section">
+        <view class="record-filters">
+          <view class="record-filter-group">
+            <block wx:for="{{detail.recordFilters}}" wx:key="value">
+              <view
+                class="record-filter {{activeFilter == item.value ? 'record-filter-active' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="onFilterTap"
+              >
+                {{item.label}}
+              </view>
+            </block>
+          </view>
+        </view>
+
+        <view class="record-list" wx:if="{{filteredSalesRecords.length}}">
+          <block wx:for="{{filteredSalesRecords}}" wx:key="id">
+            <view class="sales-record" data-id="{{item.id}}" bindtap="onOpenOrderTap">
+              <view class="record-head">
+                <view class="record-main">
+                  <view class="record-no">{{item.no}}</view>
+                  <view class="record-desc">{{item.creator}} · {{item.goodsSummary}}</view>
+                </view>
+                <view class="record-date">{{item.date}}</view>
+              </view>
+
+              <view class="record-badges">
+                <view class="record-badge badge-{{item.typeTone}}">{{item.typeText}}</view>
+                <view class="record-badge badge-{{item.statusTone}}">{{item.statusText}}</view>
+              </view>
+
+              <view class="record-amounts">
+                <view class="record-amount">
+                  <view class="record-amount-label">合同</view>
+                  <view class="record-amount-value amount-{{item.contractTone}}">{{item.contractText}}</view>
+                </view>
+                <view class="record-amount">
+                  <view class="record-amount-label">已收</view>
+                  <view class="record-amount-value amount-{{item.receivedTone}}">{{item.receivedText}}</view>
+                </view>
+                <view class="record-amount">
+                  <view class="record-amount-label">未收</view>
+                  <view class="record-amount-value amount-{{item.unpaidTone}}">{{item.unpaidText}}</view>
+                </view>
+                <button class="record-action" data-id="{{item.id}}" catchtap="onRecordActionTap">{{item.actionText}}</button>
+              </view>
+            </view>
+          </block>
+        </view>
+
+        <view wx:else class="empty-state">
+          <view class="empty-title">没有匹配的销售记录</view>
+          <view class="empty-desc">换个记录类型再试试。</view>
+        </view>
+      </view>
+
+      <view wx:if="{{activeTab == 'funds'}}" class="fund-section">
+        <view class="record-filters">
+          <view class="record-filter-group">
+            <block wx:for="{{detail.fundFilters}}" wx:key="value">
+              <view
+                class="record-filter {{activeFundFilter == item.value ? 'record-filter-active' : ''}}"
+                data-value="{{item.value}}"
+                bindtap="onFundFilterTap"
+              >
+                {{item.label}}
+              </view>
+            </block>
+          </view>
+        </view>
+
+        <view class="record-list" wx:if="{{displayedFundRecords.length}}">
+          <block wx:for="{{displayedFundRecords}}" wx:key="id">
+            <view class="fund-record" data-id="{{item.id}}" bindtap="onOpenFundTap">
+              <view class="fund-head">
+                <view class="fund-type">{{item.type}}</view>
+                <view class="fund-amount amount-{{item.amountTone}}">{{item.amountText}}</view>
+              </view>
+              <view class="record-badges fund-badges">
+                <view class="record-badge badge-{{item.orderTypeTone}}">{{item.orderTypeText}}</view>
+                <view class="record-badge badge-{{item.flowTypeTone}}">{{item.flowTypeText}}</view>
+              </view>
+              <view class="fund-meta">{{item.date}} · {{item.orderNo}}</view>
+              <view class="fund-rule">{{item.rule}}</view>
+            </view>
+          </block>
+        </view>
+
+        <view wx:else class="empty-state">
+          <view class="empty-title">暂无资金流水</view>
+          <view class="empty-desc">收款、退款或预收记录会显示在这里。</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+</view>

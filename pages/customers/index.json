@@ -1,4 +1,10 @@
 {
-  "navigationBarTitleText": "客户",
-  "usingComponents": {}
+  "navigationBarTitleText": "",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 280,
+  "usingComponents": {
+    "order-filter-bar": "/components/order-filter-bar/index",
+    "order-summary-card": "/components/order-summary-card/index",
+    "customer-list-card": "/components/customer-list-card/index"
+  }
 }

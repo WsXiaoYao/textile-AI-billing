@@ -3,7 +3,7 @@
     <input
       class="search-input"
       value="{{keyword}}"
-      placeholder="搜索客户、单号、制单人"
+      placeholder="{{searchPlaceholder}}"
       placeholder-class="search-placeholder"
       confirm-type="search"
       bindinput="onKeywordInput"
@@ -25,7 +25,7 @@
 
   <view class="query-row">
     <view class="date-trigger" bindtap="onDateTap">
-      <view class="date-label">销售日期</view>
+      <view class="date-label">{{dateTitle}}</view>
       <view class="date-value">{{dateLabel}}</view>
     </view>
     <view class="date-arrow">⌄</view>

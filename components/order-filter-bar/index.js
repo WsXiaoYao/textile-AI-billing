@@ -4,6 +4,10 @@ Component({
       type: String,
       value: ''
     },
+    searchPlaceholder: {
+      type: String,
+      value: '搜索客户、单号、制单人'
+    },
     statusTabs: {
       type: Array,
       value: []
@@ -15,6 +19,10 @@ Component({
     dateLabel: {
       type: String,
       value: '全部日期'
+    },
+    dateTitle: {
+      type: String,
+      value: '销售日期'
     },
     sortLabel: {
       type: String,

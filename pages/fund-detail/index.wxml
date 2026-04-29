@@ -1,0 +1,63 @@
+<view class="fund-detail-page">
+  <scroll-view class="fund-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="fund-content" wx:if="{{detail}}">
+      <view class="fund-card basic-card">
+        <view class="card-head">
+          <view class="card-title">基础信息</view>
+          <view class="status-pill status-{{detail.statusTone}}">{{detail.statusText}}</view>
+        </view>
+        <view class="card-desc">{{detail.infoDesc}}</view>
+
+        <view class="info-list">
+          <block wx:for="{{detail.basicRows}}" wx:key="label">
+            <view class="info-row">
+              <view class="info-label">{{item.label}}</view>
+              <view class="info-value value-{{item.tone}}">{{item.value}}</view>
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="fund-card" wx:if="{{detail.relatedOrder}}">
+        <view class="card-title">关联销售单</view>
+        <view class="order-link-card" bindtap="onOpenOrderTap">
+          <view class="order-link-head">
+            <view class="order-no">{{detail.relatedOrder.no}}</view>
+            <view class="status-pill status-{{detail.relatedOrder.statusTone}}">{{detail.relatedOrder.statusText}}</view>
+          </view>
+          <view class="order-metrics">
+            <block wx:for="{{detail.relatedOrder.metrics}}" wx:key="label">
+              <view class="order-metric">
+                <view class="metric-label">{{item.label}}</view>
+                <view class="metric-value value-{{item.tone}}">{{item.value}}</view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+
+      <view class="fund-card">
+        <view class="card-title">收款结果</view>
+        <view class="result-list">
+          <block wx:for="{{detail.resultRows}}" wx:key="label">
+            <view class="result-row">
+              <view class="result-label">{{item.label}}</view>
+              <view class="result-value value-{{item.tone}}">{{item.value}}</view>
+            </view>
+          </block>
+        </view>
+        <view class="result-note">{{detail.resultNote}}</view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-title">没有找到这笔流水</view>
+      <view class="empty-desc">返回客户详情后重新打开资金流水。</view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onShareTemplateTap">按模板分享</view>
+  </view>
+</view>

@@ -1,6 +1,147 @@
-<view class="app-page placeholder-page">
-  <view class="app-card placeholder-card">
-    <view class="app-section-title">{{title}}</view>
-    <view class="text-secondary description">{{description}}</view>
+<view class="customers-page">
+  <order-filter-bar
+    keyword="{{keyword}}"
+    search-placeholder="搜索客户、电话、地区"
+    status-tabs="{{statusTabs}}"
+    active-status="{{activeStatus}}"
+    date-title="最近下单"
+    date-label="{{dateLabel}}"
+    sort-label="{{sortLabel}}"
+    sort-options="{{sortOptions}}"
+    sort-index="{{sortIndex}}"
+    filter-count="{{filterCount}}"
+    bind:keywordinput="onKeywordInput"
+    bind:keywordconfirm="onKeywordConfirm"
+    bind:statuschange="onStatusChange"
+    bind:datetap="onDateTap"
+    bind:sortchange="onSortChange"
+    bind:filtertap="onFilterTap"
+  />
+
+  <view class="summary-section">
+    <order-summary-card summary="{{summary}}" />
   </view>
+
+  <view class="customer-list" wx:if="{{filteredTotal}}">
+    <block wx:for="{{displayedCustomers}}" wx:key="id">
+      <view class="customer-card-item">
+        <customer-list-card
+          customer="{{item}}"
+          bind:open="onOpenCustomer"
+          bind:startorder="onStartOrder"
+          bind:vieworders="onViewOrders"
+        />
+      </view>
+    </block>
+    <view class="customer-list-footer" wx:if="{{customerHasMore || customerLoadingMore}}">
+      {{customerLoadingMore ? '加载中' : '继续上滑加载'}}
+    </view>
+  </view>
+
+  <view class="empty-state" wx:else>
+    <view class="empty-title">没有匹配的客户</view>
+    <view class="empty-desc">换个客户名、电话或筛选条件再试试。</view>
+  </view>
+
+  <view class="customer-fab" bindtap="onAddCustomerTap">新增客户</view>
+
+  <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
+    <view class="filter-backdrop" bindtap="onCancelFilter"></view>
+    <view class="filter-drawer" catchtap="noop">
+      <view class="filter-header">
+        <view class="filter-title">筛选</view>
+        <view class="filter-selected" wx:if="{{filterDraftCount}}">已选 {{filterDraftCount}} 项</view>
+      </view>
+      <scroll-view class="filter-body" scroll-y>
+        <block wx:for="{{filterViewSections}}" wx:key="key" wx:for-item="section">
+          <view class="filter-section">
+            <view class="filter-section-title">{{section.title}}</view>
+            <view class="filter-chip-grid">
+              <block wx:for="{{section.options}}" wx:key="value" wx:for-item="option">
+                <view
+                  class="filter-chip {{option.active ? 'filter-chip-active' : ''}}"
+                  data-key="{{section.key}}"
+                  data-value="{{option.value}}"
+                  bindtap="onFilterOptionTap"
+                >
+                  {{option.label}}
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+      <view class="filter-footer">
+        <view class="filter-reset" bindtap="onResetFilters">重置</view>
+        <view class="filter-done" bindtap="onApplyFilters">完成</view>
+      </view>
+    </view>
+  </view>
+
+  <page-container
+    show="{{panelVisible}}"
+    position="{{panelPosition}}"
+    round="{{panelRound}}"
+    overlay="{{true}}"
+    custom-style="{{panelStyle}}"
+    bind:clickoverlay="onClosePanel"
+  >
+    <view wx:if="{{panelType == 'date'}}" class="date-panel">
+      <view class="date-panel-header">
+        <view class="date-panel-link" bindtap="onCancelDate">取消</view>
+        <view class="date-panel-title">最近下单</view>
+        <view class="date-panel-link date-panel-confirm" bindtap="onConfirmDate">确认</view>
+      </view>
+
+      <view class="date-presets">
+        <block wx:for="{{datePresets}}" wx:key="value">
+          <view
+            class="date-preset {{dateDraft.preset == item.value ? 'date-preset-active' : ''}}"
+            data-value="{{item.value}}"
+            bindtap="onSelectDatePreset"
+          >
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+
+      <view class="date-native-range">
+        <picker
+          class="date-range-picker"
+          mode="date"
+          fields="day"
+          value="{{dateDraft.start}}"
+          start="{{pickerStartDate}}"
+          end="{{dateDraft.end}}"
+          bindchange="onStartDateChange"
+        >
+          <view class="date-range-row date-range-row-first">
+            <view class="date-range-copy">
+              <view class="date-native-label">开始日期</view>
+              <view class="date-native-value">{{dateDraft.start}}</view>
+            </view>
+            <view class="date-range-chevron">›</view>
+          </view>
+        </picker>
+
+        <picker
+          class="date-range-picker"
+          mode="date"
+          fields="day"
+          value="{{dateDraft.end}}"
+          start="{{dateDraft.start}}"
+          end="{{pickerEndDate}}"
+          bindchange="onEndDateChange"
+        >
+          <view class="date-range-row">
+            <view class="date-range-copy">
+              <view class="date-native-label">结束日期</view>
+              <view class="date-native-value">{{dateDraft.end}}</view>
+            </view>
+            <view class="date-range-chevron">›</view>
+          </view>
+        </picker>
+      </view>
+    </view>
+  </page-container>
 </view>

@@ -1,0 +1,55 @@
+<view class="import-page">
+  <scroll-view class="import-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="import-content">
+      <view class="import-card">
+        <view class="card-title">{{center.importTitle}}</view>
+        <view class="card-desc">{{center.importDesc}}</view>
+        <view class="import-steps">
+          <view class="import-step import-step-active">1 选择文件</view>
+          <view class="import-step">2 后端解析</view>
+          <view class="import-step">3 回写客户</view>
+        </view>
+        <view class="action-row">
+          <view class="small-btn small-btn-secondary" bindtap="onDownloadTemplateTap">下载模板</view>
+          <view class="small-btn small-btn-primary" bindtap="onUploadTap">上传文件</view>
+          <view class="action-hint">{{center.importHint}}</view>
+        </view>
+      </view>
+
+      <view class="import-card">
+        <view class="card-title">{{center.exportTitle}}</view>
+        <view class="card-desc">{{center.exportDesc}}</view>
+        <view class="export-actions">
+          <view class="export-btn export-btn-primary" data-type="current" bindtap="onExportTap">导出当前筛选</view>
+          <view class="export-btn" data-type="authorized" bindtap="onExportTap">导出授权客户</view>
+          <view class="export-btn" data-type="link" bindtap="onExportTap">生成本地文件</view>
+        </view>
+      </view>
+
+      <view class="import-card task-card">
+        <view class="card-title">最近导入导出任务</view>
+        <view class="task-list" wx:if="{{center.tasks.length}}">
+          <block wx:for="{{center.tasks}}" wx:key="id">
+            <view class="task-item" data-id="{{item.id}}" bindtap="onTaskTap">
+              <view class="task-main">
+                <view class="task-time">{{item.time}}</view>
+                <view class="task-title">{{item.title}}</view>
+                <view class="task-desc">{{item.desc}}</view>
+              </view>
+              <view class="task-status status-{{item.statusTone}}">{{item.statusText}}</view>
+            </view>
+          </block>
+        </view>
+        <view class="task-empty" wx:else>
+          <view class="task-empty-title">暂无真实任务</view>
+          <view class="task-empty-desc">下载模板、上传文件或导出客户后，这里会生成对应任务。</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onStartImportTap">开始导入</view>
+  </view>
+</view>

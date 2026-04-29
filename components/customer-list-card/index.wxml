@@ -1,0 +1,25 @@
+<view class="customer-list-card" bindtap="onOpen">
+  <view class="customer-main">
+    <view class="customer-info">
+      <view class="customer-title-row">
+        <view class="customer-name">{{customer.name}}</view>
+        <view class="customer-tag">{{customer.tag}}</view>
+      </view>
+      <view class="customer-meta">{{customer.code}} · {{customer.phone}}</view>
+      <view class="customer-address">{{customer.address}}</view>
+    </view>
+
+    <view class="customer-balance">
+      <view class="status-pill status-{{customer.statusTone}}">{{customer.statusText}}</view>
+      <view class="balance-label">{{customer.balanceLabel}}</view>
+      <view class="balance-value balance-{{customer.balanceTone}}">{{customer.balanceText}}</view>
+    </view>
+  </view>
+
+  <view class="customer-tags" wx:if="{{customer.chips.length}}">
+    <block wx:for="{{customer.chips}}" wx:key="text">
+      <view class="customer-chip tag-{{item.tone}}">{{item.text}}</view>
+    </block>
+  </view>
+
+</view>

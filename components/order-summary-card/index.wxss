@@ -5,8 +5,8 @@
 
 .order-summary-card {
   width: 100%;
-  min-height: 192rpx;
-  padding: 26rpx 30rpx 22rpx;
+  min-height: 144rpx;
+  padding: 24rpx 30rpx 22rpx;
   border: 1rpx solid #d8e5f6;
   border-radius: 24rpx;
   background: #ffffff;
@@ -19,8 +19,11 @@
   line-height: 1.4;
 }
 
-.summary-metrics {
+.summary-title + .summary-metrics {
   margin-top: 8rpx;
+}
+
+.summary-metrics {
   display: flex;
   align-items: flex-start;
 }

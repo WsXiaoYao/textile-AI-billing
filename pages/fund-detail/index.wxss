@@ -1,0 +1,255 @@
+.fund-detail-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.fund-scroll {
+  height: 100vh;
+}
+
+.fund-content {
+  padding: 24rpx 24rpx 148rpx;
+}
+
+.fund-card {
+  margin-top: 24rpx;
+  padding: 26rpx 28rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(13, 31, 61, 0.05);
+}
+
+.fund-card:first-child {
+  margin-top: 0;
+}
+
+.card-head,
+.order-link-head,
+.result-row,
+.info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.card-title {
+  color: #1d2129;
+  font-size: 32rpx;
+  font-weight: 900;
+  line-height: 44rpx;
+}
+
+.card-desc {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.status-pill {
+  flex: 0 0 auto;
+  height: 48rpx;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-success {
+  border: 1rpx solid #b7e1cf;
+  background: #ecfdf5;
+  color: #0e8a62;
+}
+
+.status-primary {
+  border: 1rpx solid #b9d7ff;
+  background: #f2f7ff;
+  color: #2e7bef;
+}
+
+.status-danger {
+  border: 1rpx solid #f6b3bc;
+  background: #fff1f2;
+  color: #d94a55;
+}
+
+.info-list {
+  margin-top: 20rpx;
+}
+
+.info-row {
+  min-height: 84rpx;
+  border-top: 1rpx solid #e6ecf5;
+}
+
+.info-row:first-child {
+  border-top: 0;
+}
+
+.info-label,
+.result-label,
+.metric-label {
+  color: #667085;
+  font-size: 26rpx;
+  line-height: 36rpx;
+}
+
+.info-value,
+.result-value {
+  min-width: 0;
+  flex: 1;
+  color: #1d2129;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 40rpx;
+  text-align: right;
+  word-break: break-all;
+}
+
+.value-strong,
+.value-normal {
+  color: #172033;
+}
+
+.value-success {
+  color: #0e8a62;
+}
+
+.value-danger {
+  color: #d94a55;
+}
+
+.value-primary {
+  color: #2e7bef;
+}
+
+.value-muted {
+  color: #667085;
+}
+
+.order-link-card {
+  margin-top: 18rpx;
+  padding: 24rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 20rpx;
+  background: #ffffff;
+}
+
+.order-no {
+  min-width: 0;
+  flex: 1;
+  color: #1d2129;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 40rpx;
+}
+
+.order-metrics {
+  margin-top: 26rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+}
+
+.order-metric {
+  min-width: 0;
+  flex: 1;
+  text-align: center;
+}
+
+.metric-value {
+  margin-top: 4rpx;
+  color: #172033;
+  font-size: 32rpx;
+  font-weight: 900;
+  line-height: 42rpx;
+  word-break: break-all;
+}
+
+.result-list {
+  margin-top: 18rpx;
+}
+
+.result-row {
+  min-height: 60rpx;
+}
+
+.result-note {
+  margin-top: 18rpx;
+  padding: 16rpx 18rpx;
+  border: 1rpx solid #b7e1cf;
+  border-radius: 14rpx;
+  background: #ecfdf5;
+  color: #0e8a62;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.empty-state {
+  margin: 80rpx 24rpx 0;
+  padding: 52rpx 32rpx;
+  border: 1rpx dashed #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+  text-align: center;
+}
+
+.empty-title {
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.empty-desc {
+  margin-top: 10rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.bottom-actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  min-height: 108rpx;
+  padding: 14rpx 24rpx calc(14rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  border-top: 1rpx solid #e6ecf5;
+  background: #ffffff;
+}
+
+.bottom-btn {
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.bottom-btn-secondary {
+  flex: 0 0 184rpx;
+  border: 1rpx solid #d8e5f6;
+  background: #ffffff;
+  color: #2e7bef;
+}
+
+.bottom-btn-primary {
+  flex: 1;
+  background: #2e7bef;
+  color: #ffffff;
+}
