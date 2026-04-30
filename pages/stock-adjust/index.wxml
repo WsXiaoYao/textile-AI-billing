@@ -1,0 +1,109 @@
+<view class="adjust-page">
+  <scroll-view class="adjust-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="adjust-content" wx:if="{{item}}">
+      <view class="adjust-card">
+        <view class="card-title">调整信息</view>
+        <view class="card-desc">记录调整前后数量、仓库下限与原因，方便后续追溯。</view>
+        <view class="form-list">
+          <view class="form-row">
+            <view class="form-label">产品名称</view>
+            <view class="form-value">{{item.productName}}</view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">颜色</view>
+            <view class="form-value">{{item.color}}</view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">仓库</view>
+            <view class="form-value">{{form.warehouseName}}</view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">当前库存</view>
+            <view class="form-value">{{item.stockText}}</view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">调整数量</view>
+            <view class="adjust-control">
+              <input
+                class="form-input amount-input"
+                value="{{form.adjustQty}}"
+                placeholder="输入数量"
+                placeholder-class="input-placeholder"
+                type="digit"
+                bindinput="onAdjustInput"
+              />
+              <view class="direction-group">
+                <view class="direction-btn direction-increase {{form.adjustDirection == 'increase' ? 'direction-active' : ''}}" data-direction="increase" bindtap="onDirectionTap">增加</view>
+                <view class="direction-btn direction-decrease {{form.adjustDirection == 'decrease' ? 'direction-active' : ''}}" data-direction="decrease" bindtap="onDirectionTap">减少</view>
+              </view>
+            </view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">调整后库存</view>
+            <view class="form-value form-value-{{afterTone}}">{{afterStockText}}</view>
+          </view>
+          <view class="form-row">
+            <view class="form-label">库存下限</view>
+            <view class="form-value">{{item.lowerLimitText}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="adjust-card">
+        <view class="card-title">调整说明</view>
+        <view class="card-desc">保留操作人、时间和调整原因，方便后续追溯。</view>
+        <textarea
+          class="note-input"
+          value="{{form.note}}"
+          placeholder="例如：仓库盘点后修正库存，维持下限。"
+          placeholder-class="input-placeholder"
+          maxlength="120"
+          bindinput="onNoteInput"
+        />
+      </view>
+
+      <view class="adjust-card">
+        <view class="card-head">
+          <view>
+            <view class="card-title">最近调整记录</view>
+            <view class="card-desc">查看最近一次调整前后数量与影响结果。</view>
+          </view>
+          <view class="record-count">{{recentRecords.length}} 条</view>
+        </view>
+
+        <view class="record-list" wx:if="{{recentRecords.length}}">
+          <block wx:for="{{recentRecords}}" wx:key="id">
+            <view class="record-item">
+              <view class="record-top">
+                <view class="record-operator">{{item.operator}}</view>
+                <view class="record-time">{{item.time}}</view>
+              </view>
+              <view class="record-metrics">
+                <view class="record-metric">
+                  <view class="record-label">调整前</view>
+                  <view class="record-value">{{item.beforeText}}</view>
+                </view>
+                <view class="record-metric">
+                  <view class="record-label">调整量</view>
+                  <view class="record-value record-primary">{{item.deltaText}}</view>
+                </view>
+                <view class="record-metric">
+                  <view class="record-label">调整后</view>
+                  <view class="record-value record-primary">{{item.afterText}}</view>
+                </view>
+              </view>
+              <view class="record-note" wx:if="{{item.note}}">{{item.note}}</view>
+            </view>
+          </block>
+        </view>
+
+        <view class="empty-record" wx:else>暂无调整记录，保存后会在这里展示。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存调整</view>
+  </view>
+</view>

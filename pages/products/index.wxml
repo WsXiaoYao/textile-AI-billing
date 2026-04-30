@@ -1,0 +1,153 @@
+<view class="products-page">
+  <view class="product-toolbar">
+    <view class="search-action-row">
+      <view class="search-row">
+        <input
+          class="search-input"
+          value="{{keyword}}"
+          placeholder="搜索产品、编号、颜色"
+          placeholder-class="search-placeholder"
+          confirm-type="search"
+          bindinput="onKeywordInput"
+          bindconfirm="onKeywordConfirm"
+        />
+      </view>
+
+      <view class="toolbar-actions">
+        <view class="toolbar-btn toolbar-btn-primary" bindtap="onAddMenuTap">新增</view>
+      </view>
+    </view>
+
+    <view class="status-tabs">
+      <block wx:for="{{statusTabs}}" wx:key="value">
+        <view
+          class="status-tab {{activeStatus == item.value ? 'status-tab-active' : ''}}"
+          data-value="{{item.value}}"
+          bindtap="onStatusTap"
+        >
+          {{item.label}}
+        </view>
+      </block>
+    </view>
+
+    <view class="query-row">
+      <view class="query-copy">
+        <view class="category-breadcrumbs">
+          <block wx:for="{{categoryBreadcrumbs}}" wx:key="key">
+            <view
+              class="breadcrumb-item {{item.active ? 'breadcrumb-item-active' : ''}}"
+              data-key="{{item.key}}"
+              bindtap="onCategoryCrumbTap"
+            >
+              {{item.label}}
+            </view>
+            <view wx:if="{{index < categoryBreadcrumbs.length - 1}}" class="breadcrumb-sep">›</view>
+          </block>
+        </view>
+      </view>
+      <view class="query-divider"></view>
+      <picker
+        class="query-picker"
+        mode="selector"
+        range="{{sortOptions}}"
+        range-key="label"
+        value="{{sortIndex}}"
+        bindchange="onSortChange"
+      >
+        <view class="query-action">排序⌄</view>
+      </picker>
+      <view class="query-divider"></view>
+      <view class="query-action" bindtap="onFilterTap">
+        筛选<text wx:if="{{filterCount}}">·{{filterCount}}</text>⌄
+      </view>
+    </view>
+  </view>
+
+  <view class="product-body">
+    <scroll-view class="category-rail" scroll-y enhanced show-scrollbar="{{false}}">
+      <block wx:for="{{categories}}" wx:key="key">
+        <view
+          class="category-item category-level-{{item.level}} {{selectedCategory == item.key ? 'category-item-active' : ''}}"
+          data-key="{{item.key}}"
+          data-label="{{item.label}}"
+          bindtap="onCategoryTap"
+        >
+          <view class="category-name">{{item.label}}</view>
+          <view class="category-count">{{item.count}}</view>
+          <view class="category-next" wx:if="{{item.hasChildren}}">›</view>
+        </view>
+      </block>
+    </scroll-view>
+
+    <scroll-view class="product-scroll" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower">
+      <view class="product-list" wx:if="{{filteredTotal}}">
+        <block wx:for="{{displayedProducts}}" wx:key="id">
+          <view class="product-card" data-id="{{item.id}}" bindtap="onOpenProduct">
+            <view class="product-thumb">
+              <image class="product-thumb-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="{{true}}"></image>
+            </view>
+            <view class="product-info">
+              <view class="product-title-row">
+                <view class="product-name">{{item.name}}</view>
+                <view class="product-tag">{{item.categoryLeaf}}</view>
+              </view>
+              <view class="product-meta">编号 {{item.no}} · {{item.unit}} · {{item.warehouse}}</view>
+              <view class="product-color">{{item.categoryPathText}}</view>
+              <view class="product-chips">
+                <view class="product-chip chip-primary">{{item.colorCount}} 色</view>
+                <view class="product-chip chip-muted">{{item.totalStockText}}</view>
+                <view class="product-chip chip-warning" wx:if="{{item.warningCount}}">预警 {{item.warningCount}}</view>
+              </view>
+            </view>
+            <view class="product-side">
+              <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
+              <view class="price-label">售价</view>
+              <view class="price-value">{{item.priceRangeText}}</view>
+            </view>
+          </view>
+        </block>
+        <view class="list-footer" wx:if="{{productHasMore || productLoadingMore}}">
+          {{productLoadingMore ? '加载中' : '继续上滑加载'}}
+        </view>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的产品</view>
+        <view class="empty-desc">换个产品名、编号、颜色或筛选条件再试试。</view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
+    <view class="filter-backdrop" bindtap="onCancelFilter"></view>
+    <view class="filter-drawer" catchtap="noop">
+      <view class="filter-header">
+        <view class="filter-title">筛选</view>
+        <view class="filter-selected" wx:if="{{filterDraftCount}}">已选 {{filterDraftCount}} 项</view>
+      </view>
+      <scroll-view class="filter-body" scroll-y>
+        <block wx:for="{{filterViewSections}}" wx:key="key" wx:for-item="section">
+          <view class="filter-section">
+            <view class="filter-section-title">{{section.title}}</view>
+            <view class="filter-chip-row">
+              <block wx:for="{{section.options}}" wx:key="value" wx:for-item="option">
+                <view
+                  class="filter-chip {{option.active ? 'filter-chip-active' : ''}}"
+                  data-key="{{section.key}}"
+                  data-value="{{option.value}}"
+                  bindtap="onFilterOptionTap"
+                >
+                  {{option.label}}
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+      <view class="filter-footer">
+        <view class="filter-reset" bindtap="onResetFilters">重置</view>
+        <view class="filter-done" bindtap="onApplyFilters">完成</view>
+      </view>
+    </view>
+  </view>
+</view>

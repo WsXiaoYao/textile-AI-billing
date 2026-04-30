@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "",
+  "navigationBarBackgroundColor": "#2E7BEF",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#F4F7FB",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "order-filter-bar": "/components/order-filter-bar/index",
+    "order-summary-card": "/components/order-summary-card/index"
+  }
+}

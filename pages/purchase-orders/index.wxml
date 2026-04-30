@@ -1,0 +1,53 @@
+<view class="purchase-page">
+  <scroll-view class="purchase-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="purchase-content">
+      <order-filter-bar
+        keyword="{{keyword}}"
+        search-placeholder="搜索采购单号、供应商"
+        status-tabs="{{statusTabs}}"
+        active-status="{{activeStatus}}"
+        date-title="采购日期"
+        date-label="{{dateLabel}}"
+        sort-label="{{sortLabel}}"
+        sort-options="{{sortOptions}}"
+        sort-index="{{sortIndex}}"
+        filter-count="{{filterCount}}"
+        bind:keywordinput="onKeywordInput"
+        bind:keywordconfirm="onKeywordConfirm"
+        bind:statuschange="onStatusChange"
+        bind:datetap="onDateTap"
+        bind:sortchange="onSortChange"
+        bind:filtertap="onFilterTap"
+      />
+
+      <view class="order-list" wx:if="{{displayedOrders.length}}">
+        <block wx:for="{{displayedOrders}}" wx:key="id">
+          <view class="order-card" data-id="{{item.id}}" bindtap="onOpenOrder">
+            <view class="order-main">
+              <view class="order-title-row">
+                <view class="supplier-name">{{item.supplierName}}</view>
+                <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
+              </view>
+              <view class="order-meta">{{item.no}} · {{item.date}} · {{item.creator}}</view>
+              <view class="order-warehouse">{{item.warehouseName}}</view>
+            </view>
+            <view class="order-side">
+              <view class="order-amount">{{item.orderAmountText}}</view>
+              <view class="detail-btn">查看详情</view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的采购单</view>
+        <view class="empty-desc">换个采购单号、供应商或筛选条件再试试。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onAddTap">新建采购单</view>
+  </view>
+</view>

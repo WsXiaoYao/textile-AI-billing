@@ -1,0 +1,54 @@
+<view class="return-page">
+  <scroll-view class="return-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="return-content">
+      <order-filter-bar
+        keyword="{{keyword}}"
+        search-placeholder="搜索退货单、客户、商品"
+        status-tabs="{{statusTabs}}"
+        active-status="{{activeStatus}}"
+        date-title="退货日期"
+        date-label="{{dateLabel}}"
+        sort-label="{{sortLabel}}"
+        sort-options="{{sortOptions}}"
+        sort-index="{{sortIndex}}"
+        filter-count="{{filterCount}}"
+        bind:keywordinput="onKeywordInput"
+        bind:keywordconfirm="onKeywordConfirm"
+        bind:statuschange="onStatusChange"
+        bind:datetap="onDateTap"
+        bind:sortchange="onSortChange"
+        bind:filtertap="onFilterTap"
+      />
+
+      <view class="summary-section">
+        <order-summary-card summary="{{summary}}" />
+      </view>
+
+      <view class="return-list" wx:if="{{displayedReturns.length}}">
+        <block wx:for="{{displayedReturns}}" wx:key="id">
+          <view class="return-card" data-id="{{item.id}}" bindtap="onOpenReturn">
+            <view class="return-main">
+              <view class="return-no">{{item.no}}</view>
+              <view class="return-meta">{{item.customerName}} · {{item.itemSummary}} · {{item.refundDirectionText}}</view>
+              <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
+            </view>
+            <view class="return-side">
+              <view class="return-amount">{{item.refundText}}</view>
+              <view class="return-date">{{item.date}}</view>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的退货单</view>
+        <view class="empty-desc">换个退货单号、客户或筛选条件再试试。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onAddTap">新建退货单</view>
+  </view>
+</view>

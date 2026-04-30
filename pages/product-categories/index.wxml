@@ -1,0 +1,90 @@
+<view class="category-page">
+  <view class="category-content">
+    <view class="tool-card">
+      <view class="search-row">
+        <input
+          class="search-input"
+          value="{{keyword}}"
+          placeholder="搜索分类名称"
+          placeholder-class="search-placeholder"
+          confirm-type="search"
+          bindinput="onKeywordInput"
+        />
+      </view>
+      <view class="action-row">
+        <view class="action-btn action-btn-secondary" bindtap="onImportTap">导入</view>
+        <view class="action-btn action-btn-primary" bindtap="onAddCategoryTap">新增分类</view>
+      </view>
+    </view>
+
+    <view class="summary-card">
+      <view class="summary-item">
+        <view class="summary-label">产品分类</view>
+        <view class="summary-value">{{summary.categoryCount}} 个</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">产品数量</view>
+        <view class="summary-value summary-danger">{{summary.productCount}} 个</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">颜色规格</view>
+        <view class="summary-value summary-primary">{{summary.colorCount}} 个</view>
+      </view>
+    </view>
+
+    <view class="category-list" wx:if="{{displayedCategories.length}}">
+      <block wx:for="{{displayedCategories}}" wx:key="key">
+        <view class="category-card category-card-level-{{item.level}}" data-key="{{item.key}}" bindtap="onOpenCategory">
+          <view class="category-main">
+            <view class="category-name-row">
+              <view class="category-name">{{item.label}}</view>
+              <view class="category-level">L{{item.level}}</view>
+            </view>
+            <view class="category-desc">{{item.key}} · {{item.count}} 个产品</view>
+          </view>
+          <view class="category-actions">
+            <view class="category-edit" data-key="{{item.key}}" catchtap="onEditCategoryTap">编辑</view>
+            <view class="category-entry">产品 ›</view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-title">没有匹配的分类</view>
+      <view class="empty-desc">换个分类名称再试试，或新增一个分类。</view>
+    </view>
+  </view>
+
+  <view wx:if="{{categoryEditorVisible}}" class="dialog-mask" catchtap="onCloseCategoryEditor">
+    <view class="dialog-panel" catchtap="noop">
+      <view class="dialog-handle"></view>
+      <view class="dialog-head">
+        <view>
+          <view class="dialog-title">{{categoryEditorTitle}}</view>
+          <view class="dialog-subtitle">管理产品分类层级，最多支持三级。</view>
+        </view>
+      </view>
+      <view class="dialog-form-card">
+        <view class="dialog-field">
+          <view class="dialog-label">分类名称</view>
+          <input class="dialog-input" value="{{categoryForm.label}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" bindinput="onCategoryLabelInput" />
+        </view>
+        <picker mode="selector" range="{{parentOptions}}" range-key="labelText" value="{{parentIndex}}" bindchange="onParentChange">
+          <view class="dialog-field dialog-picker">
+            <view class="dialog-picker-main">
+              <view class="dialog-label">上级分类</view>
+              <view class="dialog-value">{{selectedParentLabel}}</view>
+            </view>
+            <view class="dialog-arrow">›</view>
+          </view>
+        </picker>
+      </view>
+      <view class="dialog-hint">保存后，已有产品会按新的分类路径同步。</view>
+      <view class="dialog-actions">
+        <view class="dialog-btn dialog-btn-secondary" bindtap="onCloseCategoryEditor">取消</view>
+        <view class="dialog-btn dialog-btn-primary" bindtap="onSaveCategoryTap">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

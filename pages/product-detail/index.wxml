@@ -1,0 +1,61 @@
+<view class="product-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content">
+      <view class="product-hero-card">
+        <view class="product-hero-row">
+          <view class="product-cover">
+            <image class="product-cover-image" src="{{product.imageUrl}}" mode="aspectFill" lazy-load="{{true}}"></image>
+          </view>
+          <view class="product-hero-main">
+            <view class="product-name">{{product.name}}</view>
+            <view class="product-chip-row">
+              <view class="product-chip product-chip-blue">{{product.categoryLeaf}}</view>
+              <view class="product-chip product-chip-green">{{product.enabledText}}</view>
+            </view>
+            <view class="product-code">{{product.no}}</view>
+            <view class="product-meta">默认仓库: {{product.warehouse}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-title">颜色与价格</view>
+        <view class="card-desc">颜色维度用于单、库存预警和历史价格的核心业务字段。</view>
+
+        <view class="variant-list">
+          <block wx:for="{{visibleVariants}}" wx:key="id">
+            <view class="variant-card">
+              <image class="variant-image" src="{{item.imageUrl}}" mode="aspectFill" lazy-load="{{true}}"></image>
+              <view class="variant-main">
+                <view class="variant-title-row">
+                  <view class="variant-name">{{item.color}}</view>
+                  <view wx:if="{{item.warning}}" class="stock-badge">低库存</view>
+                </view>
+                <view class="variant-meta-row">
+                  <view class="variant-meta variant-stock-meta stock-text-{{item.stockTone}}">库存 {{item.stockText}}</view>
+                  <view class="variant-meta variant-limit-meta">下限 {{item.lowerLimitText}}</view>
+                </view>
+              </view>
+              <view class="variant-price-stack">
+                <view class="price-row">
+                  <view class="price-label">售价</view>
+                  <view class="sale-price">{{item.salePriceText}}</view>
+                </view>
+                <view class="price-row">
+                  <view class="price-label">进价</view>
+                  <view class="cost-price">{{item.costPriceText}}</view>
+                </view>
+              </view>
+            </view>
+          </block>
+        </view>
+        <view wx:if="{{hasMoreVariants}}" class="show-more" bindtap="onShowMoreTap">展开全部颜色</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onEditTap">编辑产品</view>
+  </view>
+</view>

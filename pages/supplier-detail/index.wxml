@@ -1,0 +1,64 @@
+<view class="supplier-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content">
+      <view class="supplier-card">
+        <view class="supplier-head">
+          <view class="supplier-copy">
+            <view class="supplier-title-row">
+              <view class="supplier-name">{{supplier.name}}</view>
+              <view class="supplier-chip chip-{{supplier.statusTone}}">{{supplier.statusText}}</view>
+            </view>
+            <view class="supplier-desc">{{supplier.remark || '采购供应商资料。'}}</view>
+            <view class="supplier-meta">电话 {{supplier.phone || '未填写'}}</view>
+            <view class="supplier-meta">地址 {{supplier.address || '未填写地址'}}</view>
+          </view>
+          <view class="supplier-actions">
+            <view class="edit-btn" bindtap="onEditTap">编辑</view>
+            <view class="call-btn" bindtap="onCallTap">拨打</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="record-card">
+        <view class="card-head">
+          <view>
+            <view class="card-title">最近采购记录</view>
+            <view class="card-desc">展示该供应商最近采购单和金额。</view>
+          </view>
+          <view class="record-count">{{supplier.purchaseCount}} 笔</view>
+        </view>
+
+        <view class="record-table" wx:if="{{supplier.purchaseRecords.length}}">
+          <view class="table-head">
+            <view class="col-name">品名 / 颜色</view>
+            <view class="col-qty">数量</view>
+            <view class="col-price">单价</view>
+            <view class="col-amount">金额</view>
+          </view>
+          <block wx:for="{{supplier.purchaseRecords}}" wx:key="no">
+            <view class="record-row">
+              <view class="col-name">
+                <view class="record-no">{{item.no}}</view>
+                <view class="record-meta">{{item.date}} · {{item.productName}} · {{item.color}}</view>
+              </view>
+              <view class="col-qty">{{item.quantityText}}</view>
+              <view class="col-price">{{item.unitPriceText}}</view>
+              <view class="col-amount amount-danger">{{item.amountText}}</view>
+            </view>
+          </block>
+        </view>
+
+        <view class="empty-record" wx:else>暂无采购记录。</view>
+        <view class="total-row">
+          <view>累计采购</view>
+          <view class="total-amount">{{supplier.totalPurchaseText}}</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onViewPurchaseTap">查看采购单</view>
+  </view>
+</view>

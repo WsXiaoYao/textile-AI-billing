@@ -1,0 +1,29 @@
+@import "../purchase-order-detail/index.wxss";
+
+.return-notice {
+  margin: 12rpx 0;
+  padding: 18rpx 20rpx;
+  border: 1rpx solid #aee6ce;
+  border-radius: 14rpx;
+  background: #eafaf3;
+  color: #0e8a62;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+}
+
+.status-text {
+  font-weight: 900;
+}
+
+.status-success {
+  color: #0e8a62;
+}
+
+.status-warning {
+  color: #d77a00;
+}
+
+.status-danger {
+  color: #d94a55;
+}

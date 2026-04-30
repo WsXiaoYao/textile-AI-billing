@@ -1,0 +1,168 @@
+<view class="purchase-edit-page">
+  <scroll-view class="edit-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="edit-content">
+      <view class="edit-card">
+        <view class="card-title">基础信息</view>
+        <view class="form-list">
+          <picker mode="selector" range="{{supplierOptions}}" range-key="name" value="{{supplierIndex}}" bindchange="onSupplierChange">
+            <view class="form-row">
+              <view class="form-label">供应商</view>
+              <view class="form-value">{{form.supplierName}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <picker mode="date" value="{{form.date}}" bindchange="onDateChange">
+            <view class="form-row">
+              <view class="form-label">日期</view>
+              <view class="form-value">{{form.date}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <picker mode="selector" range="{{warehouseOptions}}" range-key="name" value="{{warehouseIndex}}" bindchange="onWarehouseChange">
+            <view class="form-row">
+              <view class="form-label">仓库</view>
+              <view class="form-value">{{form.warehouseName}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <view class="form-row form-row-tall">
+            <view class="form-label">备注</view>
+            <textarea class="form-textarea" value="{{form.remark}}" placeholder="补采购布类与寸布面料。" placeholder-class="input-placeholder" maxlength="120" bindinput="onRemarkInput" />
+          </view>
+        </view>
+      </view>
+
+      <view class="edit-card">
+        <view class="card-head">
+          <view class="card-title">采购明细</view>
+        </view>
+
+        <view class="line-list">
+          <block wx:for="{{form.items}}" wx:key="id">
+            <view class="line-card">
+              <view class="line-top">
+                <view class="line-title-wrap">
+                  <view class="product-picker" data-id="{{item.id}}" bindtap="openProductSelector">
+                    <view class="line-name">{{item.productName}}</view>
+                    <view class="picker-arrow">›</view>
+                  </view>
+                  <view class="line-stock">{{item.stockText}}</view>
+                </view>
+                <view class="line-side">
+                  <view class="line-amount">{{item.amountText}}</view>
+                </view>
+                <view class="remove-line" data-id="{{item.id}}" bindtap="onRemoveItemTap"></view>
+              </view>
+
+              <view class="line-controls">
+                <view class="color-chip" data-id="{{item.id}}" bindtap="openProductSelector">{{item.color}}⌄</view>
+                <view class="qty-control">
+                  <view class="qty-btn" data-id="{{item.id}}" data-delta="-1" bindtap="onStepTap">−</view>
+                  <input class="qty-input" value="{{item.quantityInput}}" type="digit" data-id="{{item.id}}" bindinput="onQtyInput" />
+                  <view class="qty-btn" data-id="{{item.id}}" data-delta="1" bindtap="onStepTap">＋</view>
+                </view>
+                <view class="line-unit">{{item.unit}}</view>
+                <view class="price-box">
+                  <text>¥</text>
+                  <input class="price-input" value="{{item.unitPriceInput}}" type="digit" data-id="{{item.id}}" bindinput="onPriceInput" />
+                </view>
+              </view>
+            </view>
+          </block>
+        </view>
+
+        <view class="add-line-wide" bindtap="onAddItemTap">新增采购明细</view>
+
+        <view class="total-row">
+          <view>订单金额</view>
+          <view class="total-amount">{{form.orderAmountText}}</view>
+        </view>
+      </view>
+
+      <view class="edit-card">
+        <view class="card-title">金额汇总</view>
+        <view class="summary-list">
+          <view class="summary-row">
+            <view>订单金额</view>
+            <view>{{form.orderAmountText}}</view>
+          </view>
+          <view class="summary-row">
+            <view>合同金额</view>
+            <view class="summary-danger">{{form.contractAmountText}}</view>
+          </view>
+          <view class="summary-row">
+            <view>库存影响</view>
+            <view class="summary-muted">提交后库存增加</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSubmitTap">提交采购单</view>
+  </view>
+
+  <view class="selector-layer {{selectorActive ? 'selector-layer-active' : ''}}" wx:if="{{selectorVisible}}">
+    <view class="selector-backdrop" bindtap="closeProductSelector"></view>
+    <view class="selector-panel" catchtap="noop">
+      <view class="selector-handle"></view>
+      <view class="selector-header">
+        <view class="selector-title">选择采购产品</view>
+        <view class="selector-cancel" bindtap="closeProductSelector">取消</view>
+      </view>
+
+      <view class="selector-current" wx:if="{{selectorLineSummary}}">
+        <view class="current-label">当前明细</view>
+        <view class="current-main">{{selectorLineSummary.productName}} / {{selectorLineSummary.color}} / {{selectorLineSummary.quantityText}}</view>
+        <view class="current-amount">{{selectorLineSummary.amountText}}</view>
+      </view>
+
+      <view class="selector-search">
+        <input
+          class="selector-input"
+          value="{{selectorKeyword}}"
+          placeholder="搜索品名、编号、颜色"
+          placeholder-class="input-placeholder"
+          confirm-type="search"
+          bindinput="onSelectorKeywordInput"
+        />
+      </view>
+
+      <scroll-view class="selector-body" scroll-y enhanced show-scrollbar="{{false}}">
+        <block wx:for="{{selectorProducts}}" wx:key="id" wx:for-item="product">
+          <view class="selector-product">
+            <view class="selector-product-head">
+              <view class="selector-product-name">{{product.name}}</view>
+              <view class="selector-product-tag">{{product.category}}</view>
+            </view>
+            <view class="selector-product-meta">{{product.productNo || '无编号'}} · {{product.categoryPathText}}</view>
+
+            <view class="selector-variants">
+              <block wx:for="{{product.variants}}" wx:key="id" wx:for-item="variant">
+                <view
+                  class="variant-option {{variant.selected ? 'variant-option-active' : ''}}"
+                  data-option-id="{{variant.id}}"
+                  bindtap="onSelectProductVariant"
+                >
+                  <view class="variant-main">
+                    <view class="variant-color">{{variant.color}}</view>
+                    <view class="variant-meta">{{variant.priceText}} · 库存 {{variant.stockText}}</view>
+                  </view>
+                  <view class="variant-selected" wx:if="{{variant.selected}}">已选</view>
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+
+        <view class="selector-footer" wx:if="{{selectorHasMore}}">继续输入关键词可缩小范围</view>
+        <view class="selector-empty" wx:if="{{!selectorProducts.length}}">没有匹配的产品</view>
+      </scroll-view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,261 @@
+.import-page {
+  min-height: 100vh;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.import-scroll {
+  height: 100vh;
+}
+
+.import-content {
+  padding: 24rpx 24rpx 148rpx;
+}
+
+.import-card {
+  margin-top: 24rpx;
+  padding: 26rpx 28rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 24rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(13, 31, 61, 0.05);
+}
+
+.import-card:first-child {
+  margin-top: 0;
+}
+
+.card-title {
+  color: #1d2129;
+  font-size: 32rpx;
+  font-weight: 900;
+  line-height: 44rpx;
+}
+
+.card-desc {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.import-steps {
+  margin-top: 22rpx;
+  display: flex;
+  gap: 12rpx;
+}
+
+.import-step {
+  min-width: 0;
+  flex: 1;
+  height: 56rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 999rpx;
+  background: #f8fafc;
+  color: #667085;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.import-step-active {
+  border-color: #9fc5ff;
+  background: #eef6ff;
+  color: #2e7bef;
+}
+
+.action-row {
+  margin-top: 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+}
+
+.small-btn,
+.export-btn {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.small-btn {
+  flex: 0 0 176rpx;
+}
+
+.small-btn-secondary,
+.export-btn {
+  border: 1rpx solid #d8e5f6;
+  background: #ffffff;
+  color: #2e7bef;
+}
+
+.small-btn-primary,
+.export-btn-primary {
+  border-color: #2e7bef;
+  background: #2e7bef;
+  color: #ffffff;
+}
+
+.action-hint {
+  min-width: 0;
+  flex: 1;
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.export-actions {
+  margin-top: 28rpx;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.export-btn {
+  min-width: 0;
+  flex: 1;
+  padding: 0 10rpx;
+}
+
+.task-list {
+  margin-top: 18rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.task-item {
+  min-height: 176rpx;
+  padding: 22rpx 24rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 20rpx;
+  background: #ffffff;
+}
+
+.task-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.task-time {
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.task-title {
+  margin-top: 8rpx;
+  color: #1d2129;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 40rpx;
+}
+
+.task-desc {
+  margin-top: 6rpx;
+  color: #667085;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
+.task-status {
+  flex: 0 0 auto;
+  height: 48rpx;
+  padding: 0 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999rpx;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.status-success {
+  border: 1rpx solid #b7e1cf;
+  background: #ecfdf5;
+  color: #0e8a62;
+}
+
+.status-warning {
+  border: 1rpx solid #f4c28b;
+  background: #fff7e8;
+  color: #d77a00;
+}
+
+.status-danger {
+  border: 1rpx solid #f6b3bc;
+  background: #fff1f2;
+  color: #d94a55;
+}
+
+.task-empty {
+  margin-top: 18rpx;
+  padding: 42rpx 24rpx;
+  border: 1rpx dashed #d8e5f6;
+  border-radius: 20rpx;
+  background: #f8fafc;
+  text-align: center;
+}
+
+.task-empty-title {
+  color: #172033;
+  font-size: 28rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+}
+
+.task-empty-desc {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.bottom-actions {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  min-height: 108rpx;
+  padding: 14rpx 24rpx calc(14rpx + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  border-top: 1rpx solid #e6ecf5;
+  background: #ffffff;
+}
+
+.bottom-btn {
+  height: 80rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14rpx;
+  font-size: 28rpx;
+  font-weight: 900;
+}
+
+.bottom-btn-secondary {
+  flex: 0 0 184rpx;
+  border: 1rpx solid #d8e5f6;
+  background: #ffffff;
+  color: #2e7bef;
+}
+
+.bottom-btn-primary {
+  flex: 1;
+  background: #2e7bef;
+  color: #ffffff;
+}

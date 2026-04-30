@@ -1,0 +1,58 @@
+<view class="warehouse-page">
+  <scroll-view class="warehouse-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="warehouse-content">
+      <view class="search-card">
+        <input
+          class="search-input"
+          value="{{keyword}}"
+          placeholder="搜索仓库名称、仓管"
+          placeholder-class="search-placeholder"
+          confirm-type="search"
+          bindinput="onKeywordInput"
+        />
+      </view>
+
+      <view class="summary-card">
+        <view class="summary-item">
+          <view class="summary-label">仓库数量</view>
+          <view class="summary-value">{{summary.warehouseCount}} 个</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">启用仓库</view>
+          <view class="summary-value summary-success">{{summary.enabledCount}} 个</view>
+        </view>
+        <view class="summary-item">
+          <view class="summary-label">默认仓</view>
+          <view class="summary-value summary-primary">{{summary.defaultName}}</view>
+        </view>
+      </view>
+
+      <view class="warehouse-list" wx:if="{{displayedWarehouses.length}}">
+        <block wx:for="{{displayedWarehouses}}" wx:key="id">
+          <view class="warehouse-card">
+            <view class="warehouse-main">
+              <view class="warehouse-title-row">
+                <view class="warehouse-name">{{item.name}}</view>
+                <view wx:if="{{item.isDefault}}" class="warehouse-chip chip-primary">默认仓</view>
+                <view class="warehouse-chip chip-{{item.statusTone}}">{{item.statusText}}</view>
+              </view>
+              <view class="warehouse-meta">仓管 {{item.keeper || '未设置'}} · {{item.address || '未填写地址'}}</view>
+              <view class="warehouse-desc">{{item.isDefault ? '默认仓不可删除' : (item.statusKey == 'enabled' ? '启用中 · 已被业务单据使用' : '已停用 · 不参与新业务选择')}}</view>
+            </view>
+            <view class="edit-btn" data-id="{{item.id}}" bindtap="onEditWarehouseTap">编辑</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的仓库</view>
+        <view class="empty-desc">换个关键词再试试，或新建一个仓库。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onAddWarehouseTap">新建仓库</view>
+  </view>
+</view>

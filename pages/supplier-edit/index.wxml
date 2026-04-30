@@ -1,0 +1,50 @@
+<view class="supplier-edit-page">
+  <scroll-view class="edit-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="edit-content">
+      <view class="edit-card">
+        <view class="card-title">基础信息</view>
+
+        <view class="form-list">
+          <view class="form-row">
+            <view class="form-label">供应商名称</view>
+            <input class="form-input" value="{{form.name}}" placeholder="请输入供应商名称" placeholder-class="input-placeholder" bindinput="onNameInput" />
+          </view>
+
+          <view class="form-row">
+            <view class="form-label">联系电话</view>
+            <input class="form-input" type="number" value="{{form.phone}}" placeholder="请输入联系电话" placeholder-class="input-placeholder" bindinput="onPhoneInput" />
+          </view>
+
+          <view class="form-row">
+            <view class="form-label">地址</view>
+            <input class="form-input" value="{{form.address}}" placeholder="请输入供应商地址" placeholder-class="input-placeholder" bindinput="onAddressInput" />
+          </view>
+
+          <view class="form-row form-row-tall">
+            <view class="form-label">备注</view>
+            <textarea class="form-textarea" value="{{form.remark}}" placeholder="支持月结、采购负责人为王姐。" placeholder-class="input-placeholder" maxlength="120" bindinput="onRemarkInput" />
+          </view>
+
+          <picker mode="selector" range="{{commonOptions}}" value="{{commonIndex}}" bindchange="onCommonChange">
+            <view class="form-row">
+              <view class="form-label">常用供应商</view>
+              <view class="form-picker-value">{{commonOptions[commonIndex]}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <view class="form-row">
+            <view class="form-label">状态</view>
+            <view class="status-pill status-{{form.statusKey == 'disabled' ? 'muted' : 'success'}}">{{statusText}}</view>
+            <view wx:if="{{showStatusAction}}" class="status-action" bindtap="onToggleStatusTap">{{form.statusKey == 'enabled' ? '禁用供应商' : '启用供应商'}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存供应商</view>
+  </view>
+</view>

@@ -1,0 +1,89 @@
+<view class="purchase-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content">
+      <view class="detail-card">
+        <view class="card-title">基础信息</view>
+        <view class="info-list">
+          <view class="info-row">
+            <view class="info-label">采购单号</view>
+            <view class="info-value">{{order.no}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-label">供应商</view>
+            <view class="info-value">{{order.supplierName}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-label">日期</view>
+            <view class="info-value">{{order.date}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-label">仓库</view>
+            <view class="info-value">{{order.warehouseName}}</view>
+          </view>
+          <view class="info-row">
+            <view class="info-label">备注</view>
+            <view class="info-value">{{order.remark || '无'}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-head">
+          <view class="card-title">采购明细</view>
+          <view class="item-count">{{order.itemCount}} 项</view>
+        </view>
+        <view class="detail-table">
+          <view class="table-head">
+            <view class="col-name">品名 / 颜色</view>
+            <view class="col-qty">数量</view>
+            <view class="col-price">单价</view>
+            <view class="col-amount">金额</view>
+          </view>
+          <block wx:for="{{order.items}}" wx:key="id">
+            <view class="detail-row">
+              <view class="col-name">
+                <view class="line-name">{{item.productName}}</view>
+                <view class="line-meta">{{item.color}} · {{item.stockText}}</view>
+              </view>
+              <view class="col-qty">{{item.quantityText}}</view>
+              <view class="col-price">{{item.unitPriceText}}</view>
+              <view class="col-amount amount-danger">{{item.amountText}}</view>
+            </view>
+          </block>
+        </view>
+        <view class="total-row">
+          <view>订单金额</view>
+          <view class="total-amount">{{order.orderAmountText}}</view>
+        </view>
+      </view>
+
+      <view class="detail-card">
+        <view class="card-title">金额汇总</view>
+        <view class="summary-list">
+          <view class="summary-row">
+            <view>订单金额</view>
+            <view>{{order.orderAmountText}}</view>
+          </view>
+          <view class="summary-row">
+            <view>优惠金额</view>
+            <view class="summary-primary">{{order.discountText}}</view>
+          </view>
+          <view class="summary-row">
+            <view>合同金额</view>
+            <view class="summary-danger">{{order.contractAmountText}}</view>
+          </view>
+          <view class="summary-row">
+            <view>制单人</view>
+            <view>{{order.creator}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <button class="bottom-btn bottom-btn-plain share-button" open-type="share">分享</button>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onEditTap">编辑采购单</view>
+  </view>
+</view>

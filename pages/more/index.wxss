@@ -1,15 +1,84 @@
-.placeholder-page {
+.more-page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx 48rpx;
+  background: #f4f7fb;
+}
+
+.more-card {
+  margin-top: 24rpx;
+  padding: 24rpx 22rpx 26rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 20rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(13, 31, 61, 0.05);
+}
+
+.more-card:first-child {
+  margin-top: 0;
+}
+
+.section-title {
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 42rpx;
+}
+
+.section-desc {
+  margin-top: 4rpx;
+  color: #667085;
+  font-size: 23rpx;
+  line-height: 34rpx;
+}
+
+.tool-grid {
+  margin-top: 24rpx;
+  display: flex;
+  flex-wrap: wrap;
+  row-gap: 28rpx;
+}
+
+.tool-item {
+  width: 33.3333%;
+  min-height: 132rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.tool-item-hover {
+  opacity: 0.72;
+}
+
+.tool-icon-wrap {
+  width: 64rpx;
+  height: 64rpx;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: 999rpx;
 }
 
-.placeholder-card {
-  width: 100%;
-  padding: 40rpx;
+.tool-icon-primary {
+  background: #eef6ff;
 }
 
-.description {
-  margin-top: 16rpx;
-  font-size: 28rpx;
+.tool-icon-warning {
+  background: #fff7e8;
+}
+
+.tool-icon {
+  width: 34rpx;
+  height: 34rpx;
+}
+
+.tool-title {
+  max-width: 150rpx;
+  margin-top: 14rpx;
+  color: #172033;
+  font-size: 23rpx;
+  font-weight: 800;
+  line-height: 32rpx;
+  text-align: center;
 }

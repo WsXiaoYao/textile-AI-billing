@@ -1,0 +1,109 @@
+<view class="product-edit-page">
+  <scroll-view class="edit-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="edit-content">
+      <view class="edit-card">
+        <view class="card-title">基础信息</view>
+
+        <view class="product-image-editor">
+          <view class="product-image-picker" bindtap="onProductImageTap">
+            <image class="product-image" src="{{form.imageUrl}}" mode="aspectFill"></image>
+            <view class="product-image-text">更换图片</view>
+          </view>
+          <view class="product-image-copy">
+            <view class="product-image-title">产品主图</view>
+            <view class="product-image-desc">用于产品列表、产品详情和开单识别后的产品确认。</view>
+          </view>
+        </view>
+
+        <view class="form-list">
+          <view class="form-row">
+            <view class="form-label">产品名称</view>
+            <input class="form-input" value="{{form.name}}" placeholder="请输入产品名称" placeholder-class="input-placeholder" bindinput="onNameInput" />
+          </view>
+
+          <view class="form-row">
+            <view class="form-label">产品编号</view>
+            <input class="form-input" value="{{form.no}}" placeholder="请输入产品编号" placeholder-class="input-placeholder" bindinput="onNoInput" />
+          </view>
+
+          <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+            <view class="form-row">
+              <view class="form-label">产品分类</view>
+              <view class="form-picker-value {{form.category ? '' : 'input-placeholder'}}">{{form.category ? form.category : '请选择产品分类'}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <picker mode="selector" range="{{warehouseOptions}}" value="{{warehouseIndex}}" bindchange="onWarehouseChange">
+            <view class="form-row">
+              <view class="form-label">默认仓库</view>
+              <view class="form-picker-value {{form.warehouse ? '' : 'input-placeholder'}}">{{form.warehouse ? form.warehouse : '请选择仓库'}}</view>
+              <view class="form-chevron">›</view>
+            </view>
+          </picker>
+
+          <view class="form-row form-row-tall">
+            <view class="form-label">备注</view>
+            <textarea class="form-textarea" value="{{form.remark}}" placeholder="补充产品说明、供应信息等" placeholder-class="input-placeholder" maxlength="120" bindinput="onRemarkInput" />
+          </view>
+        </view>
+      </view>
+
+      <view class="edit-card">
+        <view class="card-head">
+          <view>
+            <view class="card-title">颜色与价格</view>
+          </view>
+          <view class="add-variant" bindtap="onAddVariantTap">新增颜色</view>
+        </view>
+
+        <block wx:for="{{form.variants}}" wx:key="id">
+          <view class="variant-editor">
+            <view wx:if="{{form.variants.length > 1}}" class="remove-variant" data-index="{{index}}" bindtap="onRemoveVariantTap">×</view>
+            <view class="variant-editor-main">
+              <view class="variant-image-picker" data-index="{{index}}" bindtap="onVariantImageTap">
+                <image class="variant-image" src="{{item.imageUrl}}" mode="aspectFill"></image>
+                <view class="variant-image-text">换图</view>
+              </view>
+              <view class="variant-main-fields">
+                <view class="variant-field variant-field-name">
+                  <view class="field-label">颜色名称</view>
+                  <input class="field-input" value="{{item.color}}" data-index="{{index}}" data-key="color" placeholder="例如 米色" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                </view>
+                <picker mode="selector" range="{{unitOptions}}" value="{{item.unitIndex}}" data-index="{{index}}" bindchange="onVariantUnitChange">
+                  <view class="variant-unit">
+                    <view class="field-label">单位</view>
+                    <view class="unit-value">{{item.unit}}</view>
+                  </view>
+                </picker>
+              </view>
+            </view>
+            <view class="variant-fields">
+              <view class="variant-field">
+                <view class="field-label">售价</view>
+                <input class="field-input" type="digit" value="{{item.price}}" data-index="{{index}}" data-key="price" placeholder="0.00" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+              </view>
+              <view class="variant-field">
+                <view class="field-label">进价</view>
+                <input class="field-input" type="digit" value="{{item.costPrice}}" data-index="{{index}}" data-key="costPrice" placeholder="0.00" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+              </view>
+              <view class="variant-field">
+                <view class="field-label">期初库存</view>
+                <input class="field-input" type="digit" value="{{item.stockQty}}" data-index="{{index}}" data-key="stockQty" placeholder="0" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+              </view>
+              <view class="variant-field">
+                <view class="field-label">库存下限</view>
+                <input class="field-input" type="digit" value="{{item.lowerLimitQty}}" data-index="{{index}}" data-key="lowerLimitQty" placeholder="0" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+              </view>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存产品</view>
+  </view>
+</view>

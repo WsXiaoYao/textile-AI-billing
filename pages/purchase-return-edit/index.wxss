@@ -1,0 +1,45 @@
+@import "../purchase-order-edit/index.wxss";
+
+.amount-input-wrap {
+  min-width: 0;
+  flex: 1;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+}
+
+.amount-prefix {
+  color: #172033;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 72rpx;
+}
+
+.amount-input {
+  min-width: 0;
+  flex: 1;
+  height: 72rpx;
+  color: #172033;
+  font-size: 28rpx;
+  font-weight: 900;
+  line-height: 72rpx;
+}
+
+.switch-form-row {
+  gap: 14rpx;
+}
+
+.switch-desc {
+  min-width: 0;
+  flex: 1;
+  color: #172033;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+}
+
+.prepay-switch {
+  transform: scale(0.82);
+  transform-origin: right center;
+}

@@ -1,6 +1,25 @@
-<view class="app-page placeholder-page">
-  <view class="app-card placeholder-card">
-    <view class="app-section-title">{{title}}</view>
-    <view class="text-secondary description">{{description}}</view>
-  </view>
+<view class="more-page">
+  <block wx:for="{{sections}}" wx:key="title" wx:for-item="section">
+    <view class="more-card">
+      <view class="section-title">{{section.title}}</view>
+      <view class="section-desc">{{section.desc}}</view>
+
+      <view class="tool-grid">
+        <block wx:for="{{section.items}}" wx:key="key" wx:for-item="tool">
+          <view
+            class="tool-item"
+            hover-class="tool-item-hover"
+            data-key="{{tool.key}}"
+            data-title="{{tool.title}}"
+            bindtap="onToolTap"
+          >
+            <view class="tool-icon-wrap tool-icon-{{section.tone}}">
+              <image class="tool-icon" src="{{tool.icon}}" mode="aspectFit" />
+            </view>
+            <view class="tool-title">{{tool.title}}</view>
+          </view>
+        </block>
+      </view>
+    </view>
+  </block>
 </view>

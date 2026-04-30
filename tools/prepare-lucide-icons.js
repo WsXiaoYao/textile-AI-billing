@@ -8,12 +8,15 @@ const { pathToFileURL } = require('node:url');
 
 const rootDir = path.resolve(__dirname, '..');
 const sourceDir = path.join(rootDir, 'assets/icons/lucide/source');
+const uiDir = path.join(rootDir, 'assets/icons/lucide/ui');
 const tabbarDir = path.join(rootDir, 'assets/tabbar');
 const tabbarSvgDir = path.join(tabbarDir, 'svg');
 
 const lucideBaseUrl = 'https://raw.githubusercontent.com/lucide-icons/lucide/main/icons';
 const normalColor = '#7A869A';
 const selectedColor = '#2F6FE4';
+const iconDarkColor = '#172033';
+const iconWarningColor = '#F79009';
 const tabbarCanvasSize = 81;
 const tabbarGlyphSize = 58;
 const maxTabbarBytes = 40 * 1024;
@@ -29,6 +32,17 @@ const icons = [
   { name: 'settings', usage: '设置' },
   { name: 'ellipsis', usage: '更多' },
   { name: 'package', usage: '商品' },
+  { name: 'layout-grid', usage: '产品管理 / 功能入口' },
+  { name: 'list', usage: '产品分类' },
+  { name: 'gauge', usage: '库存总览 / 统计' },
+  { name: 'sliders-horizontal', usage: '库存调整' },
+  { name: 'warehouse', usage: '仓库管理' },
+  { name: 'handshake', usage: '供应商' },
+  { name: 'shopping-bag', usage: '采购单' },
+  { name: 'undo-2', usage: '退货单' },
+  { name: 'receipt', usage: '欠款总览' },
+  { name: 'target', usage: '销售总览' },
+  { name: 'bell', usage: '消息提醒' },
   { name: 'trash-2', usage: '删除' },
   { name: 'plus', usage: '新增' },
   { name: 'chevron-right', usage: '进入详情' },
@@ -40,6 +54,21 @@ const tabbarIcons = [
   { source: 'users', output: 'customers', label: '客户' },
   { source: 'ellipsis', output: 'more', label: '更多' },
   { source: 'user', output: 'profile', label: '我的' },
+];
+
+const uiIcons = [
+  { source: 'layout-grid', output: 'layout-grid-blue', color: selectedColor, usage: '产品管理' },
+  { source: 'list', output: 'list-dark', color: iconDarkColor, usage: '产品分类' },
+  { source: 'gauge', output: 'gauge-dark', color: iconDarkColor, usage: '库存总览' },
+  { source: 'sliders-horizontal', output: 'sliders-horizontal-dark', color: iconDarkColor, usage: '库存调整' },
+  { source: 'warehouse', output: 'warehouse-dark', color: iconDarkColor, usage: '仓库管理' },
+  { source: 'handshake', output: 'handshake-dark', color: iconDarkColor, usage: '供应商' },
+  { source: 'shopping-bag', output: 'shopping-bag-orange', color: iconWarningColor, usage: '采购单' },
+  { source: 'undo-2', output: 'undo-2-dark', color: iconDarkColor, usage: '退货单' },
+  { source: 'receipt', output: 'receipt-orange', color: iconWarningColor, usage: '销售欠款总览' },
+  { source: 'target', output: 'target-orange', color: iconWarningColor, usage: '产品销售总览' },
+  { source: 'users', output: 'users-orange', color: iconWarningColor, usage: '客户销售总览' },
+  { source: 'bell', output: 'bell-dark', color: iconDarkColor, usage: '提醒' },
 ];
 
 function ensureDir(dir) {
@@ -198,6 +227,7 @@ function verifyPng(outputPngPath) {
 
 async function main() {
   ensureDir(sourceDir);
+  ensureDir(uiDir);
   ensureDir(tabbarDir);
   ensureDir(tabbarSvgDir);
 
@@ -209,6 +239,25 @@ async function main() {
     const outputPath = path.join(sourceDir, `${icon.name}.svg`);
     fs.writeFileSync(outputPath, svg);
     downloaded.set(icon.name, svg);
+  }
+
+  const uiIconManifest = [];
+
+  for (const icon of uiIcons) {
+    const sourceSvg = downloaded.get(icon.source);
+    if (!sourceSvg) {
+      throw new Error(`Missing UI source icon: ${icon.source}`);
+    }
+
+    const outputPath = path.join(uiDir, `${icon.output}.svg`);
+    fs.writeFileSync(outputPath, tintSvg(sourceSvg, icon.color));
+    uiIconManifest.push({
+      source: icon.source,
+      output: icon.output,
+      color: icon.color,
+      usage: icon.usage,
+      svg: path.relative(rootDir, outputPath),
+    });
   }
 
   const tabbarManifest = [];
@@ -261,6 +310,7 @@ async function main() {
       glyphSize: tabbarGlyphSize,
     },
     icons,
+    uiIcons: uiIconManifest,
     tabbarIcons: tabbarManifest,
   };
 
@@ -276,6 +326,7 @@ async function main() {
   );
 
   console.log(`[icons] downloaded ${icons.length} Lucide SVG files`);
+  console.log(`[icons] generated ${uiIconManifest.length} UI SVG files`);
   console.log(`[icons] generated ${tabbarManifest.length - failed.length} tabBar PNG files`);
 
   if (failed.length > 0) {

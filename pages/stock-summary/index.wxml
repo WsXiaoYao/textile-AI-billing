@@ -1,0 +1,137 @@
+<view class="stock-page">
+  <scroll-view class="stock-scroll" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower">
+    <view class="stock-content">
+      <view class="toolbar-card">
+        <view class="search-row">
+          <input
+            class="search-input"
+            value="{{keyword}}"
+            placeholder="搜索产品、颜色、仓库"
+            placeholder-class="search-placeholder"
+            confirm-type="search"
+            bindinput="onKeywordInput"
+            bindconfirm="onKeywordConfirm"
+          />
+        </view>
+
+        <view class="query-row">
+          <picker
+            class="query-picker query-picker-wide"
+            mode="selector"
+            range="{{warehouseOptions}}"
+            value="{{warehouseIndex}}"
+            bindchange="onWarehouseChange"
+          >
+            <view class="query-action">仓库：{{warehouseOptions[warehouseIndex]}}⌄</view>
+          </picker>
+          <view class="quick-chip {{filters.statusKey == 'low' ? 'quick-chip-active' : ''}}" bindtap="onLowStockTap">低库存</view>
+          <picker class="query-picker" mode="selector" range="{{sortOptions}}" range-key="label" value="{{sortIndex}}" bindchange="onSortChange">
+            <view class="query-action">排序⌄</view>
+          </picker>
+          <view class="query-action" bindtap="onFilterTap">筛选<text wx:if="{{filterCount}}">·{{filterCount}}</text>⌄</view>
+        </view>
+      </view>
+
+      <view class="summary-card">
+        <view class="card-head">
+          <view>
+            <view class="card-title">库存概览</view>
+            <view class="card-desc">按产品颜色维度查看实时库存与下限。</view>
+          </view>
+          <view class="summary-count">全部 {{summary.itemCount}} 项</view>
+        </view>
+        <view class="summary-metrics">
+          <view class="summary-item summary-item-wide">
+            <view class="summary-label">总价</view>
+            <view class="summary-value amount-danger">{{summary.totalValueText}}</view>
+          </view>
+          <view class="summary-item summary-item-wide">
+            <view class="summary-label">库存数量</view>
+            <view class="summary-value">{{summary.totalStockText}}</view>
+          </view>
+          <view class="summary-item">
+            <view class="summary-label">预警数量</view>
+            <view class="summary-value amount-primary">{{summary.lowCount}}</view>
+          </view>
+        </view>
+        <view class="summary-chips">
+          <view class="summary-chip chip-warning">低库存 {{summary.lowCount}}</view>
+          <view class="summary-chip chip-muted">无库存 {{summary.emptyCount}}</view>
+          <view class="summary-chip chip-primary">有库存 {{summary.stockedCount}}</view>
+        </view>
+      </view>
+
+      <view class="result-card">
+        <view class="result-head">
+          <view class="card-title">筛选结果</view>
+          <view class="summary-count">{{itemTotal}} 条</view>
+        </view>
+
+        <view class="stock-list" wx:if="{{displayedItems.length}}">
+          <block wx:for="{{displayedItems}}" wx:key="id">
+            <view class="stock-card" data-id="{{item.id}}" bindtap="onOpenAdjust">
+              <view class="stock-main">
+                <view class="stock-title-row">
+                  <view class="stock-name">{{item.productName}} · {{item.color}}</view>
+                  <view class="stock-badge stock-badge-{{item.statusTone}}">{{item.statusText}}</view>
+                </view>
+                <view class="stock-meta">{{item.category}} · {{item.unit}} · {{item.warehouseName}}</view>
+                <view class="stock-extra">
+                  <text wx:if="{{filters.showLower}}">库存下限 {{item.lowerLimitText}}</text>
+                  <text wx:if="{{filters.showCost}}">成本 {{item.costPriceText}}</text>
+                  <text wx:if="{{filters.showSale}}">售价 {{item.salePriceText}}</text>
+                </view>
+              </view>
+              <view class="stock-side">
+                <view class="stock-side-label">库存</view>
+                <view class="stock-side-value stock-value-{{item.stockTone}}">{{item.stockText}}</view>
+              </view>
+            </view>
+          </block>
+
+          <view class="list-footer" wx:if="{{hasMore || loadingMore}}">
+            {{loadingMore ? '加载中' : '继续上滑加载'}}
+          </view>
+        </view>
+
+        <view class="empty-state" wx:else>
+          <view class="empty-title">没有匹配的库存</view>
+          <view class="empty-desc">换个产品、仓库或库存状态再试试。</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
+    <view class="filter-backdrop" bindtap="onCancelFilter"></view>
+    <view class="filter-drawer" catchtap="noop">
+      <view class="filter-header">
+        <view class="filter-title">筛选</view>
+        <view class="filter-selected" wx:if="{{filterDraftCount}}">已选 {{filterDraftCount}} 项</view>
+      </view>
+      <scroll-view class="filter-body" scroll-y>
+        <block wx:for="{{filterViewSections}}" wx:key="key" wx:for-item="section">
+          <view class="filter-section">
+            <view class="filter-section-title">{{section.title}}</view>
+            <view class="filter-chip-row">
+              <block wx:for="{{section.options}}" wx:key="value" wx:for-item="option">
+                <view
+                  class="filter-chip {{option.active ? 'filter-chip-active' : ''}}"
+                  data-key="{{section.key}}"
+                  data-value="{{option.value}}"
+                  bindtap="onFilterOptionTap"
+                >
+                  {{option.label}}
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+      <view class="filter-footer">
+        <view class="filter-reset" bindtap="onResetFilters">重置</view>
+        <view class="filter-done" bindtap="onApplyFilters">完成</view>
+      </view>
+    </view>
+  </view>
+</view>

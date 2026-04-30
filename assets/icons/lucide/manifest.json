@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-27T07:51:43.367Z",
+  "generatedAt": "2026-04-29T03:15:46.349Z",
   "source": {
     "name": "Lucide Icons",
     "url": "https://github.com/lucide-icons/lucide",
@@ -56,6 +56,50 @@
       "usage": "商品"
     },
     {
+      "name": "layout-grid",
+      "usage": "产品管理 / 功能入口"
+    },
+    {
+      "name": "list",
+      "usage": "产品分类"
+    },
+    {
+      "name": "gauge",
+      "usage": "库存总览 / 统计"
+    },
+    {
+      "name": "sliders-horizontal",
+      "usage": "库存调整"
+    },
+    {
+      "name": "warehouse",
+      "usage": "仓库管理"
+    },
+    {
+      "name": "handshake",
+      "usage": "供应商"
+    },
+    {
+      "name": "shopping-bag",
+      "usage": "采购单"
+    },
+    {
+      "name": "undo-2",
+      "usage": "退货单"
+    },
+    {
+      "name": "receipt",
+      "usage": "欠款总览"
+    },
+    {
+      "name": "target",
+      "usage": "销售总览"
+    },
+    {
+      "name": "bell",
+      "usage": "消息提醒"
+    },
+    {
       "name": "trash-2",
       "usage": "删除"
     },
@@ -66,6 +110,92 @@
     {
       "name": "chevron-right",
       "usage": "进入详情"
+    }
+  ],
+  "uiIcons": [
+    {
+      "source": "layout-grid",
+      "output": "layout-grid-blue",
+      "color": "#2F6FE4",
+      "usage": "产品管理",
+      "svg": "assets/icons/lucide/ui/layout-grid-blue.svg"
+    },
+    {
+      "source": "list",
+      "output": "list-dark",
+      "color": "#172033",
+      "usage": "产品分类",
+      "svg": "assets/icons/lucide/ui/list-dark.svg"
+    },
+    {
+      "source": "gauge",
+      "output": "gauge-dark",
+      "color": "#172033",
+      "usage": "库存总览",
+      "svg": "assets/icons/lucide/ui/gauge-dark.svg"
+    },
+    {
+      "source": "sliders-horizontal",
+      "output": "sliders-horizontal-dark",
+      "color": "#172033",
+      "usage": "库存调整",
+      "svg": "assets/icons/lucide/ui/sliders-horizontal-dark.svg"
+    },
+    {
+      "source": "warehouse",
+      "output": "warehouse-dark",
+      "color": "#172033",
+      "usage": "仓库管理",
+      "svg": "assets/icons/lucide/ui/warehouse-dark.svg"
+    },
+    {
+      "source": "handshake",
+      "output": "handshake-dark",
+      "color": "#172033",
+      "usage": "供应商",
+      "svg": "assets/icons/lucide/ui/handshake-dark.svg"
+    },
+    {
+      "source": "shopping-bag",
+      "output": "shopping-bag-orange",
+      "color": "#F79009",
+      "usage": "采购单",
+      "svg": "assets/icons/lucide/ui/shopping-bag-orange.svg"
+    },
+    {
+      "source": "undo-2",
+      "output": "undo-2-dark",
+      "color": "#172033",
+      "usage": "退货单",
+      "svg": "assets/icons/lucide/ui/undo-2-dark.svg"
+    },
+    {
+      "source": "receipt",
+      "output": "receipt-orange",
+      "color": "#F79009",
+      "usage": "销售欠款总览",
+      "svg": "assets/icons/lucide/ui/receipt-orange.svg"
+    },
+    {
+      "source": "target",
+      "output": "target-orange",
+      "color": "#F79009",
+      "usage": "产品销售总览",
+      "svg": "assets/icons/lucide/ui/target-orange.svg"
+    },
+    {
+      "source": "users",
+      "output": "users-orange",
+      "color": "#F79009",
+      "usage": "客户销售总览",
+      "svg": "assets/icons/lucide/ui/users-orange.svg"
+    },
+    {
+      "source": "bell",
+      "output": "bell-dark",
+      "color": "#172033",
+      "usage": "提醒",
+      "svg": "assets/icons/lucide/ui/bell-dark.svg"
     }
   ],
   "tabbarIcons": [
