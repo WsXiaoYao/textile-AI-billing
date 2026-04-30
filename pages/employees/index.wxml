@@ -1,0 +1,54 @@
+<view class="employee-page">
+  <scroll-view class="employee-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="employee-content">
+      <view class="toolbar-card">
+        <view class="search-row">
+          <input
+            class="search-input"
+            value="{{keyword}}"
+            placeholder="搜索员工姓名、手机号"
+            placeholder-class="search-placeholder"
+            confirm-type="search"
+            bindinput="onKeywordInput"
+            bindconfirm="onKeywordConfirm"
+          />
+        </view>
+
+        <view class="status-tabs">
+          <block wx:for="{{statusTabs}}" wx:key="value">
+            <view
+              class="status-tab {{activeStatus == item.value ? 'status-tab-active' : ''}}"
+              data-value="{{item.value}}"
+              bindtap="onStatusTap"
+            >
+              {{item.value == 'role' && roleFilterName ? roleFilterName : item.label}}
+            </view>
+          </block>
+        </view>
+      </view>
+
+      <view class="employee-list" wx:if="{{displayedEmployees.length}}">
+        <block wx:for="{{displayedEmployees}}" wx:key="id">
+          <view class="employee-card" data-id="{{item.id}}" bindtap="onOpenEmployee">
+            <view class="employee-main">
+              <view class="employee-name">{{item.name}}</view>
+              <view class="employee-desc">{{item.desc}}</view>
+              <view class="employee-permission">{{item.permissionText}}</view>
+            </view>
+            <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的员工</view>
+        <view class="empty-desc">换个姓名、手机号或筛选条件再试试。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onAddEmployeeTap">新增员工</view>
+  </view>
+</view>

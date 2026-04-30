@@ -1,0 +1,40 @@
+<view class="message-page">
+  <scroll-view class="message-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="message-content">
+      <view class="filter-row">
+        <block wx:for="{{filters}}" wx:key="key">
+          <view
+            class="filter-chip {{activeFilter === item.key ? 'filter-chip-active' : ''}}"
+            data-key="{{item.key}}"
+            bindtap="onFilterTap"
+          >
+            {{item.label}}
+          </view>
+        </block>
+      </view>
+
+      <view class="message-list" wx:if="{{messages.length}}">
+        <block wx:for="{{messages}}" wx:key="id">
+          <view class="message-card message-card-{{item.priority}}" data-id="{{item.id}}" bindtap="onMessageTap">
+            <view class="message-main">
+              <view class="message-title">{{item.title}}</view>
+              <view class="message-summary">{{item.summary}}</view>
+              <view class="message-time">{{item.time}}</view>
+            </view>
+            <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">暂无{{activeFilterLabel}}消息</view>
+        <view class="empty-desc">消息会按库存预警、打印和组织提醒自动归档。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onMarkAllReadTap">全部标记已读</view>
+  </view>
+</view>

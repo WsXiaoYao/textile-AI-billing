@@ -1,0 +1,45 @@
+<view class="receipt-page">
+  <scroll-view class="receipt-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="receipt-content">
+      <view class="receipt-card">
+        <view class="card-title">当前组织 · {{settings.org.name}}</view>
+        <view class="card-desc">切换组织后会读取对应组织的收款码配置。</view>
+
+        <view class="upload-row">
+          <view class="upload-box" bindtap="onUploadTap">
+            <image class="receipt-image" wx:if="{{settings.imagePath}}" src="{{settings.imagePath}}" mode="aspectFill" />
+            <view class="upload-empty" wx:else>
+              <image class="upload-icon" src="/assets/icons/lucide/ui/upload-blue.svg" mode="aspectFit" />
+              <view class="upload-text">上传收款码</view>
+            </view>
+          </view>
+
+          <view class="note-field">
+            <view class="field-label">收款码备注</view>
+            <textarea
+              class="note-input"
+              value="{{note}}"
+              placeholder="门店统一收款码，打印模板与分享票据优先使用。"
+              placeholder-class="input-placeholder"
+              maxlength="80"
+              bindinput="onNoteInput"
+            />
+          </view>
+        </view>
+      </view>
+
+      <view class="receipt-card">
+        <view class="card-title">使用规则</view>
+        <view class="rule-list">
+          <view class="rule-item">打印、分享票据时优先使用当前组织收款码。</view>
+          <view class="rule-item">组织切换后自动带出对应组织收款信息。</view>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存收款码</view>
+  </view>
+</view>

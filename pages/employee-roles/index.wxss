@@ -1,0 +1,49 @@
+.role-page {
+  min-height: 100vh;
+  padding: 24rpx 24rpx 48rpx;
+  background: #f4f7fb;
+  color: #172033;
+}
+
+.role-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.role-card {
+  padding: 26rpx 28rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 22rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 24rpx rgba(13, 31, 61, 0.05);
+}
+
+.role-card-active {
+  border: 3rpx solid #2e7bef;
+  padding: 24rpx 26rpx;
+}
+
+.role-name {
+  color: #172033;
+  font-size: 30rpx;
+  font-weight: 900;
+  line-height: 42rpx;
+}
+
+.role-desc {
+  margin-top: 8rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 36rpx;
+}
+
+.permission-list {
+  margin-top: 10rpx;
+}
+
+.permission-item {
+  color: #98a2b3;
+  font-size: 23rpx;
+  line-height: 34rpx;
+}

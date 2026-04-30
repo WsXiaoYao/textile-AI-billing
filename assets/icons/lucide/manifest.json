@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-04-29T03:15:46.349Z",
+  "generatedAt": "2026-04-30T02:23:18.753Z",
   "source": {
     "name": "Lucide Icons",
     "url": "https://github.com/lucide-icons/lucide",
@@ -110,6 +110,34 @@
     {
       "name": "chevron-right",
       "usage": "进入详情"
+    },
+    {
+      "name": "qr-code",
+      "usage": "收款码"
+    },
+    {
+      "name": "printer",
+      "usage": "打印设置"
+    },
+    {
+      "name": "file-text",
+      "usage": "操作手册"
+    },
+    {
+      "name": "shield-check",
+      "usage": "保障服务"
+    },
+    {
+      "name": "refresh-cw",
+      "usage": "组织切换"
+    },
+    {
+      "name": "upload",
+      "usage": "上传收款码"
+    },
+    {
+      "name": "building-2",
+      "usage": "组织"
     }
   ],
   "uiIcons": [
@@ -196,6 +224,62 @@
       "color": "#172033",
       "usage": "提醒",
       "svg": "assets/icons/lucide/ui/bell-dark.svg"
+    },
+    {
+      "source": "qr-code",
+      "output": "qr-code-blue",
+      "color": "#2F6FE4",
+      "usage": "收款码设置",
+      "svg": "assets/icons/lucide/ui/qr-code-blue.svg"
+    },
+    {
+      "source": "users",
+      "output": "users-green",
+      "color": "#0E8A62",
+      "usage": "员工权限",
+      "svg": "assets/icons/lucide/ui/users-green.svg"
+    },
+    {
+      "source": "printer",
+      "output": "printer-orange",
+      "color": "#F79009",
+      "usage": "打印设置",
+      "svg": "assets/icons/lucide/ui/printer-orange.svg"
+    },
+    {
+      "source": "file-text",
+      "output": "file-text-purple",
+      "color": "#7C3AED",
+      "usage": "操作手册",
+      "svg": "assets/icons/lucide/ui/file-text-purple.svg"
+    },
+    {
+      "source": "shield-check",
+      "output": "shield-check-green",
+      "color": "#0E8A62",
+      "usage": "保障服务",
+      "svg": "assets/icons/lucide/ui/shield-check-green.svg"
+    },
+    {
+      "source": "refresh-cw",
+      "output": "refresh-cw-white",
+      "color": "#FFFFFF",
+      "usage": "组织切换",
+      "svg": "assets/icons/lucide/ui/refresh-cw-white.svg"
+    },
+    {
+      "source": "upload",
+      "output": "upload-blue",
+      "color": "#2F6FE4",
+      "usage": "上传收款码",
+      "svg": "assets/icons/lucide/ui/upload-blue.svg"
+    },
+    {
+      "source": "building-2",
+      "output": "building-dark",
+      "color": "#172033",
+      "usage": "组织",
+      "svg": "assets/icons/lucide/ui/building-dark.svg"
     }
   ],
   "tabbarIcons": [

@@ -1,0 +1,41 @@
+<view class="org-switch-page">
+  <scroll-view class="org-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="org-content">
+      <view class="search-card">
+        <input
+          class="search-input"
+          value="{{keyword}}"
+          placeholder="搜索组织名称"
+          placeholder-class="input-placeholder"
+          confirm-type="search"
+          bindinput="onKeywordInput"
+        />
+      </view>
+
+      <view class="org-list" wx:if="{{organizations.length}}">
+        <block wx:for="{{organizations}}" wx:key="id">
+          <view class="org-card {{item.selected ? 'org-card-selected' : ''}}" data-id="{{item.id}}" bindtap="onOrgTap">
+            <view class="org-main">
+              <view class="org-name">{{item.name}}</view>
+              <view class="org-desc">{{item.desc}}</view>
+              <view class="org-meta">切换后自动同步组织收款码</view>
+            </view>
+            <view class="org-pill org-pill-{{item.selected ? 'success' : 'primary'}}">
+              {{item.selected ? '已选择' : item.actionText}}
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <view class="empty-state" wx:else>
+        <view class="empty-title">没有匹配的组织</view>
+        <view class="empty-desc">换个组织名称再试试。</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onConfirmTap">确认切换</view>
+  </view>
+</view>

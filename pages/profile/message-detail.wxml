@@ -1,0 +1,32 @@
+<view class="message-detail-page">
+  <scroll-view class="detail-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+    <view class="detail-content" wx:if="{{detail}}">
+      <view class="detail-card">
+        <view class="card-head">
+          <view class="card-title">{{detail.title}}</view>
+          <view class="type-pill type-{{detail.priority}}">{{detail.typeText}}</view>
+        </view>
+        <view class="card-desc">{{detail.summary}}</view>
+
+        <view class="info-list">
+          <block wx:for="{{detail.rows}}" wx:key="label">
+            <view class="info-row">
+              <view class="info-label">{{item.label}}</view>
+              <view class="info-value">{{item.value}}</view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-title">没有找到这条消息</view>
+      <view class="empty-desc">返回消息中心后重新打开。</view>
+    </view>
+  </scroll-view>
+
+  <view class="bottom-actions">
+    <view class="bottom-btn bottom-btn-secondary {{detail && detail.actionUrl ? '' : 'bottom-btn-full'}}" bindtap="onBackTap">返回</view>
+    <view wx:if="{{detail && detail.actionUrl}}" class="bottom-btn bottom-btn-primary" bindtap="onActionTap">{{detail.actionText}}</view>
+  </view>
+</view>

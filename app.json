@@ -29,6 +29,13 @@
     "pages/purchase-returns/index",
     "pages/purchase-return-edit/index",
     "pages/purchase-return-detail/index",
+    "pages/org-switch/index",
+    "pages/org-receipt-code/index",
+    "pages/employees/index",
+    "pages/employee-edit/index",
+    "pages/employee-roles/index",
+    "pages/profile/message-center",
+    "pages/profile/message-detail",
     "pages/profile/index"
   ],
   "window": {

@@ -1,6 +1,57 @@
-<view class="app-page placeholder-page">
-  <view class="app-card placeholder-card">
-    <view class="app-section-title">{{title}}</view>
-    <view class="text-secondary description">{{description}}</view>
+<view class="profile-page">
+  <view class="profile-hero">
+    <view class="user-avatar">王</view>
+    <view class="user-main">
+      <view class="user-name">{{profile.user.name}}</view>
+      <view class="user-meta">{{profile.user.role}} · {{profile.user.phone}}</view>
+    </view>
+    <view class="switch-action" bindtap="onSwitchOrgTap">
+      <image class="switch-icon" src="/assets/icons/lucide/ui/refresh-cw-white.svg" mode="aspectFit" />
+      <view class="switch-text">组织切换</view>
+    </view>
+  </view>
+
+  <view class="summary-card">
+    <view class="summary-item">
+      <view class="summary-label">当前组织</view>
+      <view class="summary-value">{{profile.org.name}}</view>
+    </view>
+    <view class="summary-item">
+      <view class="summary-label">角色身份</view>
+      <view class="summary-value">{{profile.org.role}}</view>
+    </view>
+    <view class="summary-item">
+      <view class="summary-label">仓库权限</view>
+      <view class="summary-value">{{profile.org.permissionText}}</view>
+    </view>
+  </view>
+
+  <view class="profile-card">
+    <view class="section-title">常用设置</view>
+    <view class="tool-row">
+      <block wx:for="{{profile.settings}}" wx:key="key">
+        <view class="tool-item" data-key="{{item.key}}" bindtap="onToolTap">
+          <view class="tool-icon-wrap tool-{{item.tone}}">
+            <image class="tool-icon" src="{{item.icon}}" mode="aspectFit" />
+            <view wx:if="{{item.badge}}" class="tool-badge">{{item.badge}}</view>
+          </view>
+          <view class="tool-title">{{item.title}}</view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="profile-card help-card">
+    <view class="section-title">帮助中心</view>
+    <view class="tool-row help-row">
+      <block wx:for="{{profile.helps}}" wx:key="key">
+        <view class="tool-item" data-key="{{item.key}}" bindtap="onToolTap">
+          <view class="tool-icon-wrap tool-{{item.tone}}">
+            <image class="tool-icon" src="{{item.icon}}" mode="aspectFit" />
+          </view>
+          <view class="tool-title">{{item.title}}</view>
+        </view>
+      </block>
+    </view>
   </view>
 </view>

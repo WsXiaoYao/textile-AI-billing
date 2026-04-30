@@ -46,6 +46,13 @@ const icons = [
   { name: 'trash-2', usage: '删除' },
   { name: 'plus', usage: '新增' },
   { name: 'chevron-right', usage: '进入详情' },
+  { name: 'qr-code', usage: '收款码' },
+  { name: 'printer', usage: '打印设置' },
+  { name: 'file-text', usage: '操作手册' },
+  { name: 'shield-check', usage: '保障服务' },
+  { name: 'refresh-cw', usage: '组织切换' },
+  { name: 'upload', usage: '上传收款码' },
+  { name: 'building-2', usage: '组织' },
 ];
 
 const tabbarIcons = [
@@ -69,6 +76,14 @@ const uiIcons = [
   { source: 'target', output: 'target-orange', color: iconWarningColor, usage: '产品销售总览' },
   { source: 'users', output: 'users-orange', color: iconWarningColor, usage: '客户销售总览' },
   { source: 'bell', output: 'bell-dark', color: iconDarkColor, usage: '提醒' },
+  { source: 'qr-code', output: 'qr-code-blue', color: selectedColor, usage: '收款码设置' },
+  { source: 'users', output: 'users-green', color: '#0E8A62', usage: '员工权限' },
+  { source: 'printer', output: 'printer-orange', color: iconWarningColor, usage: '打印设置' },
+  { source: 'file-text', output: 'file-text-purple', color: '#7C3AED', usage: '操作手册' },
+  { source: 'shield-check', output: 'shield-check-green', color: '#0E8A62', usage: '保障服务' },
+  { source: 'refresh-cw', output: 'refresh-cw-white', color: '#FFFFFF', usage: '组织切换' },
+  { source: 'upload', output: 'upload-blue', color: selectedColor, usage: '上传收款码' },
+  { source: 'building-2', output: 'building-dark', color: iconDarkColor, usage: '组织' },
 ];
 
 function ensureDir(dir) {
