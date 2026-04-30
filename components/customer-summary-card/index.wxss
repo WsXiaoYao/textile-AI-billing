@@ -18,7 +18,7 @@
 
 .customer-main {
   min-width: 0;
-  width: 420rpx;
+  width: calc(100% - 206rpx);
 }
 
 .customer-label {
@@ -32,14 +32,16 @@
   margin-top: 14rpx;
   display: flex;
   align-items: center;
-  gap: 16rpx;
+  gap: 12rpx;
   min-width: 0;
 }
 
 .customer-name {
-  max-width: 260rpx;
+  min-width: 0;
+  max-width: none;
+  flex: 0 1 auto;
   color: #1f2937;
-  font-size: 34rpx;
+  font-size: 32rpx;
   font-weight: 800;
   line-height: 44rpx;
   overflow: hidden;
@@ -48,9 +50,10 @@
 }
 
 .customer-tag {
-  min-width: 128rpx;
+  flex: 0 0 auto;
+  min-width: 0;
   height: 46rpx;
-  padding: 0 18rpx;
+  padding: 0 16rpx;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -72,9 +75,9 @@
 
 .customer-amount {
   position: absolute;
-  right: 28rpx;
+  right: 24rpx;
   top: 34rpx;
-  width: 216rpx;
+  width: 190rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -90,7 +93,7 @@
 .amount-value {
   margin-top: 4rpx;
   color: #d94a55;
-  font-size: 36rpx;
+  font-size: 38rpx;
   font-weight: 800;
   line-height: 48rpx;
   white-space: nowrap;

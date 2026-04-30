@@ -6,7 +6,7 @@
       hover-class="chip-hover"
       bindtap="onSelect"
     >
-      {{item.name}}
+      <text class="customer-chip-text">{{item.shortName || item.name}}</text>
     </button>
   </block>
   <button class="customer-chip is-more" hover-class="chip-hover" bindtap="onMore">更多</button>

@@ -10,7 +10,7 @@
   display: flex;
   align-items: flex-start;
   border-radius: 16rpx;
-  background: #87ceeb;
+  background: #1f93d6;
   color: #ffffff;
   box-shadow: 0 10rpx 22rpx rgba(43, 142, 209, 0.14);
 }

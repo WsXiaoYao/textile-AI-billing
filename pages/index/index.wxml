@@ -10,14 +10,14 @@
         <button class="reset-button" hover-class="button-hover" bindtap="onResetSession">重置会话</button>
         <button class="cart-shortcut" hover-class="button-hover" bindtap="onOpenCart" aria-label="打开购物车">
           <image class="cart-icon" src="/assets/icons/lucide/ui/shopping-cart-white.svg" mode="aspectFit" />
-          <view class="cart-badge">3</view>
+          <view wx:if="{{cartItemCount}}" class="cart-badge">{{cartItemCount}}</view>
         </button>
       </view>
     </view>
   </view>
 
   <view class="order-content">
-    <customer-summary-card customer="{{currentCustomer}}" />
+    <customer-summary-card customer="{{currentCustomer}}" bindreceivabletap="onReceivableTap" />
     <customer-switcher
       customers="{{customers}}"
       active-index="{{activeCustomer}}"
@@ -27,6 +27,7 @@
     <view class="switch-tip">{{switchMessage}}</view>
     <chat-bubble text="{{inputText}}" />
     <recognized-order-card
+      wx:if="{{cartItems.length}}"
       items="{{cartItems}}"
       total="{{totalAmount}}"
       bindopen="onOpenCart"
@@ -38,4 +39,174 @@
     bindinputchange="onDraftChange"
     bindrecognize="onRecognize"
   />
+
+  <view wx:if="{{cartSheetVisible}}" class="flow-layer {{cartSheetActive ? 'flow-layer-active' : ''}}">
+    <view class="flow-mask" bindtap="onCloseCart"></view>
+    <view class="flow-sheet cart-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="cart-sheet-head">
+        <view>
+          <view class="sheet-title">购物车</view>
+          <view class="sheet-subtitle">{{currentCustomer.name}} · {{cartItemCount}}条明细</view>
+        </view>
+        <view class="sheet-summary">
+          <view class="sheet-amount">{{totalAmount}}</view>
+          <view class="sheet-subtitle">{{cartQtyText}}</view>
+        </view>
+      </view>
+
+      <view class="cart-notice">点品名旁“换”切换商品；单位默认展示，点开后再选。</view>
+
+      <view class="cart-table-head">
+        <view class="cart-col-name">品名</view>
+        <view class="cart-col-spec">规格/颜色</view>
+        <view class="cart-col-qty">数量</view>
+        <view class="cart-col-unit">单位</view>
+        <view class="cart-col-price">单价</view>
+      </view>
+
+      <scroll-view class="cart-line-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+        <block wx:for="{{cartItems}}" wx:key="id">
+          <view class="cart-line-card">
+            <view class="cart-line-top">
+              <view class="cart-line-name-wrap">
+                <text class="cart-line-name">{{item.name}}</text>
+                <view class="change-product-btn" data-id="{{item.id}}" bindtap="onOpenProductSelector">换</view>
+              </view>
+              <view class="cart-line-stock cart-stock-{{item.stockTone}}">{{item.stockText}}</view>
+              <view class="cart-line-amount">{{item.amountText}}</view>
+              <view class="cart-remove" data-id="{{item.id}}" bindtap="onRemoveCartItem" aria-label="删除商品"></view>
+            </view>
+
+            <view class="cart-line-controls">
+              <view class="cart-spec-chip" data-id="{{item.id}}" bindtap="onOpenProductSelector">{{item.color}}{{item.id == 'cloth-gray' ? '⌄' : ''}}</view>
+              <view class="cart-qty-control">
+                <view class="cart-step" data-id="{{item.id}}" data-delta="-1" bindtap="onCartStepTap">-</view>
+                <input class="cart-qty-input" type="digit" value="{{item.quantityValue}}" data-id="{{item.id}}" bindinput="onCartQtyInput" />
+                <view class="cart-step cart-step-plus" data-id="{{item.id}}" data-delta="1" bindtap="onCartStepTap">+</view>
+              </view>
+              <view class="cart-unit">{{item.unit}}</view>
+              <view class="cart-price">{{item.unitPriceText}}</view>
+            </view>
+          </view>
+        </block>
+
+        <view class="add-cart-line" bindtap="onAddCartItem">+ 继续添加商品</view>
+      </scroll-view>
+
+      <view class="cart-footer">
+        <view class="cart-total-copy">
+          <view class="cart-total-label">合计 {{cartQtyText}}</view>
+          <view class="cart-total-amount">{{totalAmount}}</view>
+        </view>
+        <button class="cart-clear-btn" bindtap="onClearCart">清空</button>
+        <button class="cart-share-btn" bindtap="onShareCart">分享</button>
+        <button class="cart-submit-btn" bindtap="onSubmitCart">开单</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{customerSheetVisible}}" class="flow-layer {{customerSheetActive ? 'flow-layer-active' : ''}}">
+    <view class="flow-mask light-mask" bindtap="onCloseCustomerSheet"></view>
+    <view class="flow-sheet customer-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="customer-sheet-head">
+        <view class="sheet-title">切换客户</view>
+        <button class="sheet-cancel" bindtap="onCloseCustomerSheet">取消</button>
+      </view>
+
+      <view class="customer-search">
+        <input
+          class="customer-search-input"
+          value="{{customerKeyword}}"
+          placeholder="搜索客户名称 / 手机号"
+          placeholder-class="input-placeholder"
+          confirm-type="search"
+          bindinput="onCustomerKeywordInput"
+        />
+      </view>
+
+      <scroll-view class="customer-options" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onCustomerListReachBottom">
+        <block wx:for="{{filteredCustomerOptions}}" wx:key="id">
+          <view class="customer-option {{item.id == currentCustomer.id ? 'customer-option-active' : ''}}" data-id="{{item.id}}" bindtap="onCustomerOptionTap">
+            <view class="customer-option-main">
+              <view class="customer-option-name">{{item.name}}</view>
+              <view class="customer-option-meta">{{item.phone || item.code}}</view>
+            </view>
+            <view class="customer-option-tag">{{item.id == currentCustomer.id ? '当前' : item.tag}}</view>
+          </view>
+        </block>
+        <view wx:if="{{customerHasMore}}" class="customer-loading">继续上滑加载更多客户</view>
+      </scroll-view>
+
+      <view class="customer-sheet-footer">
+        <button class="customer-add-btn" bindtap="onNewCustomerTap">新增客户</button>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{productSheetVisible}}" class="flow-layer {{productSheetActive ? 'flow-layer-active' : ''}}">
+    <view class="flow-mask" bindtap="onCloseProductSheet"></view>
+    <view class="flow-sheet product-sheet" catchtap="noop">
+      <view class="sheet-handle"></view>
+      <view class="product-sheet-head">
+        <view class="sheet-title">更换商品</view>
+        <button class="sheet-cancel" bindtap="onCloseProductSheet">取消</button>
+      </view>
+
+      <view wx:if="{{selectorCurrentLine}}" class="selector-current">
+        <view class="selector-current-label">当前明细</view>
+        <view class="selector-current-main">{{selectorCurrentLine.name}} / {{selectorCurrentLine.color}} / {{selectorCurrentLine.quantityText}} / {{selectorCurrentLine.unitPriceText}}</view>
+        <view class="selector-current-amount">小计 {{selectorCurrentLine.amountText}}</view>
+      </view>
+
+      <view class="selector-search">
+        <input
+          class="selector-search-input"
+          value="{{selectorKeyword}}"
+          placeholder="搜索品名、规格、颜色"
+          placeholder-class="input-placeholder"
+          confirm-type="search"
+          bindinput="onSelectorKeywordInput"
+        />
+      </view>
+
+      <view class="selector-filter-row">
+        <button class="selector-filter {{selectorFilter == 'recent' ? 'selector-filter-active' : ''}}" data-value="recent" bindtap="onSelectorFilterTap">最近使用</button>
+        <button class="selector-filter {{selectorFilter == 'all' ? 'selector-filter-active' : ''}}" data-value="all" bindtap="onSelectorFilterTap">全部商品</button>
+        <button class="selector-filter selector-filter-low {{selectorFilter == 'low' ? 'selector-filter-low-active' : ''}}" data-value="low" bindtap="onSelectorFilterTap">低库存</button>
+      </view>
+
+      <scroll-view class="selector-products" scroll-y="{{true}}" enhanced="{{true}}" show-scrollbar="{{false}}" lower-threshold="96" bindscrolltolower="onSelectorListReachBottom">
+        <block wx:for="{{selectorProducts}}" wx:key="id" wx:for-item="product">
+          <view class="selector-product">
+            <view class="selector-product-head">
+              <view class="selector-product-name">{{product.name}}</view>
+              <view class="selector-product-category">{{product.category}}</view>
+            </view>
+            <view class="selector-variant-grid">
+              <block wx:for="{{product.variants}}" wx:key="id" wx:for-item="variant">
+                <view
+                  class="selector-variant {{variant.selected ? 'selector-variant-active' : ''}}"
+                  data-product-id="{{product.id}}"
+                  data-variant-id="{{variant.id}}"
+                  bindtap="onSelectProductVariant"
+                >
+                  <view class="selector-variant-name">{{variant.color}}</view>
+                  <view class="selector-variant-meta">{{variant.priceText}} · 库存 {{variant.stockText}}</view>
+                  <view wx:if="{{variant.selected}}" class="selector-selected-mark">已选</view>
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+        <view wx:if="{{selectorHasMore}}" class="selector-loading">继续上滑加载更多商品</view>
+      </scroll-view>
+
+      <view class="selector-footer-actions">
+        <button class="selector-cancel-btn" bindtap="onCloseProductSheet">取消</button>
+        <button class="selector-confirm-btn" bindtap="onConfirmProductReplace">确认</button>
+      </view>
+    </view>
+  </view>
 </view>

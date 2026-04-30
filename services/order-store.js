@@ -1684,6 +1684,82 @@ function recordReceipt(id, receipt) {
   return getOrderDetail(id)
 }
 
+function createOrderFromCheckout(draft = {}) {
+  const orders = loadOrders()
+  const dateText = draft.saleDate || today
+  const dateKey = dateText.replace(/-/g, '')
+  const sameDayCount = orders.filter(order => String(order.no || '').includes(dateKey)).length + 1
+  const no = `XS${dateKey}${String(sameDayCount).padStart(4, '0')}`
+  const items = Array.isArray(draft.items) ? draft.items : []
+  const customer = draft.customer || {}
+  const orderCents = Number(draft.totalCents || items.reduce((sum, item) => sum + Number(item.amountCents || 0), 0))
+  const discountCents = Number(draft.discountCents || 0)
+  const contractCents = Number(draft.contractCents || Math.max(orderCents - discountCents, 0))
+  const usePrepaidCents = Number(draft.usePrepaidCents || 0)
+  const products = items.map((item, index) => ({
+    id: item.productId || item.id || `p${index + 1}`,
+    name: item.name,
+    color: item.color || item.spec || '默认',
+    qty: item.quantityText || item.quantity || `${item.quantityValue || 0}${item.unit || ''}`,
+    priceCents: Number(item.unitPriceCents || 0),
+    amountCents: Number(item.amountCents || 0)
+  }))
+  const goodsSummary = products
+    .slice(0, 2)
+    .map(product => product.name)
+    .join('、') + (products.length > 2 ? ` 等${products.length}条明细` : ` ${products.length}条明细`)
+
+  const receiptRecords = []
+  if (usePrepaidCents > 0) {
+    receiptRecords.push({
+      no: `R${dateKey}${String(Date.now()).slice(-4)}`,
+      type: '冲销预收',
+      amountCents: usePrepaidCents,
+      date: dateText,
+      rule: '下单时使用客户预收款自动冲抵本单未收。'
+    })
+    appendCustomerFund({
+      id: `CF${dateKey}${String(Date.now()).slice(-4)}`,
+      customerName: customer.name,
+      type: 'use-prepaid',
+      typeText: '冲销预收',
+      amountCents: -usePrepaidCents,
+      date: dateText,
+      remark: draft.remark || '',
+      rule: `销售单 ${no} 使用预收款 ${formatMoney(usePrepaidCents)} 冲抵。`
+    })
+  }
+
+  const order = normalizeOrder({
+    id: no,
+    no,
+    customer: {
+      name: customer.name || '未命名客户',
+      phone: customer.phone || '',
+      address: customer.address || ''
+    },
+    goodsSummary,
+    saleDate: dateText,
+    warehouse: draft.warehouse || '默认仓',
+    creator: '王姐',
+    paymentState: 'unpaid',
+    deliveryState: 'unshipped',
+    printState: 'unprinted',
+    orderCents,
+    discountCents,
+    contractCents,
+    receivedCents: usePrepaidCents,
+    refundCents: 0,
+    prepaidBalanceCents: 0,
+    products,
+    receiptRecords
+  })
+
+  cachedOrders = [order].concat(orders)
+  saveOrders()
+  return getOrderDetail(order.id)
+}
+
 function markPrinted(id) {
   const orders = loadOrders()
   const index = orders.findIndex(order => order.id === id)
@@ -1718,6 +1794,7 @@ module.exports = {
   markPrinted,
   parseAmountInput,
   addCustomerImportTask,
+  createOrderFromCheckout,
   recordCustomerPrepayment,
   recordCustomerReceipt,
   recordReceipt,

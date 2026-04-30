@@ -20,7 +20,7 @@
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 14rpx;
+  gap: 24rpx;
   box-sizing: border-box;
 }
 

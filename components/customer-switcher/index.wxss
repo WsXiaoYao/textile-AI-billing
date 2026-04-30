@@ -8,13 +8,16 @@
   display: flex;
   gap: 12rpx;
   width: 100%;
+  padding: 0 4rpx;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .customer-chip {
   min-width: 0;
+  flex: 0 1 172rpx;
   height: 68rpx;
-  padding: 0 20rpx;
-  flex: 1;
+  padding: 0 12rpx;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -26,25 +29,36 @@
   color: #2f7df6;
   font-size: 24rpx;
   font-weight: 800;
-  line-height: normal;
+  line-height: 68rpx;
   text-align: center;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .customer-chip.is-wide {
-  flex: 1.38;
+  flex-basis: 172rpx;
 }
 
 .customer-chip.is-more {
-  flex: 0.64;
+  flex: 0 0 96rpx;
 }
 
 .customer-chip.is-active {
+  flex: 0 0 210rpx;
   border-color: #2f7df6;
   background: #2f7df6;
   color: #ffffff;
+}
+
+.customer-chip.is-active.is-wide {
+  flex-basis: 210rpx;
+}
+
+.customer-chip-text {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .chip-hover {

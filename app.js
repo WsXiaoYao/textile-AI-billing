@@ -5,6 +5,7 @@ App({
   globalData: {
     bootedAt: 0,
     selectedCustomer: null,
+    pendingCheckoutOrder: null,
     orderKeyword: ''
   }
 })
