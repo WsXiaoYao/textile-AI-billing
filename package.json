@@ -2,6 +2,7 @@
   "private": true,
   "name": "juyun-miniprogram",
   "scripts": {
+    "api:smoke": "node tools/api-smoke-test.js",
     "icons:prepare": "node tools/prepare-lucide-icons.js",
     "wx:check": "node tools/wx-static-check.js",
     "wx:check:home": "node tools/wx-static-check.js"

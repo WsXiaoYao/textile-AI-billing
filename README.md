@@ -2,11 +2,81 @@
 
 聚云掌柜微信小程序项目，用于把 Figma 设计稿逐步落地为可维护的小程序页面、组件和业务交互。
 
-当前前端主要使用 `services/*-store.js` 和 `data/*-seed.js` 做本地 mock。后续接入后端时，建议保留页面和组件结构，把 `services/` 替换为统一请求层。本文档给后端接入方说明：页面级项目结构、每个页面需要的接口、核心入参和出参。
+当前前端已加入 `api/` 统一请求层，默认通过 `mockAdapter` 复用 `services/*-store.js` 和 `data/*-seed.js` 返回本地模拟数据。后续接入后端时，页面和组件不需要直接改业务结构，只需要把 `config/env.js` 的 `API_MODE` 切到 `http` 并配置真实 `API_BASE_URL`，后端按本文档接口契约实现即可。
 
 ## 接口约定
 
 接口前缀建议使用 `/api/v1`。所有金额字段建议用整数分传输，例如 `47250` 表示 `¥472.50`，前端负责格式化展示。
+
+## 前端请求适配层
+
+小程序不能依赖本机 localhost mock 服务。当前项目采用小程序内置适配层：
+
+```text
+api/
+├── request.js                  # 统一请求入口，按配置选择 mock/http
+├── adapters/
+│   ├── mock-adapter.js          # 本地 mock，异步返回，模拟后端接口
+│   └── http-adapter.js          # 真实后端，基于 wx.request
+├── order-api.js                 # 销售单接口门面
+├── customer-api.js              # 客户接口门面
+├── product-api.js               # 产品接口门面
+├── inventory-api.js             # 库存接口门面
+├── warehouse-api.js             # 仓库接口门面
+├── supplier-api.js              # 供应商接口门面
+├── purchase-api.js              # 采购单接口门面
+├── return-api.js                # 退货单接口门面
+├── profile-api.js               # 我的/组织接口门面
+├── employee-api.js              # 员工/角色接口门面
+└── message-api.js               # 消息接口门面
+```
+
+运行模式在 `config/env.js` 中配置：
+
+```js
+module.exports = {
+  API_MODE: 'mock',
+  API_BASE_URL: '',
+  API_TIMEOUT: 15000,
+  MOCK_DELAY: 80,
+  DEFAULT_ORG_ID: 'org-main'
+}
+```
+
+接入真实后端时改为：
+
+```js
+API_MODE: 'http',
+API_BASE_URL: 'https://api.example.com/api/v1'
+```
+
+注意事项：
+
+| 项目 | 说明 |
+| --- | --- |
+| 请求方式 | 真实后端统一走 `wx.request`，不要在小程序里访问 `localhost` |
+| 合法域名 | `API_BASE_URL` 域名需要配置到微信公众平台的小程序 `request 合法域名` |
+| 响应格式 | 后端建议返回 `{ code, message, data }`，`code = 0` 表示成功 |
+| 金额字段 | 前后端统一用整数分，例如 `32000` 表示 `¥320.00` |
+| 幂等 | 写操作使用 `X-Request-Id`，后端需要支持防重复提交 |
+| 组织隔离 | 请求头包含 `X-Org-Id`，后端需要按组织隔离数据 |
+
+页面后续接 API 时统一从 `api/index.js` 或具体业务 API 引入，例如：
+
+```js
+const api = require('../../api')
+
+async loadOrders() {
+  const result = await api.order.listOrders({ page: 1, pageSize: 20 })
+  this.setData({ orders: result.list })
+}
+```
+
+接口层冒烟检查：
+
+```bash
+npm run api:smoke
+```
 
 通用响应：
 
@@ -117,10 +187,28 @@
 ├── package.json
 ├── project.config.json
 ├── sitemap.json
+├── api/
+│   ├── adapters/
+│   ├── customer-api.js
+│   ├── employee-api.js
+│   ├── index.js
+│   ├── inventory-api.js
+│   ├── message-api.js
+│   ├── order-api.js
+│   ├── product-api.js
+│   ├── profile-api.js
+│   ├── purchase-api.js
+│   ├── request.js
+│   ├── return-api.js
+│   ├── supplier-api.js
+│   ├── utils.js
+│   └── warehouse-api.js
 ├── assets/
 │   ├── icons/
 │   ├── products/
 │   └── tabbar/
+├── config/
+│   └── env.js
 ├── components/
 │   ├── chat-bubble/
 │   ├── customer-list-card/
