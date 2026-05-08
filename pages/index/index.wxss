@@ -118,6 +118,93 @@ order-composer {
   display: block;
 }
 
+.recognition-state-card {
+  margin: -18rpx 0 28rpx;
+  padding: 22rpx 24rpx 20rpx;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 16rpx;
+  background: #ffffff;
+  box-shadow: 0 8rpx 18rpx rgba(13, 31, 61, 0.06);
+}
+
+.recognition-state-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.recognition-state-title {
+  min-width: 0;
+  flex: 1 1 auto;
+  color: #1d2129;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 42rpx;
+}
+
+.recognition-state-badge {
+  flex: 0 0 auto;
+  min-width: 128rpx;
+  height: 46rpx;
+  padding: 0 18rpx;
+  border: 1rpx solid #ffd591;
+  border-radius: 999rpx;
+  background: #fff7e8;
+  color: #d46b08;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+  text-align: center;
+}
+
+.recognition-state-success .recognition-state-badge {
+  border-color: #b7ebd1;
+  background: #e8fff3;
+  color: #0e8a62;
+}
+
+.recognition-state-failed .recognition-state-badge {
+  border-color: #ffccc7;
+  background: #fff1f0;
+  color: #d94a55;
+}
+
+.recognition-state-line {
+  margin-top: 16rpx;
+  display: flex;
+  gap: 12rpx;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.recognition-state-label {
+  flex: 0 0 auto;
+  color: #98a2b3;
+}
+
+.recognition-state-waiting {
+  color: #1d2129;
+}
+
+.recognition-state-hint {
+  margin-top: 16rpx;
+  color: #1d2129;
+  font-size: 26rpx;
+  line-height: 38rpx;
+}
+
+.recognition-state-foot {
+  margin-top: 16rpx;
+  padding: 12rpx 16rpx;
+  border-radius: 10rpx;
+  background: #f0f6ff;
+  color: #2f7df6;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
 .switch-tip {
   width: 232rpx;
   height: 40rpx;

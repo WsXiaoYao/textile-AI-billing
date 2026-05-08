@@ -24,8 +24,23 @@
       bindselect="onCustomerSelect"
       bindmore="onMoreCustomers"
     />
-    <view class="switch-tip">{{switchMessage}}</view>
-    <chat-bubble text="{{inputText}}" />
+    <chat-bubble wx:if="{{inputText}}" text="{{inputText}}" />
+    <view wx:if="{{recognitionCard.visible}}" class="recognition-state-card recognition-state-{{recognitionCard.tone}}">
+      <view class="recognition-state-head">
+        <view class="recognition-state-title">{{recognitionCard.title}}</view>
+        <view class="recognition-state-badge">{{recognitionCard.badge}}</view>
+      </view>
+      <view wx:if="{{recognitionCard.recognizedText}}" class="recognition-state-line">
+        <text class="recognition-state-label">已识别</text>
+        <text>{{recognitionCard.recognizedText}}</text>
+      </view>
+      <view wx:if="{{recognitionCard.waitingText}}" class="recognition-state-line recognition-state-waiting">
+        <text class="recognition-state-label">待确认</text>
+        <text>{{recognitionCard.waitingText}}</text>
+      </view>
+      <view class="recognition-state-hint">{{recognitionCard.hintText}}</view>
+      <view wx:if="{{recognitionCard.footText}}" class="recognition-state-foot">{{recognitionCard.footText}}</view>
+    </view>
     <recognized-order-card
       wx:if="{{cartItems.length}}"
       items="{{cartItems}}"

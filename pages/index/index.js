@@ -1,7 +1,6 @@
 const orderStore = require('../../services/order-store')
 const productStore = require('../../services/product-store')
 
-const defaultInputText = '给客户黔西-龙凤开个单子，要25玛寸布米色20米、25玛寸布深灰15米、280祥云H513-米10米'
 const today = '2026-04-28'
 
 const demoStock = {
@@ -17,6 +16,20 @@ const demoStock = {
 const customerPageSize = 12
 const selectorPageSize = 12
 const recentProductNames = ['25玛寸布', '280祥云', '3公分金线曲牙织带', '38密度海绵5公分']
+const quantityUnits = ['米', '条', '个', '件', '张', '斤', '码', '包', '卷', '片', '套', '支', '只']
+const productAliasRules = [
+  { name: '25玛寸布', aliases: ['25码的布', '25码布', '25玛寸布', '玛寸布'] },
+  { name: '15米塑料打版膜', aliases: ['15米塑料打版膜', '15米塑料', '塑料打版膜', '打版膜'] },
+  { name: '38密度海绵5公分', aliases: ['38密度海绵5公分', '38密度海绵', '海绵5公分', '38密度'] },
+  { name: '皇冠双色大边', aliases: ['皇冠双色大边', '双色大边'] },
+  { name: '虎牙中边织带', aliases: ['虎牙中边织带', '虎牙织带'] },
+  { name: '法国绒双线', aliases: ['法国绒双线', '法国荣双谢'] }
+]
+const customerAliasRules = [
+  { name: '云南-徐加飞', aliases: ['云南老徐', '云南徐加飞', '老徐'] },
+  { name: '镇雄五德镇-唐修碧', aliases: ['镇雄五德镇唐姐', '唐姐', '镇雄五德镇唐修碧'] },
+  { name: '纳雍县百兴镇-何琴飞（华盛通）', aliases: ['纳雍百兴镇何琴飞华盛通', '纳雍百兴镇何琴飞', '何琴飞华盛通'] }
+]
 
 function formatQuantity(value, unit) {
   const numberValue = Number(value || 0)
@@ -44,7 +57,7 @@ function getVariantStock(variant) {
 }
 
 function toCartLine(product, variant, quantityValue, options = {}) {
-  const unit = variant.unit || product.unit || '件'
+  const unit = options.unit || variant.unit || product.unit || '件'
   return {
     id: options.id || `${product.id}-${variant.id}-${Date.now()}`,
     productId: product.id,
@@ -58,6 +71,353 @@ function toCartLine(product, variant, quantityValue, options = {}) {
     unitPriceCents: Number(variant.priceCents || 0),
     stockQty: getVariantStock(variant)
   }
+}
+
+function normalizeKeyword(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[，,。.;；:：、/\\|()（）【】\[\]{}<>《》\-－—_]/g, '')
+}
+
+function getProductAliases(product) {
+  const rule = productAliasRules.find(item => item.name === product.name)
+  return [product.name].concat(rule ? rule.aliases : [])
+    .map(alias => normalizeKeyword(alias))
+    .filter(alias => alias && alias.length >= 2)
+}
+
+function trimColorSuffix(value) {
+  return String(value || '').replace(/色$/, '')
+}
+
+function getVariantAliases(product, variant) {
+  const color = String(variant.color || '默认')
+  const normalizedProductName = normalizeKeyword(product.name)
+  const aliases = [
+    color,
+    trimColorSuffix(color),
+    color.replace(product.name, ''),
+    color.split('-').pop(),
+    trimColorSuffix(color.split('-').pop()),
+    color.split('－').pop(),
+    trimColorSuffix(color.split('－').pop())
+  ]
+
+  const normalizedColor = normalizeKeyword(color)
+  if (normalizedProductName && normalizedColor.startsWith(normalizedProductName)) {
+    aliases.push(normalizedColor.slice(normalizedProductName.length))
+  }
+  if (color === '咖') aliases.push('咖色')
+  if (product.name === '280祥云' && color === 'H516-灰蓝') aliases.push('灰')
+
+  return aliases
+    .map(alias => normalizeKeyword(alias))
+    .filter(alias => alias && (alias.length >= 2 || alias === '灰'))
+}
+
+function findCustomerInText(text) {
+  const normalizedText = normalizeKeyword(text)
+  const customers = orderStore.getCustomerList()
+
+  for (const rule of customerAliasRules) {
+    if (rule.aliases.some(alias => normalizedText.includes(normalizeKeyword(alias)))) {
+      const customer = customers.find(item => item.name === rule.name)
+      if (customer) return customer
+    }
+  }
+
+  return customers
+    .filter(customer => {
+      const name = normalizeKeyword(customer.name)
+      const phone = normalizeKeyword(customer.phone)
+      return (name && normalizedText.includes(name)) || (phone && normalizedText.includes(phone))
+    })
+    .sort((a, b) => String(b.name || '').length - String(a.name || '').length)[0] || null
+}
+
+function findProductInSegment(segment, products, currentProduct) {
+  const normalizedSegment = normalizeKeyword(segment)
+  const matched = products.find(product => getProductAliases(product).some(alias => normalizedSegment.includes(alias)))
+  return matched || currentProduct || null
+}
+
+function findVariantInSegment(segment, product) {
+  const normalizedSegment = normalizeKeyword(segment)
+  const variants = product.variants || []
+  return variants.find(variant => {
+    return getVariantAliases(product, variant).some(alias => alias && normalizedSegment.includes(alias))
+  }) || variants[0]
+}
+
+function getMentionedVariants(segment, product) {
+  const normalizedSegment = normalizeKeyword(segment)
+  const mentions = (product.variants || [])
+    .map(variant => {
+      const aliases = getVariantAliases(product, variant)
+      const matchedAlias = aliases
+        .map(alias => ({ alias, index: normalizedSegment.indexOf(alias) }))
+        .filter(item => item.index >= 0)
+        .sort((a, b) => b.alias.length - a.alias.length)[0]
+      return matchedAlias ? { variant, alias: matchedAlias.alias, index: matchedAlias.index } : null
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.index - b.index)
+
+  return mentions.filter((mention, index) => {
+    const previous = mentions.slice(0, index).find(item => {
+      return mention.index >= item.index && mention.index < item.index + item.alias.length
+    })
+    return !previous
+  })
+}
+
+function getEachQuantity(segment) {
+  const unitPattern = quantityUnits.join('|')
+  const match = String(segment || '').match(new RegExp(`各(?:要|来)?\\s*(\\d+(?:\\.\\d+)?)\\s*(${unitPattern})`))
+  if (!match) return null
+  return {
+    quantityValue: Number(match[1] || 1),
+    unit: match[2]
+  }
+}
+
+function hasQuantityText(segment) {
+  const unitPattern = quantityUnits.join('|')
+  return new RegExp(`\\d+(?:\\.\\d+)?\\s*(${unitPattern})`).test(String(segment || ''))
+}
+
+function getQuantityAfterVariant(segment, mention, product, variant, fallbackQuantity) {
+  if (fallbackQuantity) return fallbackQuantity
+
+  const normalizedSegment = normalizeKeyword(segment)
+  const tail = normalizedSegment.slice(mention.index + mention.alias.length)
+  const unitPattern = quantityUnits.join('|')
+  const match = tail.match(new RegExp(`^(?:要|来)?(\\d+(?:\\.\\d+)?)(${unitPattern})`))
+    || tail.match(new RegExp(`(?:要|来)?(\\d+(?:\\.\\d+)?)(${unitPattern})`))
+
+  if (match) {
+    return {
+      quantityValue: Number(match[1] || 1),
+      unit: match[2] || variant.unit || product.unit || '件'
+    }
+  }
+
+  return parseQuantity(segment, product, variant)
+}
+
+function parseQuantity(segment, product, variant) {
+  const unitPattern = quantityUnits.join('|')
+  const quantityRegExp = new RegExp(`(\\d+(?:\\.\\d+)?)\\s*(${unitPattern})`, 'g')
+  const matches = []
+  let match = quantityRegExp.exec(segment)
+  while (match) {
+    matches.push(match)
+    match = quantityRegExp.exec(segment)
+  }
+
+  if (matches.length) {
+    return {
+      quantityValue: Number(matches[matches.length - 1][1] || 1),
+      unit: matches[matches.length - 1][2] || variant.unit || product.unit || '件'
+    }
+  }
+
+  const productIndex = segment.indexOf(product.name)
+  const tail = productIndex >= 0 ? segment.slice(productIndex + product.name.length) : segment
+  const numberMatch = tail.match(/(\d+(?:\.\d+)?)/)
+  return {
+    quantityValue: Number(numberMatch ? numberMatch[1] : 1),
+    unit: variant.unit || product.unit || '件'
+  }
+}
+
+function parseSegmentLines(segment, product, indexSeed) {
+  const mentions = getMentionedVariants(segment, product)
+  const eachQuantity = getEachQuantity(segment)
+
+  if (mentions.length) {
+    return mentions.map((mention, index) => {
+      const parsedQty = getQuantityAfterVariant(segment, mention, product, mention.variant, eachQuantity)
+      return toCartLine(product, mention.variant, parsedQty.quantityValue, {
+        id: `recognized-${Date.now()}-${indexSeed}-${index}`,
+        unit: parsedQty.unit
+      })
+    })
+  }
+
+  const variant = findVariantInSegment(segment, product)
+  const parsedQty = parseQuantity(segment, product, variant)
+  if (product.name === '25玛寸布' && parsedQty.unit === '码') {
+    return []
+  }
+  return [toCartLine(product, variant, parsedQty.quantityValue, {
+    id: `recognized-${Date.now()}-${indexSeed}`,
+    unit: parsedQty.unit
+  })]
+}
+
+function parseOrderText(text) {
+  const products = productStore.getProductList()
+    .slice()
+    .sort((a, b) => String(b.name || '').length - String(a.name || '').length)
+  const segments = String(text || '')
+    .split(/[，,、;；\n]+/)
+    .map(item => item.trim())
+    .filter(Boolean)
+  const items = []
+  const warnings = []
+  const pendingItems = []
+  const unrecognizedSegments = []
+  let currentProduct = null
+  let pendingSegments = []
+
+  segments.forEach((segment, index) => {
+    const product = findProductInSegment(segment, products, currentProduct)
+    if (!product) {
+      unrecognizedSegments.push(segment)
+      return
+    }
+    if (product !== currentProduct) pendingSegments = []
+    currentProduct = product
+
+    const mentions = getMentionedVariants(segment, product)
+    const hasQuantity = hasQuantityText(segment)
+    const eachQuantity = getEachQuantity(segment)
+
+    if (!mentions.length && hasQuantity && (product.variants || []).length > 1) {
+      const fallbackVariant = product.variants[0]
+      const parsedQty = parseQuantity(segment, product, fallbackVariant)
+      pendingItems.push({
+        id: `pending-${Date.now()}-${index}`,
+        product,
+        segment,
+        quantityValue: parsedQty.quantityValue,
+        unit: parsedQty.unit,
+        question: `第一条 ${product.name} 要哪个规格/颜色？`
+      })
+      return
+    }
+
+    if (mentions.length && !hasQuantity && !eachQuantity) {
+      pendingSegments.push(segment)
+      return
+    }
+
+    const parseSource = eachQuantity && pendingSegments.length
+      ? pendingSegments.concat(segment).join('、')
+      : segment
+    if (eachQuantity) pendingSegments = []
+
+    const lines = parseSegmentLines(parseSource, product, index)
+    lines.forEach(line => {
+      items.push(line)
+      if (Number(line.stockQty) <= 0) {
+        warnings.push(`${line.name}${line.color ? `/${line.color}` : ''} 库存为 0`)
+      }
+    })
+  })
+
+  return {
+    customer: findCustomerInText(text),
+    items,
+    pendingItems,
+    unrecognizedSegments,
+    warnings,
+    rawText: text
+  }
+}
+
+function getLineProductNames(lines) {
+  const names = []
+  lines.forEach(line => {
+    if (line.name && !names.includes(line.name)) names.push(line.name)
+  })
+  return names
+}
+
+function buildRecognitionCard(result, status = 'success') {
+  const productNames = getLineProductNames(result.items)
+  const recognizedParts = []
+  if (result.customer) recognizedParts.push(`客户：${result.customer.name}`)
+  if (productNames.length) recognizedParts.push(`商品：${productNames.join('、')}`)
+
+  if (status === 'pending') {
+    const pending = result.pendingItems[0]
+    const waitingText = pending
+      ? `${pending.product.name} 缺少规格/颜色，数量 ${formatQuantity(pending.quantityValue, pending.unit)}`
+      : (result.warnings && result.warnings.length ? result.warnings.join('；') : '还有信息需要补充')
+    return {
+      visible: true,
+      tone: 'pending',
+      title: '识别到部分信息，需确认',
+      badge: '待客户确认',
+      recognizedText: recognizedParts.length ? recognizedParts.join('　') : '已识别部分开单信息',
+      waitingText,
+      hintText: pending ? pending.question : '本次识别存在库存异常，请先调整商品或数量。',
+      footText: '确认前不加入购物车，补齐后再显示最终卡片。'
+    }
+  }
+
+  if (status === 'failed') {
+    return {
+      visible: true,
+      tone: 'failed',
+      title: '未识别到商品信息',
+      badge: '待补充',
+      recognizedText: result.customer ? `已识别客户：${result.customer.name}` : '客户和商品都还不明确',
+      waitingText: result.unrecognizedSegments.length ? `未识别：${result.unrecognizedSegments.join('、')}` : '请输入品名、规格/颜色和数量',
+      hintText: '可以像聊天一样补一句：25玛寸布米色20米。',
+      footText: '补充后点击识别，系统会继续尝试解析。'
+    }
+  }
+
+  return {
+    visible: true,
+    tone: 'success',
+    title: '已识别并加入购物车',
+    badge: '已加入',
+    recognizedText: recognizedParts.length ? recognizedParts.join('　') : '已识别商品明细',
+    waitingText: `本次识别 ${result.items.length} 条明细`,
+    hintText: result.warnings.length ? result.warnings[0] : '可点击卡片进入购物车调整。',
+    footText: ''
+  }
+}
+
+function buildPendingRecognition(result) {
+  const pending = result.pendingItems[0]
+  if (!pending) return null
+  return {
+    customer: result.customer,
+    items: result.items,
+    pendingItem: pending,
+    rawText: result.rawText
+  }
+}
+
+function isClarificationOnlyText(text) {
+  const value = String(text || '').trim()
+  if (!value) return false
+  if (hasQuantityText(value)) return false
+  return /(第.{0,4}条|颜色|规格|是|换成|改成)/.test(value)
+}
+
+function mergeCartLines(currentLines, recognizedLines) {
+  const nextLines = currentLines.slice()
+
+  recognizedLines.forEach(line => {
+    const index = nextLines.findIndex(item => item.productId === line.productId && item.variantId === line.variantId)
+    if (index >= 0) {
+      nextLines[index] = {
+        ...nextLines[index],
+        quantityValue: Number(nextLines[index].quantityValue || 0) + Number(line.quantityValue || 0)
+      }
+      return
+    }
+    nextLines.push(line)
+  })
+
+  return nextLines
 }
 
 function normalizeCartLines(lines) {
@@ -92,15 +452,7 @@ function normalizeCartLines(lines) {
 }
 
 function buildInitialCartLines() {
-  const products = productStore.getProductList()
-  const cloth = products.find(product => product.name === '25玛寸布') || products[0]
-  const xiangyun = products.find(product => product.name === '280祥云') || products[1] || products[0]
-
-  return normalizeCartLines([
-    toCartLine(cloth, cloth.variants[0], 20, { id: 'cloth-rice' }),
-    toCartLine(cloth, cloth.variants[1] || cloth.variants[0], 15, { id: 'cloth-gray' }),
-    toCartLine(xiangyun, xiangyun.variants[0], 10, { id: 'xiangyun-rice' })
-  ])
+  return normalizeCartLines([])
 }
 
 function toHomeCustomer(customer, index = 0) {
@@ -197,8 +549,10 @@ Page({
     customerListLimit: customerPageSize,
     customerHasMore: false,
     activeCustomer: 0,
-    switchMessage: '客户切换完成',
-    inputText: defaultInputText,
+    switchMessage: '输入后点击识别',
+    recognitionCard: null,
+    pendingRecognition: null,
+    inputText: '',
     draftText: '',
     cartItems: [],
     totalCents: 0,
@@ -245,7 +599,9 @@ Page({
       ...customerState,
       activeCustomer: 0,
       switchMessage: '客户切换完成',
-      inputText: `给客户${customerState.currentCustomer.name}开个单子，要25玛寸布米色20米、25玛寸布深灰15米、280祥云H513-米10米`
+      recognitionCard: null,
+      pendingRecognition: null,
+      inputText: ''
     })
   },
 
@@ -390,7 +746,11 @@ Page({
   onResetSession() {
     this.setData({
       draftText: '',
-      switchMessage: '会话已重置'
+      inputText: '',
+      switchMessage: '会话已重置',
+      recognitionCard: null,
+      pendingRecognition: null,
+      ...normalizeCartLines([])
     })
   },
 
@@ -550,26 +910,177 @@ Page({
       return
     }
 
+    if (this.data.pendingRecognition) {
+      const pending = this.data.pendingRecognition
+      const pendingItem = pending.pendingItem
+      const variant = findVariantInSegment(draftText, pendingItem.product)
+      const hasMatchedVariant = getMentionedVariants(draftText, pendingItem.product)
+        .some(mention => mention.variant.id === variant.id)
+
+      if (!hasMatchedVariant) {
+        this.setData({
+          inputText: draftText,
+          draftText: '',
+          recognitionCard: {
+            visible: true,
+            tone: 'pending',
+            title: '还需要确认规格/颜色',
+            badge: '待客户确认',
+            recognizedText: `商品：${pendingItem.product.name}`,
+            waitingText: pendingItem.question,
+            hintText: '可以回复：第一条是米色，或者直接说深灰。',
+            footText: '确认前不会加入购物车。'
+          }
+        })
+        return
+      }
+
+      const confirmedLine = toCartLine(pendingItem.product, variant, pendingItem.quantityValue, {
+        id: `confirmed-${Date.now()}`,
+        unit: pendingItem.unit
+      })
+      const confirmedResult = {
+        customer: pending.customer,
+        items: pending.items.concat(confirmedLine),
+        warnings: Number(confirmedLine.stockQty) <= 0 ? [`${confirmedLine.name}/${confirmedLine.color} 库存为 0`] : [],
+        rawText: `${pending.rawText}\n${draftText}`,
+        pendingItems: [],
+        unrecognizedSegments: []
+      }
+      const nextState = {}
+      if (confirmedResult.customer) {
+        Object.assign(nextState, buildCustomerState(confirmedResult.customer), { activeCustomer: 0 })
+      }
+      if (confirmedResult.warnings.length) {
+        this.setData({
+          ...nextState,
+          draftText: '',
+          inputText: draftText,
+          pendingRecognition: pending,
+          recognitionCard: buildRecognitionCard(confirmedResult, 'pending'),
+          switchMessage: '识别到库存异常，未加入购物车'
+        })
+        wx.showToast({
+          title: confirmedResult.warnings[0],
+          icon: 'none'
+        })
+        return
+      }
+      const mergedLines = mergeCartLines(this.data.cartItems, confirmedResult.items)
+      this.setData({
+        ...nextState,
+        draftText: '',
+        inputText: draftText,
+        pendingRecognition: null,
+        recognitionCard: buildRecognitionCard(confirmedResult, 'success'),
+        switchMessage: `已补齐，加入 ${confirmedResult.items.length} 条明细`,
+        ...normalizeCartLines(mergedLines)
+      })
+      return
+    }
+
+    if (isClarificationOnlyText(draftText)) {
+      this.setData({
+        inputText: draftText,
+        draftText: '',
+        recognitionCard: {
+          visible: true,
+          tone: 'failed',
+          title: '没有可补充的识别结果',
+          badge: '待补充',
+          recognizedText: '当前没有上一轮待确认的开单内容',
+          waitingText: `无法单独识别：${draftText}`,
+          hintText: '请先输入完整开单内容，出现待确认卡片后再补充颜色或规格。',
+          footText: '例如：给黔西-龙凤开单，25玛寸布20米、深灰15米。'
+        },
+        switchMessage: '缺少上一轮待确认上下文'
+      })
+      wx.showToast({
+        title: '请先输入完整开单内容',
+        icon: 'none'
+      })
+      return
+    }
+
+    const result = parseOrderText(draftText)
+    if (result.pendingItems.length || result.warnings.length) {
+      const nextState = {}
+      if (result.customer) {
+        Object.assign(nextState, buildCustomerState(result.customer), { activeCustomer: 0 })
+      }
+      this.setData({
+        ...nextState,
+        draftText: '',
+        inputText: draftText,
+        pendingRecognition: result.pendingItems.length ? buildPendingRecognition(result) : null,
+        recognitionCard: buildRecognitionCard(result, 'pending'),
+        switchMessage: result.pendingItems.length ? '识别到部分信息，需确认' : '识别到库存异常，未加入购物车'
+      })
+      if (result.warnings.length && !result.pendingItems.length) {
+        wx.showToast({
+          title: result.warnings[0],
+          icon: 'none'
+        })
+      }
+      return
+    }
+
+    if (!result.items.length) {
+      this.setData({
+        inputText: draftText,
+        draftText: '',
+        pendingRecognition: null,
+        recognitionCard: buildRecognitionCard(result, 'failed'),
+        switchMessage: '未识别到商品，请补充品名、颜色和数量'
+      })
+      wx.showToast({
+        title: '未识别到商品',
+        icon: 'none'
+      })
+      return
+    }
+
+    const nextState = {}
+    if (result.customer) {
+      Object.assign(nextState, buildCustomerState(result.customer), { activeCustomer: 0 })
+    }
+
+    const mergedLines = mergeCartLines(this.data.cartItems, result.items)
+    const warningText = result.warnings.length
+      ? `已识别 ${result.items.length} 条，部分低库存`
+      : `已识别 ${result.items.length} 条并加入购物车`
+
+    if (result.warnings.length) {
+      wx.showToast({
+        title: result.warnings[0],
+        icon: 'none'
+      })
+    }
+
     this.setData({
+      ...nextState,
       draftText: '',
       inputText: draftText,
-      switchMessage: '识别完成，已加入购物车'
+      pendingRecognition: null,
+      recognitionCard: buildRecognitionCard(result, 'success'),
+      switchMessage: warningText,
+      ...normalizeCartLines(mergedLines)
     })
   },
 
   buildCheckoutDraft() {
-    const contractCents = Math.max(this.data.totalCents - 7250, 0)
-    const usePrepaidCents = Math.min(8000, contractCents)
+    const contractCents = this.data.totalCents
+    const prepaidCents = Number(this.data.currentCustomer.prepaidCents || 0)
 
     return {
       customer: this.data.currentCustomer,
       items: this.data.cartItems,
       totalCents: this.data.totalCents,
-      discountCents: Math.max(this.data.totalCents - contractCents, 0),
+      discountCents: 0,
       contractCents,
-      prepaidCents: 10000,
-      usePrepaidCents,
-      unpaidCents: Math.max(contractCents - usePrepaidCents, 0),
+      prepaidCents,
+      usePrepaidCents: 0,
+      unpaidCents: contractCents,
       warehouse: '默认仓',
       saleDate: today,
       remark: '',
