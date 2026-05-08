@@ -3,6 +3,11 @@
   "name": "juyun-miniprogram",
   "scripts": {
     "api:smoke": "node tools/api-smoke-test.js",
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:start": "npm --prefix backend run start",
+    "backend:smoke": "npm --prefix backend run smoke",
+    "backend:db:generate": "npm --prefix backend run db:generate",
+    "backend:db:push": "npm --prefix backend run db:push",
     "icons:prepare": "node tools/prepare-lucide-icons.js",
     "wx:check": "node tools/wx-static-check.js",
     "wx:check:home": "node tools/wx-static-check.js"

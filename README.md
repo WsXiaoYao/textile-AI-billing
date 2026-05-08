@@ -78,6 +78,40 @@ async loadOrders() {
 npm run api:smoke
 ```
 
+本地后端服务已放在 `backend/`，用于把小程序从内置 mock 平滑切到 HTTP 联调。它当前包含：
+
+| 层级 | 说明 |
+| --- | --- |
+| Fastify HTTP 服务 | 启动 `http://127.0.0.1:3000`，接口前缀 `/api/v1` |
+| mock-bridge | 复用现有 `api/adapters/mock-adapter.js`，让 HTTP 接口先返回与前端 mock 一致的数据 |
+| Prisma schema | 基于 PostgreSQL 的真实业务表结构雏形，覆盖组织、员工、客户、产品、库存、销售单、收款、供应商、采购、退货、消息和导入导出任务 |
+
+本地启动：
+
+```bash
+pg_ctl -D ~/.local/pgsql/data -l ~/.local/pgsql/log/postgresql.log start
+npm install
+npm --prefix backend install
+cp backend/.env.example backend/.env
+npm run backend:db:generate
+npm run backend:db:push
+npm run backend:smoke
+npm run backend:dev
+```
+
+本地后端连接串：
+
+```bash
+postgresql://xiaoyao@127.0.0.1:5432/textile_ai_billing
+```
+
+小程序联调时可把 `config/env.js` 切到：
+
+```js
+API_MODE: 'http',
+API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
+```
+
 通用响应：
 
 ```json

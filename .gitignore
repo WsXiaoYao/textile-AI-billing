@@ -17,6 +17,7 @@ project.private.config.json
 # Dependencies and generated packages
 node_modules/
 miniprogram_npm/
+backend/.env
 
 # Logs
 logs/
@@ -33,4 +34,3 @@ artifacts/
 .cache/
 .tmp/
 tmp/
-

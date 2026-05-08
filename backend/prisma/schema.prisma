@@ -1,0 +1,556 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeStatus {
+  enabled
+  disabled
+}
+
+enum ProductStatus {
+  enabled
+  disabled
+}
+
+enum WarehouseStatus {
+  enabled
+  disabled
+}
+
+enum PaymentState {
+  unpaid
+  partial
+  paid
+  overpaid
+  prepaid
+  refunded
+}
+
+enum ShippingState {
+  unshipped
+  partial
+  delivered
+  overdelivered
+  refused
+}
+
+enum PrintState {
+  unprinted
+  printed
+}
+
+enum PurchaseOrderState {
+  draft
+  submitted
+}
+
+enum ReturnOrderState {
+  pending
+  partial
+  prepay
+  refunded
+}
+
+enum FundRecordType {
+  sales_receipt
+  customer_receipt
+  prepayment
+  prepayment_offset
+  refund
+  adjustment
+}
+
+enum InventoryLedgerType {
+  sales_out
+  purchase_in
+  return_in
+  adjustment
+}
+
+enum ImportTaskType {
+  customer_import
+  customer_export
+  product_import
+  product_export
+  category_import
+}
+
+enum TaskStatus {
+  pending
+  parsing
+  success
+  failed
+}
+
+enum MessageStatus {
+  unread
+  read
+}
+
+enum MessageType {
+  inventory_warning
+  print_result
+  organization_notice
+  system
+}
+
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  code        String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  roles       Role[]
+  employees   Employee[]
+  warehouses  Warehouse[]
+  customers   Customer[]
+  categories  ProductCategory[]
+  products    Product[]
+  suppliers   Supplier[]
+  messages    Message[]
+  importTasks ImportExportTask[]
+  auditLogs   AuditLog[]
+}
+
+model User {
+  id        String   @id @default(cuid())
+  openid    String?  @unique
+  unionid   String?
+  name      String
+  phone     String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  employees Employee[]
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  orgId       String
+  name        String
+  description String?
+  permissions Json     @default("{}")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  employees    Employee[]
+
+  @@unique([orgId, name])
+  @@index([orgId])
+}
+
+model Employee {
+  id            String         @id @default(cuid())
+  orgId         String
+  userId        String?
+  roleId        String?
+  name          String
+  phone         String?
+  status        EmployeeStatus @default(enabled)
+  warehouseIds  String[]       @default([])
+  remark        String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  user         User?        @relation(fields: [userId], references: [id])
+  role         Role?        @relation(fields: [roleId], references: [id])
+
+  @@index([orgId, phone])
+  @@index([orgId, roleId])
+}
+
+model Warehouse {
+  id          String          @id @default(cuid())
+  orgId       String
+  name        String
+  manager     String?
+  address     String?
+  isDefault   Boolean         @default(false)
+  status      WarehouseStatus @default(enabled)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  organization      Organization       @relation(fields: [orgId], references: [id])
+  products          Product[]
+  inventoryBalances InventoryBalance[]
+  inventoryLedgers  InventoryLedger[]
+  salesOrders       SalesOrder[]
+  purchaseOrders    PurchaseOrder[]
+  returnOrders      ReturnOrder[]
+
+  @@unique([orgId, name])
+  @@index([orgId, status])
+}
+
+model Customer {
+  id              String   @id @default(cuid())
+  orgId           String
+  name            String
+  code            String?
+  phone           String?
+  category        String?
+  province        String?
+  address         String?
+  totalDebtCents  Int      @default(0)
+  prepaidCents    Int      @default(0)
+  remark          String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  salesOrders  SalesOrder[]
+  returnOrders ReturnOrder[]
+  fundRecords  FundRecord[]
+
+  @@unique([orgId, code])
+  @@index([orgId, name])
+  @@index([orgId, phone])
+}
+
+model ProductCategory {
+  id        String   @id @default(cuid())
+  orgId     String
+  parentId  String?
+  name      String
+  level     Int      @default(1)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization      @relation(fields: [orgId], references: [id])
+  parent       ProductCategory?  @relation("CategoryChildren", fields: [parentId], references: [id])
+  children     ProductCategory[] @relation("CategoryChildren")
+  products     Product[]
+
+  @@unique([orgId, parentId, name])
+  @@index([orgId, level])
+}
+
+model Product {
+  id                 String        @id @default(cuid())
+  orgId              String
+  categoryId         String?
+  defaultWarehouseId String?
+  name               String
+  no                 String?
+  imageUrl           String?
+  status             ProductStatus @default(enabled)
+  remark             String?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  organization     Organization       @relation(fields: [orgId], references: [id])
+  category         ProductCategory?   @relation(fields: [categoryId], references: [id])
+  defaultWarehouse Warehouse?         @relation(fields: [defaultWarehouseId], references: [id])
+  variants         ProductVariant[]
+  salesItems       SalesOrderItem[]
+  purchaseItems    PurchaseOrderItem[]
+  returnItems      ReturnOrderItem[]
+  inventoryLedgers InventoryLedger[]
+
+  @@unique([orgId, no])
+  @@index([orgId, name])
+  @@index([orgId, categoryId])
+}
+
+model ProductVariant {
+  id            String   @id @default(cuid())
+  productId     String
+  color         String
+  unit          String
+  imageUrl      String?
+  saleCents     Int      @default(0)
+  costCents     Int      @default(0)
+  openingQty    Decimal  @default(0) @db.Decimal(14, 2)
+  stockLowerQty Decimal  @default(0) @db.Decimal(14, 2)
+  sortOrder     Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  product           Product             @relation(fields: [productId], references: [id])
+  inventoryBalances InventoryBalance[]
+  inventoryLedgers  InventoryLedger[]
+  salesItems        SalesOrderItem[]
+  purchaseItems     PurchaseOrderItem[]
+  returnItems       ReturnOrderItem[]
+
+  @@unique([productId, color])
+  @@index([productId])
+}
+
+model InventoryBalance {
+  id          String   @id @default(cuid())
+  orgId       String
+  warehouseId String
+  variantId   String
+  stockQty    Decimal  @default(0) @db.Decimal(14, 2)
+  reservedQty Decimal  @default(0) @db.Decimal(14, 2)
+  updatedAt   DateTime @updatedAt
+
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([orgId, warehouseId, variantId])
+  @@index([orgId, variantId])
+}
+
+model InventoryLedger {
+  id          String              @id @default(cuid())
+  orgId       String
+  warehouseId String
+  productId   String
+  variantId   String
+  type        InventoryLedgerType
+  refType     String?
+  refId       String?
+  beforeQty   Decimal             @db.Decimal(14, 2)
+  changeQty   Decimal             @db.Decimal(14, 2)
+  afterQty    Decimal             @db.Decimal(14, 2)
+  reason      String?
+  operator    String?
+  createdAt   DateTime            @default(now())
+
+  warehouse Warehouse      @relation(fields: [warehouseId], references: [id])
+  product   Product        @relation(fields: [productId], references: [id])
+  variant   ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orgId, variantId, createdAt])
+  @@index([orgId, refType, refId])
+}
+
+model SalesOrder {
+  id            String        @id @default(cuid())
+  orgId         String
+  no            String
+  customerId    String
+  warehouseId   String?
+  orderDate     DateTime
+  orderCents    Int           @default(0)
+  discountCents Int           @default(0)
+  contractCents Int           @default(0)
+  receivedCents Int           @default(0)
+  unpaidCents   Int           @default(0)
+  paymentState  PaymentState  @default(unpaid)
+  shippingState ShippingState @default(unshipped)
+  printState    PrintState    @default(unprinted)
+  remark        String?
+  creator       String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  customer    Customer         @relation(fields: [customerId], references: [id])
+  warehouse   Warehouse?       @relation(fields: [warehouseId], references: [id])
+  items       SalesOrderItem[]
+  fundRecords FundRecord[]
+
+  @@unique([orgId, no])
+  @@index([orgId, customerId, orderDate])
+  @@index([orgId, paymentState])
+}
+
+model SalesOrderItem {
+  id         String   @id @default(cuid())
+  orderId    String
+  productId  String
+  variantId  String
+  productName String
+  color      String
+  unit       String
+  quantity   Decimal  @db.Decimal(14, 2)
+  unitCents  Int      @default(0)
+  amountCents Int     @default(0)
+  createdAt  DateTime @default(now())
+
+  order   SalesOrder     @relation(fields: [orderId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@index([productId, variantId])
+}
+
+model FundRecord {
+  id          String         @id @default(cuid())
+  orgId       String
+  customerId  String?
+  orderId     String?
+  type        FundRecordType
+  amountCents Int            @default(0)
+  balanceCents Int           @default(0)
+  note        String?
+  occurredAt  DateTime       @default(now())
+  createdAt   DateTime       @default(now())
+
+  customer Customer?   @relation(fields: [customerId], references: [id])
+  order    SalesOrder? @relation(fields: [orderId], references: [id])
+
+  @@index([orgId, customerId, occurredAt])
+  @@index([orgId, orderId])
+}
+
+model Supplier {
+  id                 String   @id @default(cuid())
+  orgId              String
+  name               String
+  phone              String?
+  address            String?
+  isFrequent         Boolean  @default(false)
+  status             String   @default("enabled")
+  totalPurchaseCents Int      @default(0)
+  remark             String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  organization   Organization    @relation(fields: [orgId], references: [id])
+  purchaseOrders PurchaseOrder[]
+
+  @@unique([orgId, name])
+  @@index([orgId, phone])
+}
+
+model PurchaseOrder {
+  id            String             @id @default(cuid())
+  orgId         String
+  no            String
+  supplierId    String
+  warehouseId   String?
+  orderDate     DateTime
+  orderCents    Int                @default(0)
+  contractCents Int                @default(0)
+  state         PurchaseOrderState @default(draft)
+  remark        String?
+  creator       String?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  supplier  Supplier            @relation(fields: [supplierId], references: [id])
+  warehouse Warehouse?          @relation(fields: [warehouseId], references: [id])
+  items     PurchaseOrderItem[]
+
+  @@unique([orgId, no])
+  @@index([orgId, supplierId, orderDate])
+}
+
+model PurchaseOrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  variantId   String
+  productName String
+  color       String
+  unit        String
+  quantity    Decimal  @db.Decimal(14, 2)
+  unitCents   Int      @default(0)
+  amountCents Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  order   PurchaseOrder @relation(fields: [orderId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+}
+
+model ReturnOrder {
+  id              String           @id @default(cuid())
+  orgId           String
+  no              String
+  customerId      String
+  warehouseId     String?
+  orderDate       DateTime
+  returnCents     Int              @default(0)
+  receivedToPrepay Boolean         @default(false)
+  state           ReturnOrderState @default(pending)
+  remark          String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  customer  Customer          @relation(fields: [customerId], references: [id])
+  warehouse Warehouse?        @relation(fields: [warehouseId], references: [id])
+  items     ReturnOrderItem[]
+
+  @@unique([orgId, no])
+  @@index([orgId, customerId, orderDate])
+}
+
+model ReturnOrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  variantId   String
+  productName String
+  color       String
+  unit        String
+  quantity    Decimal  @db.Decimal(14, 2)
+  unitCents   Int      @default(0)
+  amountCents Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  order   ReturnOrder    @relation(fields: [orderId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
+  variant ProductVariant @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+}
+
+model Message {
+  id        String        @id @default(cuid())
+  orgId     String
+  type      MessageType
+  status    MessageStatus @default(unread)
+  title     String
+  content   String
+  refType   String?
+  refId     String?
+  createdAt DateTime      @default(now())
+  readAt    DateTime?
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, status, createdAt])
+}
+
+model ImportExportTask {
+  id          String         @id @default(cuid())
+  orgId       String
+  type        ImportTaskType
+  status      TaskStatus     @default(pending)
+  fileName    String?
+  fileUrl     String?
+  totalRows   Int            @default(0)
+  successRows Int            @default(0)
+  failedRows  Int            @default(0)
+  errorText   String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, type, createdAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  orgId     String
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  before    Json?
+  after     Json?
+  createdAt DateTime @default(now())
+
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, entity, entityId])
+  @@index([orgId, createdAt])
+}
