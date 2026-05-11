@@ -18,6 +18,7 @@ api/
 ├── adapters/
 │   ├── mock-adapter.js          # 本地 mock，异步返回，模拟后端接口
 │   └── http-adapter.js          # 真实后端，基于 wx.request
+├── auth-api.js                  # 微信手机号登录/会话接口门面
 ├── order-api.js                 # 销售单接口门面
 ├── customer-api.js              # 客户接口门面
 ├── product-api.js               # 产品接口门面
@@ -223,6 +224,7 @@ API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 ├── sitemap.json
 ├── api/
 │   ├── adapters/
+│   ├── auth-api.js
 │   ├── customer-api.js
 │   ├── employee-api.js
 │   ├── index.js
@@ -264,6 +266,8 @@ API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 │   ├── wechat-design-application-rules.md
 │   └── wechat-miniprogram-research.md
 ├── pages/
+│   ├── login/
+│   │   └── index.*                 # 微信手机号授权登录
 │   ├── index/
 │   │   ├── index.*                 # 首页对话开单
 │   │   └── order-confirm.*         # 确认下单
@@ -349,30 +353,62 @@ API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 │   ├── supplier-store.js
 │   └── warehouse-store.js
 ├── styles/
-└── tools/
-    ├── prepare-lucide-icons.js
-    └── wx-static-check.js
+├── tools/
+│   ├── prepare-lucide-icons.js
+│   └── wx-static-check.js
+└── utils/
+    └── auth-session.js            # 登录 token 与当前组织缓存
 ```
 
 ## 核心数据模型
 
 ### Customer
 
+客户字段以后以后端 `customers.sql` 为唯一口径。数据库、后端接口、客户导入导出都优先使用同一套 snake_case 字段名；小程序页面如果已有 `name/category/receivableCents` 等旧展示字段，只作为过渡兼容字段，不再作为新增接口的主字段。金额字段在后端表中按元保存时，接口进入小程序前仍需转换为整数分，避免前端小数误差。
+
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
 | `id` | string | 客户 ID，当前 mock 使用客户名 |
-| `name` | string | 客户名称 |
+| `customer_name` | string | 客户名称 |
+| `customer_category` | string | 客户分类，默认 `未分类` |
 | `phone` | string | 联系电话 |
-| `address` | string | 地址 |
-| `category` | string | 客户分类 |
-| `area` | string | 区域 |
-| `level` | string | `normal` / `key` |
-| `contractCents` | number | 合同累计金额 |
-| `receivedCents` | number | 已收累计金额 |
-| `receivableCents` | number | 欠款金额 |
-| `prepaidCents` | number | 预收余额 |
-| `orderCount` | number | 销售单数量 |
-| `lastOrderDate` | string | 最近下单日期 |
+| `backup_phone` | string | 备用电话 |
+| `fax` | string | 传真 |
+| `remark` | string | 备注 |
+| `address_short` | string | 地址简称 |
+| `province` | string | 省份 |
+| `city` | string | 城市 |
+| `district` | string | 区县 |
+| `detail_address` | string | 详细地址 |
+| `address_remark` | string | 地址备注 |
+| `zipcode` | string | 邮编 |
+| `opening_debt` | number | 期初欠款，后端表口径为元 |
+| `contract_amount` | number | 合同累计金额，后端表口径为元 |
+| `delivered_amount` | number | 已发货金额，后端表口径为元 |
+| `prepaid_amount` | number | 预收余额，后端表口径为元 |
+| `unpaid_amount` | number | 未收款金额，后端表口径为元 |
+| `paid_amount` | number | 已收累计金额，后端表口径为元 |
+| `is_active` | boolean | 是否启用 |
+| `source_file` | string | 导入来源文件 |
+| `source_sheet` | string | 导入来源工作表 |
+| `source_row_no` | number | 导入来源行号 |
+| `customer_name_normalized` | string | 客户名归一化检索字段 |
+| `customer_name_pinyin` | string | 客户名拼音检索字段 |
+| `customer_name_initials` | string | 客户名首字母检索字段 |
+| `created_at` | string | 创建时间 |
+| `updated_at` | string | 更新时间 |
+
+小程序旧展示字段兼容映射：
+
+| 旧展示字段 | 来源字段 |
+| --- | --- |
+| `name` | `customer_name` |
+| `category` / `tag` | `customer_category` |
+| `address` | `detail_address || address_short` |
+| `contractCents` | `contract_amount * 100` |
+| `receivedCents` | `paid_amount * 100` |
+| `receivableCents` | `unpaid_amount * 100` |
+| `prepaidCents` | `prepaid_amount * 100` |
 
 ### SalesOrder
 
@@ -813,7 +849,19 @@ API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 5. 退货单提交后：后端应写退货单、按 `returnToPrepay` 处理预收或退款、按仓库回写库存。
 6. 库存调整后：后端应记录调整前、调整数、调整后、操作人和原因，方便追溯。
 7. 所有列表接口必须支持分页；客户选择、商品选择、产品列表这类大数据弹层必须懒加载。
-8. 前端当前没有真实登录流程，后端接入时需补登录态、组织权限和仓库权限过滤。
+8. 登录态由 `api/auth-api.js` 和 `utils/auth-session.js` 维护；真实后端需按手机号匹配员工、组织、角色和仓库权限。
+
+## 登录接口
+
+小程序使用微信手机号授权登录。前端通过 `wx.login` 获取 `loginCode`，通过 `button open-type="getPhoneNumber"` 获取 `phoneCode`，再调用后端换取业务登录态。手机号是用户唯一标识，后端负责把手机号绑定到 `User`，并匹配或创建对应 `Employee`。
+
+| 功能 | 接口 | 入参 | 出参 |
+| --- | --- | --- | --- |
+| 微信手机号登录 | `POST /auth/wechat-phone-login` | `{ phoneCode, loginCode }` | `{ token, expiresAt, user, currentOrg, employee, permissions }` |
+| 获取当前登录态 | `GET /auth/me` | Header: `Authorization: Bearer <token>` | `{ user, currentOrg, employee, permissions, expiresAt }` |
+| 退出登录 | `POST /auth/logout` | Header: `Authorization: Bearer <token>` | `{ loggedOut: true }` |
+
+本地开发可以在 `backend/.env` 设置 `WECHAT_MOCK_LOGIN="true"`，后端会用 mock 手机号打通流程；正式环境必须配置 `WECHAT_APP_ID`、`WECHAT_APP_SECRET`，并调用微信 `getuserphonenumber` 接口。
 
 ## 常用命令
 

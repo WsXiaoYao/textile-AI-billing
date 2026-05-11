@@ -8,6 +8,10 @@
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
     "smoke": "node scripts/smoke.js",
+    "seed:customers": "node scripts/seed-customers.js",
+    "seed:customer-categories": "node scripts/seed-customer-categories.js",
+    "comment:customers": "node scripts/comment-customers.js",
+    "view:customers-cn": "node scripts/create-customers-cn-view.js",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
     "db:studio": "prisma studio"

@@ -15,6 +15,7 @@ const sections = [
     desc: '供应商、采购和退换按业务链路进入',
     tone: 'warning',
     items: [
+      { key: 'customer-categories', title: '客户分类', icon: '/assets/icons/lucide/ui/users-orange.svg' },
       { key: 'suppliers', title: '供应商', icon: '/assets/icons/lucide/ui/handshake-dark.svg' },
       { key: 'purchase-orders', title: '采购单', icon: '/assets/icons/lucide/ui/shopping-bag-orange.svg' },
       { key: 'purchase-returns', title: '退货单', icon: '/assets/icons/lucide/ui/undo-2-dark.svg' }
@@ -46,6 +47,7 @@ Page({
       categories: '/pages/product-categories/index',
       'stock-summary': '/pages/stock-summary/index',
       warehouses: '/pages/warehouses/index',
+      'customer-categories': '/pages/customer-categories/index',
       suppliers: '/pages/suppliers/index',
       'purchase-orders': '/pages/purchase-orders/index',
       'purchase-returns': '/pages/purchase-returns/index'

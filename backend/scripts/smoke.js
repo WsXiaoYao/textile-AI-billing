@@ -1,10 +1,11 @@
 const { buildApp } = require('../src/app')
 
-async function request(app, method, url, payload) {
+async function request(app, method, url, payload, headers = {}) {
   const response = await app.inject({
     method,
     url,
-    payload
+    payload,
+    headers
   })
 
   const body = response.json()
@@ -24,6 +25,16 @@ async function main() {
   const products = await request(app, 'GET', '/api/v1/products?page=1&pageSize=2')
   const orders = await request(app, 'GET', '/api/v1/sales-orders?page=1&pageSize=2')
   const inventory = await request(app, 'GET', '/api/v1/inventory?page=1&pageSize=2')
+  const auth = await request(app, 'POST', '/api/v1/auth/wechat-phone-login', {
+    phoneCode: '1358270496',
+    loginCode: 'smoke'
+  })
+  const me = await request(app, 'GET', '/api/v1/auth/me', null, {
+    authorization: `Bearer ${auth.token}`
+  })
+  await request(app, 'POST', '/api/v1/auth/logout', null, {
+    authorization: `Bearer ${auth.token}`
+  })
 
   await app.close()
 
@@ -32,7 +43,8 @@ async function main() {
     customers: customers.list.length,
     products: products.list.length,
     orders: orders.list.length,
-    inventory: inventory.list.length
+    inventory: inventory.list.length,
+    authUser: me.user.phone
   }))
 }
 

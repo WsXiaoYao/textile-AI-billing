@@ -14,74 +14,84 @@
           <view class="form-row">
             <view class="form-label">客户名称</view>
             <input
-              class="form-input"
+              class="form-input {{formErrors.name ? 'form-input-error' : ''}}"
               value="{{form.name}}"
               placeholder="请输入客户名称"
               placeholder-class="input-placeholder"
+              maxlength="120"
               bindinput="onNameInput"
             />
           </view>
+          <view wx:if="{{formErrors.name}}" class="form-error">{{formErrors.name}}</view>
 
           <view class="form-row">
             <view class="form-label">联系电话</view>
             <input
-              class="form-input"
+              class="form-input {{formErrors.phone ? 'form-input-error' : ''}}"
               type="number"
               value="{{form.phone}}"
-              placeholder="请输入手机号"
+              placeholder="请输入11位手机号"
               placeholder-class="input-placeholder"
+              maxlength="11"
               bindinput="onPhoneInput"
             />
           </view>
+          <view wx:if="{{formErrors.phone}}" class="form-error">{{formErrors.phone}}</view>
 
-          <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
+        <picker mode="selector" range="{{categoryOptions}}" range-key="name" value="{{categoryIndex}}" bindchange="onCategoryChange">
             <view class="form-row">
               <view class="form-label">客户分类</view>
-              <view class="form-picker-value {{form.category ? '' : 'input-placeholder'}}">{{form.category ? form.category : '请选择客户分类'}}</view>
+              <view class="form-picker-value {{formErrors.category ? 'form-input-error' : ''}} {{form.category ? '' : 'input-placeholder'}}">{{form.category ? form.category : '请选择客户分类'}}</view>
               <view class="form-chevron">›</view>
             </view>
           </picker>
+          <view wx:if="{{formErrors.category}}" class="form-error">{{formErrors.category}}</view>
 
           <view class="form-row">
             <view class="form-label">详细地址</view>
             <input
-              class="form-input"
+              class="form-input {{formErrors.address ? 'form-input-error' : ''}}"
               value="{{form.address}}"
               placeholder="请输入客户地址"
               placeholder-class="input-placeholder"
+              maxlength="255"
               bindinput="onAddressInput"
             />
           </view>
+          <view wx:if="{{formErrors.address}}" class="form-error">{{formErrors.address}}</view>
 
           <view class="form-row">
             <view class="form-label">期初欠款</view>
             <input
-              class="form-input"
+              class="form-input {{formErrors.openingReceivable ? 'form-input-error' : ''}}"
               type="digit"
               value="{{form.openingReceivable}}"
               placeholder="输入历史应收金额"
               placeholder-class="input-placeholder"
+              maxlength="12"
               bindinput="onOpeningInput"
             />
           </view>
+          <view wx:if="{{formErrors.openingReceivable}}" class="form-error">{{formErrors.openingReceivable}}</view>
 
           <view class="form-row form-row-tall">
             <view class="form-label">备注</view>
             <textarea
-              class="form-textarea"
+              class="form-textarea {{formErrors.remark ? 'form-input-error' : ''}}"
               value="{{form.remark}}"
               placeholder="补充客户习惯、门店说明等"
               placeholder-class="input-placeholder"
-              maxlength="120"
+              maxlength="500"
               bindinput="onRemarkInput"
             />
           </view>
+          <view wx:if="{{formErrors.remark}}" class="form-error">{{formErrors.remark}}</view>
         </view>
       </view>
 
       <view class="edit-card">
         <view class="card-title">业务说明</view>
-        <view class="card-desc">期初欠款用于历史应收初始化，保存后可在客户详情查看合同金额、已收和未收汇总。</view>
+        <view class="card-desc">期初欠款用于历史应收初始化，保存后会计入客户未收款汇总。</view>
         <view class="rule-tags">
           <view class="rule-tag rule-tag-primary">按组织权限导入</view>
           <view class="rule-tag rule-tag-warning">期初欠款可为空</view>
@@ -94,6 +104,6 @@
 
   <view class="bottom-actions">
     <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
-    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存客户</view>
+    <view class="bottom-btn bottom-btn-primary {{saving ? 'bottom-btn-disabled' : ''}}" bindtap="onSaveTap">{{saving ? '保存中' : '保存客户'}}</view>
   </view>
 </view>

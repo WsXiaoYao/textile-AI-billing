@@ -1,8 +1,19 @@
-const orderStore = require('../../services/order-store')
+const customerApi = require('../../api/customer-api')
+
+const emptyDetail = {
+  customer: {},
+  amountMetrics: [],
+  salesRecords: [],
+  fundRecords: [],
+  tabs: [],
+  recordFilters: [],
+  fundFilters: [],
+  recordSummary: ''
+}
 
 Page({
   data: {
-    detail: orderStore.getCustomerDetail('黔西-龙凤'),
+    detail: emptyDetail,
     activeTab: 'sales',
     activeFilter: 'all',
     activeFundFilter: 'all',
@@ -19,11 +30,22 @@ Page({
     this.loadDetail()
   },
 
-  loadDetail() {
-    const detail = orderStore.getCustomerDetail(this.customerId || '黔西-龙凤')
-    this.setData({ detail }, () => {
-      this.applyRecordFilter()
-    })
+  async loadDetail() {
+    if (!this.customerId) return
+    try {
+      const detail = await customerApi.getCustomerDetail(this.customerId)
+      this.setData({ detail: detail || emptyDetail }, () => {
+        this.applyRecordFilter()
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '客户详情加载失败',
+        icon: 'none'
+      })
+      this.setData({ detail: emptyDetail }, () => {
+        this.applyRecordFilter()
+      })
+    }
   },
 
   onTabTap(event) {

@@ -1,0 +1,91 @@
+<view class="category-page">
+  <view class="category-content">
+    <view class="tool-card">
+      <view class="search-row">
+        <input
+          class="search-input"
+          value="{{keyword}}"
+          placeholder="搜索客户分类"
+          placeholder-class="search-placeholder"
+          confirm-type="search"
+          bindinput="onKeywordInput"
+        />
+      </view>
+      <view class="action-row">
+        <view class="action-btn action-btn-secondary" bindtap="onBackTap">返回</view>
+        <view class="action-btn action-btn-primary" bindtap="onAddCategoryTap">新增分类</view>
+      </view>
+    </view>
+
+    <view class="summary-card">
+      <view class="summary-item">
+        <view class="summary-label">客户分类</view>
+        <view class="summary-value">{{summary.categoryCount}} 个</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">启用分类</view>
+        <view class="summary-value summary-primary">{{summary.activeCount}} 个</view>
+      </view>
+      <view class="summary-item">
+        <view class="summary-label">客户数量</view>
+        <view class="summary-value summary-danger">{{summary.customerCount}} 位</view>
+      </view>
+    </view>
+
+    <view class="category-list" wx:if="{{displayedCategories.length}}">
+      <block wx:for="{{displayedCategories}}" wx:key="id">
+        <view class="category-card {{item.isActive ? '' : 'category-card-disabled'}}">
+          <view class="category-main">
+            <view class="category-name-row">
+              <view class="category-name">{{item.name}}</view>
+              <view class="category-level {{item.isActive ? '' : 'category-level-muted'}}">{{item.isActive ? '启用' : '停用'}}</view>
+            </view>
+            <view class="category-desc">排序 {{item.sortOrder}} · {{item.customerCount}} 位客户</view>
+          </view>
+          <view class="category-actions">
+            <view class="category-edit" data-id="{{item.id}}" catchtap="onEditCategoryTap">编辑</view>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-title">没有匹配的分类</view>
+      <view class="empty-desc">换个分类名称再试试，或新增一个客户分类。</view>
+    </view>
+  </view>
+
+  <view wx:if="{{editorVisible}}" class="dialog-mask" catchtap="onCloseEditor">
+    <view class="dialog-panel" catchtap="noop">
+      <view class="dialog-handle"></view>
+      <view class="dialog-head">
+        <view>
+          <view class="dialog-title">{{editorTitle}}</view>
+          <view class="dialog-subtitle">客户分类由当前组织自己维护，用于客户筛选和客户资料归档。</view>
+        </view>
+      </view>
+      <view class="dialog-form-card">
+        <view class="dialog-field">
+          <view class="dialog-label">分类名称</view>
+          <input class="dialog-input" value="{{form.name}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" bindinput="onNameInput" />
+        </view>
+        <view class="dialog-field">
+          <view class="dialog-label">排序</view>
+          <input class="dialog-input" type="number" value="{{form.sortOrder}}" placeholder="数字越小越靠前" placeholder-class="search-placeholder" bindinput="onSortInput" />
+        </view>
+        <view class="dialog-field dialog-switch-field">
+          <view>
+            <view class="dialog-label">启用状态</view>
+            <view class="dialog-value">{{form.isActive ? '启用' : '停用'}}</view>
+          </view>
+          <switch checked="{{form.isActive}}" color="#2e7bef" bindchange="onActiveChange" />
+        </view>
+      </view>
+      <view class="dialog-hint">停用后不会出现在新增客户和筛选列表中，已关联客户仍会保留原分类。</view>
+      <view class="dialog-actions">
+        <view class="dialog-btn dialog-btn-secondary" bindtap="onCloseEditor">取消</view>
+        <view class="dialog-btn dialog-btn-primary" bindtap="onSaveCategoryTap">保存</view>
+      </view>
+    </view>
+  </view>
+</view>

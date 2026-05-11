@@ -5,7 +5,7 @@
 
 .customer-list-card {
   width: 100%;
-  min-height: 178rpx;
+  min-height: 156rpx;
   padding: 26rpx 28rpx;
   border: 1rpx solid #d8e5f6;
   border-radius: 24rpx;
@@ -58,15 +58,37 @@
 }
 
 .customer-meta,
-.customer-address {
+.customer-address-line {
   margin-top: 6rpx;
   color: #667085;
   font-size: 24rpx;
   line-height: 34rpx;
 }
 
-.customer-address {
+.customer-address-line {
   max-width: 410rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.customer-area {
+  flex: 0 0 auto;
+  height: 30rpx;
+  padding: 0 8rpx;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6rpx;
+  background: #f6f7f9;
+  color: #344054;
+  font-size: 20rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.customer-address {
+  min-width: 0;
+  flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -135,29 +157,6 @@
 
 .balance-primary {
   color: #2e7bef;
-}
-
-.customer-tags {
-  margin-top: 16rpx;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10rpx;
-}
-
-.customer-chip {
-  box-sizing: border-box;
-  min-width: 104rpx;
-  height: 44rpx;
-  padding: 0 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999rpx;
-  font-size: 22rpx;
-  font-weight: 800;
-  line-height: 1;
-  white-space: nowrap;
 }
 
 .tag-success {

@@ -1,4 +1,5 @@
-const orderStore = require('../../services/order-store')
+const customerApi = require('../../api/customer-api')
+const categoryApi = require('../../api/customer-category-api')
 
 const sortOptions = [
   { label: '最近下单 从新到旧', value: 'dateDesc' },
@@ -96,6 +97,15 @@ const defaultDateRange = {
   end: today
 }
 
+const emptySummary = {
+  title: '',
+  metrics: [
+    { key: 'receivableCustomers', label: '欠款客户', value: '0位', tone: 'success' },
+    { key: 'receivable', label: '累计欠款', value: '¥0.00', tone: 'success' },
+    { key: 'prepaid', label: '预收余额', value: '¥0.00', tone: 'success' }
+  ]
+}
+
 function cloneFilters(filters) {
   return {
     balanceState: filters.balanceState || '',
@@ -106,10 +116,10 @@ function cloneFilters(filters) {
   }
 }
 
-function buildFilterSections(filters) {
+function buildFilterSections(filters, categoryOptions = []) {
   return filterSections.map(section => ({
     ...section,
-    options: section.options.map(option => ({
+    options: (section.key === 'category' && categoryOptions.length ? categoryOptions : section.options).map(option => ({
       ...option,
       active: filters[section.key] === option.value
     }))
@@ -151,7 +161,7 @@ Page({
     customerRenderCount: 0,
     customerHasMore: false,
     customerLoadingMore: false,
-    summary: orderStore.getCustomerSummary(),
+    summary: emptySummary,
     sortOptions,
     sortValue: 'dateDesc',
     sortIndex: 0,
@@ -160,6 +170,7 @@ Page({
     activeStatus: 'all',
     filters: cloneFilters(emptyFilters),
     filterDraft: cloneFilters(emptyFilters),
+    categoryOptions: [],
     filterViewSections: buildFilterSections(emptyFilters),
     filterDraftCount: 0,
     filterCount: 0,
@@ -179,6 +190,7 @@ Page({
   },
 
   onLoad() {
+    this.loadCategoryOptions()
     this.loadCustomers()
   },
 
@@ -249,7 +261,7 @@ Page({
     const filterDraft = cloneFilters(this.data.filters)
     this.setData({
       filterDraft,
-      filterViewSections: buildFilterSections(filterDraft),
+      filterViewSections: buildFilterSections(filterDraft, this.data.categoryOptions),
       filterDraftCount: this.countFilters(filterDraft),
       filterDrawerVisible: true,
       filterDrawerActive: false,
@@ -282,7 +294,7 @@ Page({
     filterDraft[key] = filterDraft[key] === value ? '' : value
     this.setData({
       filterDraft,
-      filterViewSections: buildFilterSections(filterDraft),
+      filterViewSections: buildFilterSections(filterDraft, this.data.categoryOptions),
       filterDraftCount: this.countFilters(filterDraft)
     })
   },
@@ -291,7 +303,7 @@ Page({
     const filterDraft = cloneFilters(emptyFilters)
     this.setData({
       filterDraft,
-      filterViewSections: buildFilterSections(filterDraft),
+      filterViewSections: buildFilterSections(filterDraft, this.data.categoryOptions),
       filterDraftCount: 0
     })
   },
@@ -398,13 +410,49 @@ Page({
 
   noop() {},
 
-  loadCustomers(callback) {
-    this.customers = orderStore.getCustomerList()
-    this.setData({
-      summary: orderStore.getCustomerSummary()
-    }, () => {
-      this.applyFilters(callback)
-    })
+  async loadCategoryOptions() {
+    try {
+      const result = await categoryApi.listCategories()
+      const categoryOptions = (result.list || []).map(category => ({
+        label: category.name,
+        value: category.id
+      }))
+      this.setData({
+        categoryOptions,
+        filterViewSections: buildFilterSections(this.data.filterDraft || emptyFilters, categoryOptions)
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '客户分类加载失败',
+        icon: 'none'
+      })
+    }
+  },
+
+  async loadCustomers(callback) {
+    this.customerPage = 1
+    try {
+      const [summary, result] = await Promise.all([
+        customerApi.getCustomerSummary(),
+        customerApi.listCustomers(this.buildCustomerQuery(1, customerInitialLimit))
+      ])
+      const list = result.list || []
+      this.customers = list
+      this.setData({
+        summary: summary || emptySummary,
+        displayedCustomers: list,
+        filteredTotal: result.total || list.length,
+        customerRenderCount: list.length,
+        customerHasMore: Boolean(result.hasMore),
+        customerLoadingMore: false
+      }, callback)
+    } catch (error) {
+      this.setData({ customerLoadingMore: false }, callback)
+      wx.showToast({
+        title: error.message || '客户加载失败',
+        icon: 'none'
+      })
+    }
   },
 
   closeFilterDrawer() {
@@ -424,31 +472,7 @@ Page({
   },
 
   applyFilters(callback) {
-    const keyword = this.data.keyword.trim().toLowerCase()
-    const filters = this.data.filters
-    const dateRange = this.data.dateRange
-    const customers = this.customers || []
-    const filteredCustomers = this.sortCustomers(customers.filter(customer => {
-      const text = [
-        customer.name,
-        customer.code,
-        customer.tag,
-        customer.category,
-        customer.area,
-        customer.phone,
-        customer.address,
-        customer.lastOrderNo,
-        customer.recentGoods,
-        customer.creatorsText
-      ].join(' ').toLowerCase()
-
-      return (!keyword || text.includes(keyword)) &&
-        this.isDateMatched(customer, dateRange) &&
-        this.isFilterMatched(customer, filters)
-    }))
-
-    this.filteredCustomers = filteredCustomers
-    this.resetCustomerWindow(callback)
+    this.loadCustomers(callback)
   },
 
   resetCustomerWindow(callback) {
@@ -466,21 +490,49 @@ Page({
   loadMoreCustomers() {
     if (this.data.customerLoadingMore || !this.data.customerHasMore) return
 
-    const filteredCustomers = this.filteredCustomers || []
-    const currentCount = this.data.customerRenderCount
-    const nextCount = Math.min(currentCount + customerPageSize, filteredCustomers.length)
-    const nextItems = filteredCustomers.slice(currentCount, nextCount)
-
     this.setData({
       customerLoadingMore: true
-    }, () => {
-      this.setData({
-        displayedCustomers: this.data.displayedCustomers.concat(nextItems),
-        customerRenderCount: nextCount,
-        customerHasMore: nextCount < filteredCustomers.length,
-        customerLoadingMore: false
-      })
+    }, async () => {
+      try {
+        const page = (this.customerPage || 1) + 1
+        const result = await customerApi.listCustomers(this.buildCustomerQuery(page, customerPageSize))
+        const nextItems = result.list || []
+        this.customerPage = page
+        this.customers = (this.customers || []).concat(nextItems)
+        const nextCount = this.data.customerRenderCount + nextItems.length
+
+        this.setData({
+          displayedCustomers: this.data.displayedCustomers.concat(nextItems),
+          customerRenderCount: nextCount,
+          filteredTotal: result.total || this.data.filteredTotal,
+          customerHasMore: Boolean(result.hasMore),
+          customerLoadingMore: false
+        })
+      } catch (error) {
+        this.setData({ customerLoadingMore: false })
+        wx.showToast({
+          title: error.message || '加载更多失败',
+          icon: 'none'
+        })
+      }
     })
+  },
+
+  buildCustomerQuery(page, pageSize) {
+    const filters = this.data.filters || {}
+    return {
+      page,
+      pageSize,
+      keyword: this.data.keyword.trim(),
+      sortKey: this.data.sortValue,
+      balanceState: filters.balanceState,
+      categoryId: filters.category,
+      area: filters.area,
+      level: filters.level,
+      activityState: filters.activityState,
+      startDate: this.data.dateRange.start,
+      endDate: this.data.dateRange.end
+    }
   },
 
   sortCustomers(list) {

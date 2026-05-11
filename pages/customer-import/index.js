@@ -1,4 +1,4 @@
-const orderStore = require('../../services/order-store')
+const customerApi = require('../../api/customer-api')
 
 function getUserFilePath(fileName) {
   const safeName = fileName.replace(/[\\/:*?"<>|]/g, '-')
@@ -53,16 +53,50 @@ function formatFileSize(size) {
 
 Page({
   data: {
-    center: orderStore.getCustomerImportExport()
+    center: {
+      importTitle: '客户批量导入',
+      importDesc: '加载真实客户导入配置中',
+      exportTitle: '客户批量导出',
+      exportDesc: '',
+      importHint: '',
+      tasks: []
+    }
   },
 
   onShow() {
     this.refreshCenter()
   },
 
-  refreshCenter() {
+  async refreshCenter() {
+    try {
+      const center = await customerApi.getImportExportCenter()
+      this.setData({
+        center: {
+          ...center,
+          tasks: (this.localTasks || []).concat(center.tasks || [])
+        }
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '导入配置加载失败',
+        icon: 'none'
+      })
+    }
+  },
+
+  addLocalTask(task) {
+    this.localTasks = [
+      {
+        id: task.id || `task-${Date.now()}`,
+        time: task.time || '刚刚',
+        ...task
+      }
+    ].concat(this.localTasks || [])
     this.setData({
-      center: orderStore.getCustomerImportExport()
+      center: {
+        ...this.data.center,
+        tasks: this.localTasks.concat((this.data.center.tasks || []).filter(item => !this.localTasks.some(taskItem => taskItem.id === item.id)))
+      }
     })
   },
 
@@ -75,9 +109,11 @@ Page({
   },
 
   onDownloadTemplateTap() {
-    writeTextFile('客户导入模板.csv', orderStore.getCustomerTemplateCsv())
+    customerApi.getTemplate()
+      .then(template => writeTextFile(template.fileName || '客户导入模板.csv', template.content || ''))
       .then(filePath => {
-        orderStore.addCustomerImportTask({
+        this.addLocalTask({
+          id: `template-${Date.now()}`,
           title: '客户导入模板.csv',
           desc: '模板文件已生成，可用 Excel 打开后填写客户资料。',
           statusText: '可打开',
@@ -85,21 +121,20 @@ Page({
           filePath,
           actionType: 'template'
         })
-        this.refreshCenter()
         wx.showToast({
           title: '模板已生成',
           icon: 'success'
         })
       })
       .catch(() => {
-        orderStore.addCustomerImportTask({
+        this.addLocalTask({
+          id: `template-failed-${Date.now()}`,
           title: '客户导入模板.csv',
           desc: '当前环境无法写入本地模板文件。',
           statusText: '生成失败',
           statusTone: 'danger',
           actionType: 'template'
         })
-        this.refreshCenter()
         wx.showToast({
           title: '模板生成失败',
           icon: 'none'
@@ -122,9 +157,9 @@ Page({
           return
         }
 
-        orderStore.addCustomerImportTask({
+        customerApi.addImportTask({
           title: `客户导入：${file.name}`,
-          desc: `已选择 ${extension.toUpperCase()} 文件，大小 ${formatFileSize(file.size)}。待接入后端上传接口后，由后端解析并回写客户资料。`,
+          desc: `已选择 ${extension.toUpperCase()} 文件，大小 ${formatFileSize(file.size)}。`,
           statusText: '待上传',
           statusTone: 'warning',
           filePath: file.path || '',
@@ -133,7 +168,16 @@ Page({
           fileType: extension,
           actionType: 'import'
         })
-        this.refreshCenter()
+          .then(task => {
+            this.addLocalTask({
+              ...task,
+              title: task.title || `客户导入：${file.name}`,
+              desc: task.desc || `已选择 ${extension.toUpperCase()} 文件，大小 ${formatFileSize(file.size)}。`,
+              statusText: task.statusText || '待上传',
+              statusTone: task.statusTone || 'warning',
+              filePath: file.path || ''
+            })
+          })
         wx.showToast({
           title: '已创建上传任务',
           icon: 'none'
@@ -157,31 +201,32 @@ Page({
     }
     const fileName = titleMap[type] || titleMap.current
 
-    writeTextFile(fileName, orderStore.getCustomerExportCsv(type))
+    customerApi.exportCustomers({ type })
+      .then(result => writeTextFile(result.fileName || fileName, result.content || ''))
       .then(filePath => {
-        orderStore.addCustomerImportTask({
+        this.addLocalTask({
+          id: `export-${Date.now()}`,
           title: fileName,
-          desc: `已根据当前客户数据生成本地 CSV 文件，共 ${orderStore.getCustomerList().length} 位客户。`,
+          desc: '已根据后端真实客户表生成本地 CSV 文件。',
           statusText: '可打开',
           statusTone: 'success',
           filePath,
           actionType: 'export'
         })
-        this.refreshCenter()
         wx.showToast({
           title: '导出文件已生成',
           icon: 'success'
         })
       })
       .catch(() => {
-        orderStore.addCustomerImportTask({
+        this.addLocalTask({
+          id: `export-failed-${Date.now()}`,
           title: fileName,
           desc: '当前环境无法写入导出文件。',
           statusText: '导出失败',
           statusTone: 'danger',
           actionType: 'export'
         })
-        this.refreshCenter()
         wx.showToast({
           title: '导出失败',
           icon: 'none'
@@ -189,8 +234,12 @@ Page({
       })
   },
 
-  onTaskTap(event) {
-    const task = orderStore.getCustomerImportTask(event.currentTarget.dataset.id)
+  async onTaskTap(event) {
+    const id = event.currentTarget.dataset.id
+    let task = (this.localTasks || []).find(item => item.id === id)
+    if (!task) {
+      task = await customerApi.getImportTask(id)
+    }
     if (!task || !task.filePath) return
 
     wx.openDocument({

@@ -28,7 +28,41 @@ function findCustomerName(id) {
   return detail && detail.name ? detail.name : id
 }
 
+function mockAuthPayload(payload = {}) {
+  const phone = String(payload.mockPhone || payload.phone || '1358270496')
+  return {
+    token: 'mock-auth-token',
+    expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+    user: {
+      id: 'user-main',
+      name: '王姐',
+      phone,
+      phoneCountryCode: '86',
+      openidBound: true
+    },
+    currentOrg: {
+      id: env.DEFAULT_ORG_ID,
+      name: '聚云纺织',
+      code: env.DEFAULT_ORG_ID
+    },
+    employee: {
+      id: 'emp-main',
+      name: '王姐',
+      phone,
+      status: 'enabled',
+      roleId: 'role-owner',
+      role: '老板',
+      warehouseIds: ['wh-default']
+    },
+    permissions: ['sales:read', 'sales:write', 'customers:read', 'products:read', 'inventory:read', 'settings:read']
+  }
+}
+
 const routes = [
+  route('POST', /^\/auth\/wechat-phone-login$/, ({ payload }) => mockAuthPayload(payload)),
+  route('GET', /^\/auth\/me$/, () => mockAuthPayload()),
+  route('POST', /^\/auth\/logout$/, () => ({ loggedOut: true })),
+
   route('GET', /^\/sales-orders\/summary$/, ({ payload }) => orderStore.getOrderSummary(payload)),
   route('GET', /^\/sales-orders$/, ({ payload }) => {
     const list = filterByKeyword(orderStore.getOrderList(), payload.keyword, ['id', 'no', 'customerName', 'goodsSummary', 'creator'])

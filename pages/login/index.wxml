@@ -1,0 +1,26 @@
+<view class="login-page">
+  <view class="login-hero">
+    <view class="brand-mark">聚</view>
+    <view class="brand-copy">
+      <view class="brand-name">聚云掌柜</view>
+      <view class="brand-desc">使用微信手机号登录后，可以同步组织、员工与仓库权限。</view>
+    </view>
+  </view>
+
+  <view class="login-card">
+    <view class="card-title">微信手机号登录</view>
+    <view class="card-desc">手机号作为账号唯一标识，后端会自动匹配员工档案；没有员工档案时，本地开发环境会创建默认组织账号。</view>
+    <view wx:if="{{isMockMode}}" class="dev-tip">当前为 mock 开发模式，建议先用模拟登录验证小程序登录链路；真实手机号授权请用真机预览测试。</view>
+    <button wx:if="{{isMockMode}}" class="primary-btn" disabled="{{loading}}" bindtap="onMockLogin">{{loading ? '登录中' : '开发环境模拟登录'}}</button>
+    <button
+      class="{{isMockMode ? 'ghost-btn' : 'primary-btn'}}"
+      loading="{{loading}}"
+      disabled="{{loading}}"
+      open-type="getPhoneNumber"
+      bindgetphonenumber="onGetPhoneNumber"
+    >
+      {{loading ? '登录中' : '真实微信授权登录'}}
+    </button>
+    <button class="plain-btn" disabled="{{loading}}" bindtap="goBack">暂不登录</button>
+  </view>
+</view>

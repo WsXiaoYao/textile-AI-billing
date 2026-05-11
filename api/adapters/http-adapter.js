@@ -1,4 +1,5 @@
 const env = require('../../config/env')
+const { getCurrentOrgId, getToken } = require('../../utils/auth-session')
 const { makeRequestId, normalizeResponse } = require('../utils')
 
 function joinUrl(path) {
@@ -17,6 +18,7 @@ function request(options = {}) {
       return
     }
 
+    const token = getToken()
     wx.request({
       url,
       method,
@@ -24,8 +26,9 @@ function request(options = {}) {
       timeout: env.API_TIMEOUT,
       header: {
         'content-type': 'application/json',
-        'X-Org-Id': env.DEFAULT_ORG_ID,
+        'X-Org-Id': getCurrentOrgId(env.DEFAULT_ORG_ID),
         'X-Request-Id': makeRequestId(),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...(options.header || {})
       },
       success(res) {

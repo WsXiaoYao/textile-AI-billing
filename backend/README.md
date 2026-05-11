@@ -4,6 +4,7 @@
 
 当前后端包含两层：
 
+- `auth`：提供微信手机号授权登录、会话查询和退出登录，前端切到 HTTP 后会自动携带 `Authorization`。
 - `mock-bridge`：把 `/api/v1/*` 请求转发到小程序项目现有的 mock store，方便立刻联调。
 - `Prisma + PostgreSQL`：提供真实后端的数据模型基础，后续逐步把 mock 路由替换成数据库事务实现。
 
@@ -38,6 +39,9 @@ npm run dev
 ```bash
 curl http://127.0.0.1:3000/health
 curl 'http://127.0.0.1:3000/api/v1/customers?page=1&pageSize=2'
+curl -X POST http://127.0.0.1:3000/api/v1/auth/wechat-phone-login \
+  -H 'content-type: application/json' \
+  -d '{"phoneCode":"1358270496","loginCode":"local"}'
 ```
 
 小程序联调时把 `config/env.js` 改成：
@@ -48,6 +52,35 @@ API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 ```
 
 微信开发者工具需要在本地设置里勾选“不校验合法域名、web-view、TLS 版本以及 HTTPS 证书”。
+
+## 微信手机号登录
+
+登录逻辑按小程序真实链路设计：
+
+1. 前端调用 `wx.login` 获取 `loginCode`。
+2. 用户点击 `open-type="getPhoneNumber"` 按钮，前端拿到 `phoneCode`。
+3. 前端调用 `POST /api/v1/auth/wechat-phone-login`。
+4. 后端用 `phoneCode` 调微信 `getuserphonenumber` 换手机号，用手机号作为唯一标识创建或匹配 `User`。
+5. 后端按手机号绑定员工，返回 `token`、当前组织、员工、角色权限和仓库权限。
+
+接口：
+
+| 接口 | 说明 |
+| --- | --- |
+| `POST /api/v1/auth/wechat-phone-login` | 入参 `{ phoneCode, loginCode }`，返回 `{ token, expiresAt, user, currentOrg, employee, permissions }` |
+| `GET /api/v1/auth/me` | 根据 `Authorization: Bearer <token>` 返回当前登录态 |
+| `POST /api/v1/auth/logout` | 删除当前会话 |
+
+本地开发默认 `WECHAT_MOCK_LOGIN="true"`，可以不配置微信密钥直接跑通。正式环境需要配置：
+
+```bash
+WECHAT_APP_ID="小程序 appid"
+WECHAT_APP_SECRET="小程序 secret"
+WECHAT_MOCK_LOGIN="false"
+AUTH_AUTO_PROVISION="false"
+```
+
+`AUTH_AUTO_PROVISION` 控制未匹配员工时是否自动创建默认组织员工。正式业务建议关闭，改为要求管理员提前维护员工手机号。
 
 ## 后续替换路线
 

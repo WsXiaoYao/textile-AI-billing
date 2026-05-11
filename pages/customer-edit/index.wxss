@@ -120,6 +120,17 @@
   font-weight: 400;
 }
 
+.form-input-error {
+  color: #d92d20;
+}
+
+.form-error {
+  margin: -8rpx 0 12rpx 154rpx;
+  color: #d92d20;
+  font-size: 22rpx;
+  line-height: 32rpx;
+}
+
 .form-chevron {
   width: 28rpx;
   color: #98a2b3;
@@ -202,4 +213,8 @@
   flex: 1;
   background: #2e7bef;
   color: #ffffff;
+}
+
+.bottom-btn-disabled {
+  opacity: 0.58;
 }

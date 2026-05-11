@@ -100,35 +100,61 @@ enum MessageType {
 }
 
 model Organization {
-  id          String   @id @default(cuid())
-  name        String
-  code        String?  @unique
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  roles       Role[]
-  employees   Employee[]
-  warehouses  Warehouse[]
-  customers   Customer[]
-  categories  ProductCategory[]
-  products    Product[]
-  suppliers   Supplier[]
-  messages    Message[]
-  importTasks ImportExportTask[]
-  auditLogs   AuditLog[]
-}
-
-model User {
   id        String   @id @default(cuid())
-  openid    String?  @unique
-  unionid   String?
   name      String
-  phone     String?
-  avatarUrl String?
+  code      String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  employees Employee[]
+  roles              Role[]
+  employees          Employee[]
+  authSessions       AuthSession[]
+  warehouses         Warehouse[]
+  customers          Customer[]
+  customerCategories CustomerCategory[]
+  accounts           Account[]
+  categories         ProductCategory[]
+  products           Product[]
+  suppliers          Supplier[]
+  messages           Message[]
+  importTasks        ImportExportTask[]
+  auditLogs          AuditLog[]
+  receiptOrders      ReceiptOrder[]
+  receiptOrderItems  ReceiptOrderItem[]
+}
+
+model User {
+  id               String    @id @default(cuid())
+  openid           String?   @unique
+  unionid          String?
+  name             String
+  phone            String?   @unique
+  phoneCountryCode String?
+  phoneVerifiedAt  DateTime?
+  avatarUrl        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  employees    Employee[]
+  authSessions AuthSession[]
+}
+
+model AuthSession {
+  id         String   @id @default(cuid())
+  userId     String
+  orgId      String?
+  employeeId String?
+  tokenHash  String   @unique
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id])
+  organization Organization? @relation(fields: [orgId], references: [id])
+  employee     Employee?     @relation(fields: [employeeId], references: [id])
+
+  @@index([userId, expiresAt])
+  @@index([orgId])
 }
 
 model Role {
@@ -148,36 +174,37 @@ model Role {
 }
 
 model Employee {
-  id            String         @id @default(cuid())
-  orgId         String
-  userId        String?
-  roleId        String?
-  name          String
-  phone         String?
-  status        EmployeeStatus @default(enabled)
-  warehouseIds  String[]       @default([])
-  remark        String?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id           String         @id @default(cuid())
+  orgId        String
+  userId       String?
+  roleId       String?
+  name         String
+  phone        String?
+  status       EmployeeStatus @default(enabled)
+  warehouseIds String[]       @default([])
+  remark       String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
 
-  organization Organization @relation(fields: [orgId], references: [id])
-  user         User?        @relation(fields: [userId], references: [id])
-  role         Role?        @relation(fields: [roleId], references: [id])
+  organization Organization  @relation(fields: [orgId], references: [id])
+  user         User?         @relation(fields: [userId], references: [id])
+  role         Role?         @relation(fields: [roleId], references: [id])
+  authSessions AuthSession[]
 
   @@index([orgId, phone])
   @@index([orgId, roleId])
 }
 
 model Warehouse {
-  id          String          @id @default(cuid())
-  orgId       String
-  name        String
-  manager     String?
-  address     String?
-  isDefault   Boolean         @default(false)
-  status      WarehouseStatus @default(enabled)
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id        String          @id @default(cuid())
+  orgId     String
+  name      String
+  manager   String?
+  address   String?
+  isDefault Boolean         @default(false)
+  status    WarehouseStatus @default(enabled)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
 
   organization      Organization       @relation(fields: [orgId], references: [id])
   products          Product[]
@@ -192,28 +219,92 @@ model Warehouse {
 }
 
 model Customer {
-  id              String   @id @default(cuid())
-  orgId           String
-  name            String
-  code            String?
-  phone           String?
-  category        String?
-  province        String?
-  address         String?
-  totalDebtCents  Int      @default(0)
-  prepaidCents    Int      @default(0)
-  remark          String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                       BigInt   @id @default(autoincrement())
+  org_id                   String
+  customer_category_id     String?
+  customer_name            String   @db.VarChar(255)
+  customer_category        String   @default("未分类") @db.VarChar(50)
+  phone                    String?  @db.VarChar(30)
+  backup_phone             String?  @db.VarChar(30)
+  fax                      String?  @db.VarChar(50)
+  remark                   String?
+  address_short            String?  @db.VarChar(255)
+  province                 String?  @db.VarChar(50)
+  city                     String?  @db.VarChar(100)
+  district                 String?  @db.VarChar(100)
+  detail_address           String?
+  address_remark           String?
+  zipcode                  String?  @db.VarChar(20)
+  opening_debt             Decimal  @default(0) @db.Decimal(18, 2)
+  contract_amount          Decimal  @default(0) @db.Decimal(18, 2)
+  delivered_amount         Decimal  @default(0) @db.Decimal(18, 2)
+  prepaid_amount           Decimal  @default(0) @db.Decimal(18, 2)
+  unpaid_amount            Decimal  @default(0) @db.Decimal(18, 2)
+  paid_amount              Decimal  @default(0) @db.Decimal(18, 2)
+  is_active                Boolean  @default(true)
+  source_file              String   @default("") @db.VarChar(255)
+  source_sheet             String   @default("") @db.VarChar(100)
+  source_row_no            Int      @default(0)
+  customer_name_normalized String   @default("") @db.VarChar(255)
+  customer_name_pinyin     String   @default("") @db.VarChar(255)
+  customer_name_initials   String   @default("") @db.VarChar(255)
+  created_at               DateTime @default(now()) @db.Timestamptz(6)
+  updated_at               DateTime @updatedAt @db.Timestamptz(6)
 
-  organization Organization @relation(fields: [orgId], references: [id])
-  salesOrders  SalesOrder[]
-  returnOrders ReturnOrder[]
-  fundRecords  FundRecord[]
+  organization     Organization      @relation(fields: [org_id], references: [id])
+  customerCategory CustomerCategory? @relation(fields: [customer_category_id], references: [id])
+  salesOrders      SalesOrder[]
+  returnOrders     ReturnOrder[]
+  fundRecords      FundRecord[]
+  receiptOrders    ReceiptOrder[]
 
-  @@unique([orgId, code])
-  @@index([orgId, name])
-  @@index([orgId, phone])
+  @@index([org_id, customer_category_id])
+  @@index([org_id, customer_category])
+  @@index([org_id, customer_name])
+  @@index([org_id, customer_name_normalized])
+  @@index([org_id, customer_name_pinyin])
+  @@index([org_id, customer_name_initials])
+  @@index([org_id, phone])
+  @@index([org_id, province, city, district])
+  @@index([org_id, is_active])
+  @@map("customers")
+}
+
+model CustomerCategory {
+  id         String   @id @default(cuid())
+  org_id     String
+  name       String   @db.VarChar(50)
+  sort_order Int      @default(0)
+  is_active  Boolean  @default(true)
+  is_default Boolean  @default(false)
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  updated_at DateTime @updatedAt @db.Timestamptz(6)
+
+  organization Organization @relation(fields: [org_id], references: [id])
+  customers    Customer[]
+
+  @@unique([org_id, name])
+  @@index([org_id, is_active, sort_order])
+  @@map("customer_categories")
+}
+
+model Account {
+  id             String   @id @default(cuid())
+  orgId          String   @map("org_id")
+  accountName    String   @map("account_name") @db.VarChar(100)
+  initBalance    Decimal  @default(0) @map("init_balance") @db.Decimal(18, 2)
+  currentBalance Decimal  @default(0) @map("current_balance") @db.Decimal(18, 2)
+  remark         String?  @db.VarChar(500)
+  status         String   @default("enabled")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  organization  Organization   @relation(fields: [orgId], references: [id])
+  receiptOrders ReceiptOrder[]
+
+  @@unique([orgId, accountName])
+  @@index([orgId, status])
+  @@map("accounts")
 }
 
 model ProductCategory {
@@ -248,9 +339,9 @@ model Product {
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
 
-  organization     Organization       @relation(fields: [orgId], references: [id])
-  category         ProductCategory?   @relation(fields: [categoryId], references: [id])
-  defaultWarehouse Warehouse?         @relation(fields: [defaultWarehouseId], references: [id])
+  organization     Organization        @relation(fields: [orgId], references: [id])
+  category         ProductCategory?    @relation(fields: [categoryId], references: [id])
+  defaultWarehouse Warehouse?          @relation(fields: [defaultWarehouseId], references: [id])
   variants         ProductVariant[]
   salesItems       SalesOrderItem[]
   purchaseItems    PurchaseOrderItem[]
@@ -331,7 +422,7 @@ model SalesOrder {
   id            String        @id @default(cuid())
   orgId         String
   no            String
-  customerId    String
+  customerId    BigInt
   warehouseId   String?
   orderDate     DateTime
   orderCents    Int           @default(0)
@@ -347,10 +438,11 @@ model SalesOrder {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  customer    Customer         @relation(fields: [customerId], references: [id])
-  warehouse   Warehouse?       @relation(fields: [warehouseId], references: [id])
-  items       SalesOrderItem[]
-  fundRecords FundRecord[]
+  customer     Customer           @relation(fields: [customerId], references: [id])
+  warehouse    Warehouse?         @relation(fields: [warehouseId], references: [id])
+  items        SalesOrderItem[]
+  fundRecords  FundRecord[]
+  receiptItems ReceiptOrderItem[]
 
   @@unique([orgId, no])
   @@index([orgId, customerId, orderDate])
@@ -358,17 +450,17 @@ model SalesOrder {
 }
 
 model SalesOrderItem {
-  id         String   @id @default(cuid())
-  orderId    String
-  productId  String
-  variantId  String
+  id          String   @id @default(cuid())
+  orderId     String
+  productId   String
+  variantId   String
   productName String
-  color      String
-  unit       String
-  quantity   Decimal  @db.Decimal(14, 2)
-  unitCents  Int      @default(0)
-  amountCents Int     @default(0)
-  createdAt  DateTime @default(now())
+  color       String
+  unit        String
+  quantity    Decimal  @db.Decimal(14, 2)
+  unitCents   Int      @default(0)
+  amountCents Int      @default(0)
+  createdAt   DateTime @default(now())
 
   order   SalesOrder     @relation(fields: [orderId], references: [id])
   product Product        @relation(fields: [productId], references: [id])
@@ -379,22 +471,68 @@ model SalesOrderItem {
 }
 
 model FundRecord {
-  id          String         @id @default(cuid())
-  orgId       String
-  customerId  String?
-  orderId     String?
-  type        FundRecordType
-  amountCents Int            @default(0)
-  balanceCents Int           @default(0)
-  note        String?
-  occurredAt  DateTime       @default(now())
-  createdAt   DateTime       @default(now())
+  id           String         @id @default(cuid())
+  orgId        String
+  customerId   BigInt?
+  orderId      String?
+  type         FundRecordType
+  amountCents  Int            @default(0)
+  balanceCents Int            @default(0)
+  note         String?
+  occurredAt   DateTime       @default(now())
+  createdAt    DateTime       @default(now())
 
   customer Customer?   @relation(fields: [customerId], references: [id])
   order    SalesOrder? @relation(fields: [orderId], references: [id])
 
   @@index([orgId, customerId, occurredAt])
   @@index([orgId, orderId])
+}
+
+model ReceiptOrder {
+  id                  String   @id @default(cuid())
+  orgId               String   @map("org_id")
+  receiptNo           String   @map("receipt_no")
+  customerId          BigInt   @map("customer_id")
+  receiptDate         DateTime @map("receipt_date")
+  accountId           String   @map("account_id")
+  accountNameSnapshot String   @map("account_name_snapshot") @db.VarChar(100)
+  receiptAmount       Decimal  @map("receipt_amount") @db.Decimal(18, 2)
+  prepayMode          Boolean  @default(false) @map("prepay_mode")
+  creatorUserId       String?  @map("creator_user_id")
+  remark              String?  @db.VarChar(500)
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  organization Organization       @relation(fields: [orgId], references: [id])
+  customer     Customer           @relation(fields: [customerId], references: [id])
+  account      Account            @relation(fields: [accountId], references: [id])
+  items        ReceiptOrderItem[]
+
+  @@unique([orgId, receiptNo])
+  @@index([orgId, customerId, receiptDate])
+  @@index([orgId, accountId])
+  @@map("receipt_orders")
+}
+
+model ReceiptOrderItem {
+  id                     String   @id @default(cuid())
+  orgId                  String   @map("org_id")
+  receiptId              String   @map("receipt_id")
+  salesOrderId           String?  @map("sales_order_id")
+  contractAmount         Decimal  @map("contract_amount") @db.Decimal(18, 2)
+  receivedAmountBefore   Decimal  @map("received_amount_before") @db.Decimal(18, 2)
+  unreceivedAmountBefore Decimal  @map("unreceived_amount_before") @db.Decimal(18, 2)
+  currentReceiveAmount   Decimal  @map("current_receive_amount") @db.Decimal(18, 2)
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  organization Organization @relation(fields: [orgId], references: [id])
+  receipt      ReceiptOrder @relation(fields: [receiptId], references: [id])
+  salesOrder   SalesOrder?  @relation(fields: [salesOrderId], references: [id])
+
+  @@index([orgId, receiptId])
+  @@index([orgId, salesOrderId])
+  @@map("receipt_order_items")
 }
 
 model Supplier {
@@ -453,26 +591,26 @@ model PurchaseOrderItem {
   amountCents Int      @default(0)
   createdAt   DateTime @default(now())
 
-  order   PurchaseOrder @relation(fields: [orderId], references: [id])
-  product Product       @relation(fields: [productId], references: [id])
+  order   PurchaseOrder  @relation(fields: [orderId], references: [id])
+  product Product        @relation(fields: [productId], references: [id])
   variant ProductVariant @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
 }
 
 model ReturnOrder {
-  id              String           @id @default(cuid())
-  orgId           String
-  no              String
-  customerId      String
-  warehouseId     String?
-  orderDate       DateTime
-  returnCents     Int              @default(0)
-  receivedToPrepay Boolean         @default(false)
-  state           ReturnOrderState @default(pending)
-  remark          String?
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  orgId            String
+  no               String
+  customerId       BigInt
+  warehouseId      String?
+  orderDate        DateTime
+  returnCents      Int              @default(0)
+  receivedToPrepay Boolean          @default(false)
+  state            ReturnOrderState @default(pending)
+  remark           String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   customer  Customer          @relation(fields: [customerId], references: [id])
   warehouse Warehouse?        @relation(fields: [warehouseId], references: [id])

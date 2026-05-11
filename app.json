@@ -1,6 +1,7 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/login/index",
     "pages/index/order-confirm",
     "pages/orders/index",
     "pages/order-detail/index",
@@ -11,6 +12,7 @@
     "pages/fund-detail/index",
     "pages/customer-edit/index",
     "pages/customer-import/index",
+    "pages/customer-categories/index",
     "pages/more/index",
     "pages/products/index",
     "pages/product-detail/index",

@@ -6,7 +6,10 @@
         <view class="customer-tag">{{customer.tag}}</view>
       </view>
       <view class="customer-meta">{{customer.code}} · {{customer.phone}}</view>
-      <view class="customer-address">{{customer.address}}</view>
+      <view class="customer-address-line">
+        <text class="customer-area" wx:if="{{customer.area}}">地区 {{customer.area}}</text>
+        <text class="customer-address">{{customer.address}}</text>
+      </view>
     </view>
 
     <view class="customer-balance">
@@ -14,12 +17,6 @@
       <view class="balance-label">{{customer.balanceLabel}}</view>
       <view class="balance-value balance-{{customer.balanceTone}}">{{customer.balanceText}}</view>
     </view>
-  </view>
-
-  <view class="customer-tags" wx:if="{{customer.chips.length}}">
-    <block wx:for="{{customer.chips}}" wx:key="text">
-      <view class="customer-chip tag-{{item.tone}}">{{item.text}}</view>
-    </block>
   </view>
 
 </view>

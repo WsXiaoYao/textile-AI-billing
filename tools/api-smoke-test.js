@@ -1,6 +1,7 @@
 const api = require('../api')
 
 async function run() {
+  const auth = await api.auth.wechatPhoneLogin({ mockPhone: '1358270496', loginCode: 'smoke' })
   const orders = await api.order.listOrders({ page: 1, pageSize: 2 })
   const customers = await api.customer.listCustomers({ page: 1, pageSize: 2 })
   const products = await api.product.listProducts({ page: 1, pageSize: 2 })
@@ -30,7 +31,8 @@ async function run() {
     purchases: purchases.list.length,
     returns: returns.list.length,
     employees: employees.list.length,
-    messages: messages.list.length
+    messages: messages.list.length,
+    authUser: auth.user.phone
   }))
 }
 
