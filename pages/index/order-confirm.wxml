@@ -68,6 +68,7 @@
               class="discount-input"
               type="digit"
               value="{{discountInputValue}}"
+              maxlength="12"
               bindinput="onDiscountInput"
               bindblur="onDiscountBlur"
             />
@@ -102,7 +103,7 @@
           value="{{remark}}"
           placeholder="给客户或仓库的补充说明"
           placeholder-class="input-placeholder"
-          maxlength="120"
+          maxlength="500"
           bindinput="onRemarkInput"
         />
       </view>

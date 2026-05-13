@@ -4,11 +4,13 @@ const {
   ensureDefaultEmployee,
   findOrCreateUser,
   getBearerToken,
+  getMockLoginOptions,
   hashToken,
   getWechatOpenid,
   getWechatPhoneInfo,
   resolveAuthSession
 } = require('../auth-service')
+const { env } = require('../env')
 const { fail, ok } = require('../response')
 
 function buildSessionPayload(session) {
@@ -20,6 +22,13 @@ function buildSessionPayload(session) {
 }
 
 async function authRoutes(app) {
+  app.get('/auth/mock-options', async request => {
+    return ok({
+      enabled: env.WECHAT_MOCK_LOGIN,
+      tenants: await getMockLoginOptions(app.prisma)
+    }, request.id)
+  })
+
   app.post('/auth/wechat-phone-login', async (request, reply) => {
     const payload = request.body || {}
     if (!payload.phoneCode && !payload.mockPhone && !payload.phone) {
@@ -37,7 +46,7 @@ async function authRoutes(app) {
       ])
       const user = await findOrCreateUser(app.prisma, phoneInfo, wechatIdentity)
       const employee = await ensureDefaultEmployee(app.prisma, user)
-      if (!employee) {
+      if (!employee || employee.status !== 'enabled') {
         reply.code(403)
         return fail('手机号未绑定员工，请联系管理员开通权限', {
           code: 403,
@@ -45,10 +54,17 @@ async function authRoutes(app) {
         })
       }
 
-      const session = await createAuthSession(app.prisma, user, employee)
+      const authUser = employee && employee.name
+        ? {
+          ...user,
+          name: employee.name,
+          tenantId: employee.tenantId || user.tenantId
+        }
+        : user
+      const session = await createAuthSession(app.prisma, authUser, employee)
 
       return ok({
-        ...buildAuthContext(user, employee),
+        ...buildAuthContext(authUser, employee),
         token: session.token,
         expiresAt: session.expiresAt.toISOString()
       }, request.id)

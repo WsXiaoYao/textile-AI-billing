@@ -1,5 +1,5 @@
 <view class="return-page">
-  <scroll-view class="return-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="return-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}" bindscroll="onListScroll">
     <view class="return-content">
       <order-filter-bar
         keyword="{{keyword}}"
@@ -51,4 +51,5 @@
     <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
     <view class="bottom-btn bottom-btn-primary" bindtap="onAddTap">新建退货单</view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="220rpx" bind:backtop="onBackTopTap" />
 </view>

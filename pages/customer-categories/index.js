@@ -1,4 +1,5 @@
 const categoryApi = require('../../api/customer-category-api')
+const validator = require('../../utils/form-validation')
 
 function emptyForm() {
   return {
@@ -60,14 +61,6 @@ Page({
     })
   },
 
-  onBackTap() {
-    if (getCurrentPages().length > 1) {
-      wx.navigateBack()
-      return
-    }
-    wx.switchTab({ url: '/pages/more/index' })
-  },
-
   onAddCategoryTap() {
     this.openEditor(emptyForm())
   },
@@ -101,16 +94,17 @@ Page({
     this.setData({
       form: {
         ...this.data.form,
-        name: event.detail.value
+        name: event.detail.value.slice(0, 50)
       }
     })
   },
 
   onSortInput(event) {
+    const sortOrder = Math.min(Math.max(Number(validator.digitsOnly(event.detail.value) || 0), 0), 9999)
     this.setData({
       form: {
         ...this.data.form,
-        sortOrder: Number(event.detail.value || 0)
+        sortOrder
       }
     })
   },
@@ -125,9 +119,16 @@ Page({
   },
 
   async onSaveCategoryTap() {
-    const form = this.data.form
-    if (!String(form.name || '').trim()) {
-      wx.showToast({ title: '请输入分类名称', icon: 'none' })
+    const form = {
+      ...this.data.form,
+      name: validator.trimText(this.data.form.name),
+      sortOrder: Math.min(Math.max(Number(this.data.form.sortOrder || 0), 0), 9999)
+    }
+    const errors = []
+    validator.requireText(errors, '分类名称', form.name)
+    validator.maxLength(errors, '分类名称', form.name, 50)
+    if (validator.showFirstError(errors)) {
+      this.setData({ form })
       return
     }
 

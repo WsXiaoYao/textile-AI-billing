@@ -12,7 +12,12 @@
         />
       </view>
 
-      <view class="org-list" wx:if="{{organizations.length}}">
+      <view class="empty-state" wx:if="{{loading}}">
+        <view class="empty-title">正在加载组织</view>
+        <view class="empty-desc">正在读取当前账号可访问的组织。</view>
+      </view>
+
+      <view class="org-list" wx:elif="{{organizations.length}}">
         <block wx:for="{{organizations}}" wx:key="id">
           <view class="org-card {{item.selected ? 'org-card-selected' : ''}}" data-id="{{item.id}}" bindtap="onOrgTap">
             <view class="org-main">
@@ -36,6 +41,6 @@
 
   <view class="bottom-actions">
     <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
-    <view class="bottom-btn bottom-btn-primary" bindtap="onConfirmTap">确认切换</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onConfirmTap">{{switching ? '切换中' : '确认切换'}}</view>
   </view>
 </view>

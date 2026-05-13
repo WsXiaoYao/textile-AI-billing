@@ -1,5 +1,6 @@
 const customerApi = require('../../api/customer-api')
 const categoryApi = require('../../api/customer-category-api')
+const { guardTabAccess } = require('../../utils/tabbar')
 
 const sortOptions = [
   { label: '最近下单 从新到旧', value: 'dateDesc' },
@@ -186,7 +187,8 @@ Page({
     panelType: '',
     panelPosition: 'bottom',
     panelRound: false,
-    panelStyle: ''
+    panelStyle: '',
+    showBackTop: false
   },
 
   onLoad() {
@@ -195,6 +197,7 @@ Page({
   },
 
   onShow() {
+    if (!guardTabAccess(this, '/pages/customers/index')) return
     this.loadCustomers()
   },
 
@@ -206,6 +209,16 @@ Page({
 
   onReachBottom() {
     this.loadMoreCustomers()
+  },
+
+  onPageScroll(event) {
+    const showBackTop = Number(event.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
+    wx.pageScrollTo({ scrollTop: 0, duration: 240 })
+    this.setData({ showBackTop: false })
   },
 
   onUnload() {

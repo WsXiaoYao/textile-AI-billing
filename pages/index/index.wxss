@@ -1,6 +1,6 @@
 .order-page {
   min-height: 100vh;
-  padding-bottom: 128rpx;
+  padding-bottom: calc(252rpx + env(safe-area-inset-bottom));
   background: #f5f8fc;
   color: #172033;
 }

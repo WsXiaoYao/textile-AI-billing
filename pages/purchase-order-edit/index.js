@@ -1,4 +1,6 @@
 const purchaseStore = require('../../services/purchase-store')
+const purchaseApi = require('../../api/purchase-api')
+const validator = require('../../utils/form-validation')
 
 function stripLineViewState(line) {
   const {
@@ -133,24 +135,36 @@ Page({
     this.clearSelectorTimer()
   },
 
-  loadForm(id) {
-    const supplierOptions = purchaseStore.getSupplierOptions()
-    const warehouseOptions = purchaseStore.getWarehouseOptions()
-    const productOptions = purchaseStore.getProductOptions()
-    const productChoices = buildProductChoices(productOptions)
-    const form = recalcForm(purchaseStore.getPurchaseOrderForm(id), productChoices)
-    const supplierIndex = Math.max(0, supplierOptions.findIndex(item => item.id === form.supplierId || item.name === form.supplierName))
-    const warehouseIndex = Math.max(0, warehouseOptions.findIndex(item => item.name === form.warehouseName))
+  async loadForm(id) {
+    try {
+      const [supplierOptions, warehouseOptions, productOptions, sourceForm] = await Promise.all([
+        purchaseApi.getSupplierOptions(),
+        purchaseApi.getWarehouseOptions(),
+        purchaseApi.getProductOptions({ limit: 160 }),
+        id ? purchaseApi.getPurchaseOrderForm(id) : purchaseApi.getPurchaseOrderForm()
+      ])
+      const productChoices = buildProductChoices(productOptions || [])
+      const initialItems = sourceForm.items && sourceForm.items.length
+        ? sourceForm.items
+        : productOptions && productOptions.length
+          ? [purchaseStore.createLineFromOption(productOptions[0])]
+          : []
+      const form = recalcForm({ ...sourceForm, items: initialItems }, productChoices)
+      const supplierIndex = Math.max(0, (supplierOptions || []).findIndex(item => item.id === form.supplierId || item.name === form.supplierName))
+      const warehouseIndex = Math.max(0, (warehouseOptions || []).findIndex(item => item.id === form.warehouseId || item.name === form.warehouseName))
 
-    this.setData({
-      form,
-      supplierOptions,
-      supplierIndex,
-      warehouseOptions,
-      warehouseIndex,
-      productOptions,
-      productChoices
-    })
+      this.setData({
+        form,
+        supplierOptions: supplierOptions || [],
+        supplierIndex,
+        warehouseOptions: warehouseOptions || [],
+        warehouseIndex,
+        productOptions: productOptions || [],
+        productChoices
+      })
+    } catch (error) {
+      wx.showToast({ title: error.message || '采购单表单加载失败', icon: 'none' })
+    }
   },
 
   setForm(nextForm) {
@@ -182,19 +196,20 @@ Page({
   onWarehouseChange(event) {
     const warehouseIndex = Number(event.detail.value || 0)
     const warehouse = this.data.warehouseOptions[warehouseIndex]
-    this.setData({
-      warehouseIndex,
-      form: {
-        ...this.data.form,
-        warehouseName: warehouse.name
-      }
-    })
+	    this.setData({
+	      warehouseIndex,
+	      form: {
+	        ...this.data.form,
+	        warehouseName: warehouse.name,
+	        warehouseId: warehouse.id
+	      }
+	    })
   },
 
   onRemarkInput(event) {
     this.setForm({
       ...this.data.form,
-      remark: event.detail.value
+      remark: event.detail.value.slice(0, 120)
     })
   },
 
@@ -294,7 +309,7 @@ Page({
 
   onQtyInput(event) {
     const id = event.currentTarget.dataset.id
-    const quantity = purchaseStore.parseQty(event.detail.value)
+    const quantity = purchaseStore.parseQty(validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
     this.setForm({
       ...this.data.form,
       items: this.data.form.items.map(item => item.id === id ? { ...item, quantity } : item)
@@ -303,7 +318,7 @@ Page({
 
   onPriceInput(event) {
     const id = event.currentTarget.dataset.id
-    const unitPriceCents = purchaseStore.parseAmountInput(event.detail.value)
+    const unitPriceCents = purchaseStore.parseAmountInput(validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
     this.setForm({
       ...this.data.form,
       items: this.data.form.items.map(item => item.id === id ? { ...item, unitPriceCents } : item)
@@ -359,18 +374,30 @@ Page({
     wx.navigateTo({ url: '/pages/purchase-orders/index' })
   },
 
-  onSubmitTap() {
-    const result = purchaseStore.submitPurchaseOrderForm(stripFormViewState(this.data.form))
-    if (!result.ok) {
-      wx.showToast({ title: result.message, icon: 'none' })
-      return
-    }
+  async onSubmitTap() {
+    const form = stripFormViewState(this.data.form)
+    const errors = []
+    if (!form.supplierId) errors.push('请选择供应商')
+    if (!form.warehouseId && !form.warehouseName) errors.push('请选择仓库')
+    validator.maxLength(errors, '备注', form.remark, 120)
+    if (!form.items || !form.items.length) errors.push('请添加采购明细')
+    ;(form.items || []).forEach((item, index) => {
+      if (!item.productId || !item.variantId) errors.push(`第${index + 1}条请选择产品`)
+      if (Number(item.quantity || 0) <= 0) errors.push(`第${index + 1}条采购数量必须大于0`)
+      if (Number(item.unitPriceCents || 0) <= 0) errors.push(`第${index + 1}条采购单价必须大于0`)
+    })
+    if (validator.showFirstError(errors)) return
 
-    wx.showToast({ title: '采购单已提交', icon: 'success' })
-    setTimeout(() => {
-      wx.redirectTo({
-        url: `/pages/purchase-order-detail/index?id=${encodeURIComponent(result.order.id)}`
-      })
-    }, 500)
+    try {
+      const result = await purchaseApi.submitPurchaseOrder(form)
+      wx.showToast({ title: '采购单已提交', icon: 'success' })
+      setTimeout(() => {
+        wx.redirectTo({
+          url: `/pages/purchase-order-detail/index?id=${encodeURIComponent(result.order.id)}`
+        })
+      }, 500)
+    } catch (error) {
+      wx.showToast({ title: error.message || '采购单提交失败', icon: 'none' })
+    }
   }
 })

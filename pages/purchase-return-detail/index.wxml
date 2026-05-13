@@ -12,6 +12,10 @@
             <view class="info-label">客户</view>
             <view class="info-value">{{order.customerName}}</view>
           </view>
+          <view class="info-row" wx:if="{{order.salesOrderId}}" bindtap="onSalesOrderTap">
+            <view class="info-label">来源销售单</view>
+            <view class="info-value info-link">{{order.salesOrderNo}}</view>
+          </view>
           <view class="info-row">
             <view class="info-label">日期</view>
             <view class="info-value">{{order.date}}</view>

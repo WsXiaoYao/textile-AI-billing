@@ -1,18 +1,36 @@
 const profileStore = require('../../services/profile-store')
+const profileApi = require('../../api/profile-api')
+const { guardTabAccess } = require('../../utils/tabbar')
 
 Page({
   data: {
-    profile: profileStore.getProfileHome()
+    profile: profileStore.getProfileHome(),
+    loading: false
   },
 
   onShow() {
-    this.setData({
-      profile: profileStore.getProfileHome()
-    })
+    if (!guardTabAccess(this, '/pages/profile/index')) return
+    this.loadProfile()
   },
 
-  onSwitchOrgTap() {
-    wx.navigateTo({ url: '/pages/org-switch/index' })
+  async loadProfile() {
+    this.setData({ loading: true })
+    try {
+      const profile = await profileApi.getProfileHome()
+      this.setData({ profile })
+    } catch (error) {
+      this.setData({ profile: profileStore.getProfileHome() })
+      wx.showToast({
+        title: error.message || '我的信息加载失败',
+        icon: 'none'
+      })
+    } finally {
+      this.setData({ loading: false })
+    }
+  },
+
+  onSwitchAccountTap() {
+    wx.navigateTo({ url: '/pages/login/index' })
   },
 
   onToolTap(event) {

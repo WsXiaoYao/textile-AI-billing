@@ -1,4 +1,4 @@
-const supplierStore = require('../../services/supplier-store')
+const supplierApi = require('../../api/supplier-api')
 
 const statusTabs = [
   { label: '全部', value: 'all' },
@@ -12,7 +12,9 @@ Page({
     activeStatus: 'all',
     statusTabs,
     suppliers: [],
-    displayedSuppliers: []
+    displayedSuppliers: [],
+    scrollTop: 0,
+    showBackTop: false
   },
 
   onLoad() {
@@ -29,9 +31,28 @@ Page({
     })
   },
 
-  loadSuppliers(callback) {
-    this.suppliers = supplierStore.getSupplierList()
-    this.applyFilters(callback)
+  onListScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
+    this.setData({
+      scrollTop: this.data.scrollTop === 0 ? 1 : 0,
+      showBackTop: false
+    })
+  },
+
+  async loadSuppliers(callback) {
+    try {
+      const result = await supplierApi.listSuppliers()
+      this.suppliers = result.list || []
+      this.applyFilters(callback)
+    } catch (error) {
+      wx.showToast({ title: error.message || '供应商加载失败', icon: 'none' })
+      this.suppliers = []
+      this.applyFilters(callback)
+    }
   },
 
   onKeywordInput(event) {

@@ -17,6 +17,14 @@
       },
       {
         "type": "folder",
+        "value": "backend"
+      },
+      {
+        "type": "folder",
+        "value": "data"
+      },
+      {
+        "type": "folder",
         "value": "assets/tabbar/svg"
       },
       {
@@ -34,6 +42,18 @@
       {
         "type": "file",
         "value": "package-lock.json"
+      },
+      {
+        "type": "file",
+        "value": "README.md"
+      },
+      {
+        "type": "file",
+        "value": "DESIGN.md"
+      },
+      {
+        "type": "file",
+        "value": "AGENTS.md"
       }
     ],
     "include": []

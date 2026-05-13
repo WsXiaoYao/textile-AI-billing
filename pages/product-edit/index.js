@@ -1,5 +1,6 @@
 const productStore = require('../../services/product-store')
 const warehouseStore = require('../../services/warehouse-store')
+const validator = require('../../utils/form-validation')
 
 function getUnitOptions() {
   const units = []
@@ -66,15 +67,15 @@ Page({
   },
 
   onNameInput(event) {
-    this.updateField('name', event.detail.value)
+    this.updateField('name', event.detail.value.slice(0, 80))
   },
 
   onNoInput(event) {
-    this.updateField('no', event.detail.value)
+    this.updateField('no', event.detail.value.slice(0, 50))
   },
 
   onRemarkInput(event) {
-    this.updateField('remark', event.detail.value)
+    this.updateField('remark', event.detail.value.slice(0, 120))
   },
 
   chooseImage(success) {
@@ -161,10 +162,14 @@ Page({
   onVariantInput(event) {
     const index = Number(event.currentTarget.dataset.index)
     const key = event.currentTarget.dataset.key
+    const numberKeys = ['price', 'costPrice', 'stockQty', 'lowerLimitQty']
+    const value = numberKeys.includes(key)
+      ? validator.normalizeDecimalInput(event.detail.value, { maxDecimal: key === 'stockQty' || key === 'lowerLimitQty' ? 3 : 2 })
+      : event.detail.value.slice(0, 50)
     const variants = this.data.form.variants.slice()
     variants[index] = {
       ...variants[index],
-      [key]: event.detail.value
+      [key]: value
     }
     this.setData({
       form: {
@@ -240,7 +245,42 @@ Page({
   },
 
   onSaveTap() {
-    const result = productStore.saveProductForm(this.data.form)
+    const form = {
+      ...this.data.form,
+      name: validator.trimText(this.data.form.name),
+      no: validator.trimText(this.data.form.no),
+      remark: validator.trimText(this.data.form.remark),
+      variants: (this.data.form.variants || []).map(variant => ({
+        ...variant,
+        color: validator.trimText(variant.color),
+        price: validator.normalizeDecimalInput(variant.price, { maxDecimal: 2 }),
+        costPrice: validator.normalizeDecimalInput(variant.costPrice, { maxDecimal: 2 }),
+        stockQty: validator.normalizeDecimalInput(variant.stockQty, { maxDecimal: 3 }),
+        lowerLimitQty: validator.normalizeDecimalInput(variant.lowerLimitQty, { maxDecimal: 3 })
+      }))
+    }
+    const errors = []
+    validator.requireText(errors, '产品名称', form.name)
+    validator.maxLength(errors, '产品名称', form.name, 80)
+    validator.maxLength(errors, '产品编号', form.no, 50)
+    if (!form.category) errors.push('请选择产品分类')
+    if (!form.warehouse) errors.push('请选择默认仓库')
+    validator.maxLength(errors, '备注', form.remark, 120)
+    if (!form.variants.length) errors.push('请至少添加一个颜色规格')
+    form.variants.forEach((variant, index) => {
+      if (!variant.color) errors.push(`第${index + 1}个颜色请输入颜色名称`)
+      if (!variant.unit) errors.push(`第${index + 1}个颜色请选择单位`)
+      if (variant.price && !validator.isNonNegativeAmount(variant.price)) errors.push(`第${index + 1}个颜色售价格式不正确`)
+      if (variant.costPrice && !validator.isNonNegativeAmount(variant.costPrice)) errors.push(`第${index + 1}个颜色进价格式不正确`)
+      if (variant.stockQty && !/^\d+(\.\d{1,3})?$/.test(variant.stockQty)) errors.push(`第${index + 1}个颜色库存格式不正确`)
+      if (variant.lowerLimitQty && !/^\d+(\.\d{1,3})?$/.test(variant.lowerLimitQty)) errors.push(`第${index + 1}个颜色库存下限格式不正确`)
+    })
+    if (validator.showFirstError(errors)) {
+      this.setData({ form })
+      return
+    }
+
+    const result = productStore.saveProductForm(form)
     if (!result.ok) {
       wx.showToast({
         title: result.message,

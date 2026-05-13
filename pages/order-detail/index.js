@@ -1,13 +1,52 @@
-const orderStore = require('../../services/order-store')
+const orderApi = require('../../api/order-api')
+
+function emptyDetail() {
+  return {
+    id: '',
+    no: '',
+    statusText: '',
+    statusTone: 'muted',
+    canReceive: false,
+    printActionText: '打印',
+    successTitle: '销售单已生成',
+    successDesc: '',
+    customer: {
+      name: '',
+      phone: '',
+      address: '',
+      date: '',
+      warehouse: '',
+      printStatus: ''
+    },
+    amounts: [],
+    amountNote: '',
+    receipt: {
+      desc: '',
+      no: '',
+      emptyText: '',
+      emptyHint: '',
+      remaining: '',
+      tone: 'muted'
+    },
+    returnInfo: {
+      count: 0,
+      totalText: '¥0.00',
+      desc: '',
+      list: []
+    },
+    products: [],
+    printDesc: ''
+  }
+}
 
 Page({
   data: {
-    detail: orderStore.getOrderDetail('XS202604180003'),
+    detail: emptyDetail(),
     showCreatedNotice: false
   },
 
   onLoad(options = {}) {
-    this.orderId = options.id || 'XS202604180003'
+    this.orderId = options.id || ''
     this.setData({
       showCreatedNotice: options.created === '1' || options.from === 'cart' || options.from === 'checkout'
     })
@@ -18,10 +57,17 @@ Page({
     this.loadDetail()
   },
 
-  loadDetail() {
-    this.setData({
-      detail: orderStore.getOrderDetail(this.orderId || 'XS202604180003')
-    })
+  async loadDetail() {
+    if (!this.orderId) return
+    try {
+      const detail = await orderApi.getOrderDetail(this.orderId)
+      this.setData({ detail })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '订单详情加载失败',
+        icon: 'none'
+      })
+    }
   },
 
   onBackTap() {
@@ -45,13 +91,35 @@ Page({
     })
   },
 
-  onPrintTap() {
-    orderStore.markPrinted(this.data.detail.id)
-    this.loadDetail()
-    wx.showToast({
-      title: '已标记打印',
-      icon: 'success'
+  onReturnTap() {
+    if (!this.data.detail.id) return
+    wx.navigateTo({
+      url: `/pages/purchase-return-edit/index?salesOrderId=${encodeURIComponent(this.data.detail.id)}`
     })
+  },
+
+  onOpenReturnOrder(event) {
+    const id = event.currentTarget.dataset.id
+    if (!id) return
+    wx.navigateTo({
+      url: `/pages/purchase-return-detail/index?id=${encodeURIComponent(id)}`
+    })
+  },
+
+  async onPrintTap() {
+    try {
+      const detail = await orderApi.markPrinted(this.data.detail.id)
+      this.setData({ detail })
+      wx.showToast({
+        title: '已标记打印',
+        icon: 'success'
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '打印状态更新失败',
+        icon: 'none'
+      })
+    }
   },
 
   onShareAppMessage() {

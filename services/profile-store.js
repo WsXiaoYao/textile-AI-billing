@@ -1,6 +1,8 @@
 const profileStorageKey = 'textile_profile_v1'
 const receiptStorageKey = 'textile_org_receipt_code_v1'
 const messageStore = require('./message-store')
+const authSession = require('../utils/auth-session')
+const { filterByPermission } = require('../utils/permissions')
 
 const defaultUser = {
   name: '王姐',
@@ -57,6 +59,23 @@ function saveProfileState(state) {
 }
 
 function getCurrentOrg() {
+  const auth = authSession.getAuth()
+  if (auth && auth.currentOrg) {
+    const employee = auth.employee || {}
+    const role = employee.role || '未分配'
+    const warehouseCount = Array.isArray(employee.warehouseIds) ? employee.warehouseIds.length : 0
+    return {
+      id: auth.currentOrg.id,
+      name: auth.currentOrg.name,
+      code: auth.currentOrg.code,
+      desc: `${auth.currentOrg.name} · ${role}`,
+      role,
+      warehouseCount,
+      permissionText: warehouseCount > 0 ? `${warehouseCount} 个仓库` : '全部仓库',
+      receiptStatus: '当前登录组织'
+    }
+  }
+
   const state = loadProfileState()
   return organizations.find(org => org.id === state.currentOrgId) || organizations[0]
 }
@@ -82,16 +101,33 @@ function switchOrganization(orgId) {
 
 function getProfileHome() {
   const org = getCurrentOrg()
+  const auth = authSession.getAuth()
   const messageStats = messageStore.getMessageStats()
+  const userName = auth && auth.employee && auth.employee.name
+    ? auth.employee.name
+    : auth && auth.user && auth.user.name
+      ? auth.user.name
+      : defaultUser.name
+  const role = auth && auth.employee && auth.employee.role ? auth.employee.role : org.role
+  const phone = auth && auth.user && auth.user.phone ? auth.user.phone : defaultUser.phone
+
   return {
-    user: defaultUser,
-    org,
-    settings: [
-      { key: 'receipt-code', title: '收款码设置', icon: '/assets/icons/lucide/ui/qr-code-blue.svg', tone: 'primary' },
-      { key: 'staff-permission', title: '员工权限', icon: '/assets/icons/lucide/ui/users-green.svg', tone: 'success' },
-      { key: 'print-settings', title: '打印设置', icon: '/assets/icons/lucide/ui/printer-orange.svg', tone: 'warning' },
-      { key: 'message-center', title: '消息中心', icon: '/assets/icons/lucide/ui/bell-dark.svg', tone: 'primary', badge: messageStats.unread }
-    ],
+    user: {
+      name: userName,
+      phone,
+      role,
+      avatarText: String(userName || '用').slice(0, 1)
+    },
+    org: {
+      ...org,
+      role
+    },
+    settings: filterByPermission([
+      { key: 'receipt-code', title: '收款码设置', icon: '/assets/icons/lucide/ui/qr-code-blue.svg', tone: 'primary', permissions: ['settings:read', 'settings:write'] },
+      { key: 'staff-permission', title: '员工权限', icon: '/assets/icons/lucide/ui/users-green.svg', tone: 'success', permissions: ['settings:read', 'settings:write'] },
+      { key: 'print-settings', title: '打印设置', icon: '/assets/icons/lucide/ui/printer-orange.svg', tone: 'warning', permissions: ['print:write'] },
+      { key: 'message-center', title: '消息中心', icon: '/assets/icons/lucide/ui/bell-dark.svg', tone: 'primary', badge: messageStats.unread, permissions: ['messages:read'] }
+    ]),
     helps: [
       { key: 'manual', title: '操作手册', icon: '/assets/icons/lucide/ui/file-text-purple.svg', tone: 'purple' },
       { key: 'support', title: '套餐购买', icon: '/assets/icons/lucide/ui/shield-check-green.svg', tone: 'success' }

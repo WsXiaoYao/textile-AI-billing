@@ -1,5 +1,5 @@
 <view class="warehouse-page">
-  <scroll-view class="warehouse-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="warehouse-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}" bindscroll="onListScroll">
     <view class="warehouse-content">
       <view class="search-card">
         <input
@@ -55,4 +55,5 @@
     <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
     <view class="bottom-btn bottom-btn-primary" bindtap="onAddWarehouseTap">新建仓库</view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="220rpx" bind:backtop="onBackTopTap" />
 </view>

@@ -36,6 +36,16 @@ function saveAuth(payload) {
   wx.setStorageSync(AUTH_KEY, payload)
 }
 
+function mergeAuth(payload) {
+  if (!hasWxStorage() || !payload) return
+  const current = getAuth() || {}
+  saveAuth({
+    ...current,
+    ...payload,
+    token: payload.token || current.token || getToken()
+  })
+}
+
 function clearAuth() {
   if (!hasWxStorage()) return
   try {
@@ -51,5 +61,6 @@ module.exports = {
   getAuth,
   getCurrentOrgId,
   getToken,
+  mergeAuth,
   saveAuth
 }

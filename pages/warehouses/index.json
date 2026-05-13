@@ -2,5 +2,8 @@
   "navigationBarTitleText": "",
   "navigationBarBackgroundColor": "#2E7BEF",
   "navigationBarTextStyle": "white",
-  "backgroundColor": "#F4F7FB"
+  "backgroundColor": "#F4F7FB",
+  "usingComponents": {
+    "back-to-top": "/components/back-to-top/index"
+  }
 }

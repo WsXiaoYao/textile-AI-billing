@@ -101,11 +101,15 @@ enum MessageType {
 
 model Organization {
   id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
   name      String
   code      String?  @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  tenant             Tenant?             @relation(fields: [tenantId], references: [id])
+  userOrgRels        UserOrgRel[]
+  employeeWarehouses EmployeeWarehouse[]
   roles              Role[]
   employees          Employee[]
   authSessions       AuthSession[]
@@ -114,17 +118,20 @@ model Organization {
   customerCategories CustomerCategory[]
   accounts           Account[]
   categories         ProductCategory[]
-  products           Product[]
   suppliers          Supplier[]
   messages           Message[]
   importTasks        ImportExportTask[]
   auditLogs          AuditLog[]
   receiptOrders      ReceiptOrder[]
   receiptOrderItems  ReceiptOrderItem[]
+  orgSetting         OrgSetting?
+
+  @@index([tenantId])
 }
 
 model User {
   id               String    @id @default(cuid())
+  tenantId         String?   @map("tenant_id")
   openid           String?   @unique
   unionid          String?
   name             String
@@ -135,12 +142,17 @@ model User {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
 
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id])
+  userOrgRels  UserOrgRel[]
   employees    Employee[]
   authSessions AuthSession[]
+
+  @@index([tenantId])
 }
 
 model AuthSession {
   id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
   userId     String
   orgId      String?
   employeeId String?
@@ -149,16 +161,19 @@ model AuthSession {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id])
   user         User          @relation(fields: [userId], references: [id])
   organization Organization? @relation(fields: [orgId], references: [id])
   employee     Employee?     @relation(fields: [employeeId], references: [id])
 
+  @@index([tenantId])
   @@index([userId, expiresAt])
   @@index([orgId])
 }
 
 model Role {
   id          String   @id @default(cuid())
+  tenantId    String?  @map("tenant_id")
   orgId       String
   name        String
   description String?
@@ -166,15 +181,19 @@ model Role {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  tenant       Tenant?      @relation(fields: [tenantId], references: [id])
   organization Organization @relation(fields: [orgId], references: [id])
   employees    Employee[]
+  employeeRoles EmployeeRole[]
 
+  @@index([tenantId])
   @@unique([orgId, name])
   @@index([orgId])
 }
 
 model Employee {
   id           String         @id @default(cuid())
+  tenantId     String?        @map("tenant_id")
   orgId        String
   userId       String?
   roleId       String?
@@ -186,17 +205,43 @@ model Employee {
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
-  organization Organization  @relation(fields: [orgId], references: [id])
-  user         User?         @relation(fields: [userId], references: [id])
-  role         Role?         @relation(fields: [roleId], references: [id])
-  authSessions AuthSession[]
+  tenant             Tenant?             @relation(fields: [tenantId], references: [id])
+  organization       Organization        @relation(fields: [orgId], references: [id])
+  user               User?               @relation(fields: [userId], references: [id])
+  role               Role?               @relation(fields: [roleId], references: [id])
+  employeeRoles      EmployeeRole[]
+  authSessions       AuthSession[]
+  userOrgRels        UserOrgRel[]
+  employeeWarehouses EmployeeWarehouse[]
 
+  @@index([tenantId])
   @@index([orgId, phone])
   @@index([orgId, roleId])
 }
 
+model EmployeeRole {
+  id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
+  orgId      String
+  employeeId String
+  roleId     String
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  employee Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  role     Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, roleId])
+  @@index([tenantId])
+  @@index([orgId])
+  @@index([roleId])
+  @@map("employee_roles")
+}
+
 model Warehouse {
   id        String          @id @default(cuid())
+  tenantId  String?         @map("tenant_id")
   orgId     String
   name      String
   manager   String?
@@ -206,20 +251,97 @@ model Warehouse {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
 
+  employeeWarehouses EmployeeWarehouse[]
   organization      Organization       @relation(fields: [orgId], references: [id])
-  products          Product[]
   inventoryBalances InventoryBalance[]
   inventoryLedgers  InventoryLedger[]
   salesOrders       SalesOrder[]
   purchaseOrders    PurchaseOrder[]
   returnOrders      ReturnOrder[]
 
+  @@index([tenantId])
   @@unique([orgId, name])
   @@index([orgId, status])
 }
 
+model Tenant {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  status    String   @default("enabled")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizations      Organization[]
+  users              User[]
+  authSessions       AuthSession[]
+  roles              Role[]
+  employees          Employee[]
+  userOrgRels        UserOrgRel[]
+  employeeWarehouses EmployeeWarehouse[]
+  orgSettings        OrgSetting[]
+}
+
+model OrgSetting {
+  id                String   @id @default(cuid())
+  tenantId          String?  @map("tenant_id")
+  orgId             String   @unique @map("org_id")
+  paymentQrcodeUrl  String?  @map("payment_qrcode_url") @db.VarChar(500)
+  qrcodeRemark      String?  @map("qrcode_remark") @db.VarChar(500)
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  tenant       Tenant?      @relation(fields: [tenantId], references: [id])
+  organization Organization @relation(fields: [orgId], references: [id])
+
+  @@index([tenantId])
+  @@map("org_settings")
+}
+
+model UserOrgRel {
+  id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
+  userId     String
+  orgId      String
+  employeeId String?
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id])
+  user         User          @relation(fields: [userId], references: [id])
+  organization Organization  @relation(fields: [orgId], references: [id])
+  employee     Employee?     @relation(fields: [employeeId], references: [id])
+
+  @@unique([userId, orgId])
+  @@index([tenantId])
+  @@index([orgId])
+  @@index([employeeId])
+}
+
+model EmployeeWarehouse {
+  id          String   @id @default(cuid())
+  tenantId    String?  @map("tenant_id")
+  orgId       String
+  employeeId  String
+  warehouseId String
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant       Tenant?       @relation(fields: [tenantId], references: [id])
+  organization Organization  @relation(fields: [orgId], references: [id])
+  employee     Employee      @relation(fields: [employeeId], references: [id])
+  warehouse    Warehouse     @relation(fields: [warehouseId], references: [id])
+
+  @@unique([employeeId, warehouseId])
+  @@index([tenantId])
+  @@index([orgId, warehouseId])
+}
+
 model Customer {
   id                       BigInt   @id @default(autoincrement())
+  tenantId                 String?  @map("tenant_id")
   org_id                   String
   customer_category_id     String?
   customer_name            String   @db.VarChar(255)
@@ -258,6 +380,7 @@ model Customer {
   fundRecords      FundRecord[]
   receiptOrders    ReceiptOrder[]
 
+  @@index([tenantId])
   @@index([org_id, customer_category_id])
   @@index([org_id, customer_category])
   @@index([org_id, customer_name])
@@ -272,6 +395,7 @@ model Customer {
 
 model CustomerCategory {
   id         String   @id @default(cuid())
+  tenantId   String?  @map("tenant_id")
   org_id     String
   name       String   @db.VarChar(50)
   sort_order Int      @default(0)
@@ -283,6 +407,7 @@ model CustomerCategory {
   organization Organization @relation(fields: [org_id], references: [id])
   customers    Customer[]
 
+  @@index([tenantId])
   @@unique([org_id, name])
   @@index([org_id, is_active, sort_order])
   @@map("customer_categories")
@@ -290,6 +415,7 @@ model CustomerCategory {
 
 model Account {
   id             String   @id @default(cuid())
+  tenantId       String?  @map("tenant_id")
   orgId          String   @map("org_id")
   accountName    String   @map("account_name") @db.VarChar(100)
   initBalance    Decimal  @default(0) @map("init_balance") @db.Decimal(18, 2)
@@ -302,6 +428,7 @@ model Account {
   organization  Organization   @relation(fields: [orgId], references: [id])
   receiptOrders ReceiptOrder[]
 
+  @@index([tenantId])
   @@unique([orgId, accountName])
   @@index([orgId, status])
   @@map("accounts")
@@ -309,6 +436,7 @@ model Account {
 
 model ProductCategory {
   id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
   orgId     String
   parentId  String?
   name      String
@@ -320,52 +448,66 @@ model ProductCategory {
   organization Organization      @relation(fields: [orgId], references: [id])
   parent       ProductCategory?  @relation("CategoryChildren", fields: [parentId], references: [id])
   children     ProductCategory[] @relation("CategoryChildren")
-  products     Product[]
 
+  @@index([tenantId])
   @@unique([orgId, parentId, name])
   @@index([orgId, level])
 }
 
 model Product {
-  id                 String        @id @default(cuid())
-  orgId              String
-  categoryId         String?
-  defaultWarehouseId String?
-  name               String
-  no                 String?
-  imageUrl           String?
-  status             ProductStatus @default(enabled)
-  remark             String?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  id                    BigInt   @id @default(autoincrement())
+  tenantId              String?  @map("tenant_id")
+  orgId                 String?  @map("org_id")
+  productCode           String   @unique(map: "products_1_product_code_key") @map("product_code") @db.VarChar(50)
+  productName           String   @map("product_name") @db.VarChar(255)
+  productNameNormalized String?  @map("product_name_normalized")
+  productNamePinyin     String?  @map("product_name_pinyin")
+  productNameInitials   String?  @map("product_name_initials")
+  categoryName          String   @map("category_name") @db.VarChar(100)
+  defaultUnit           String?  @map("default_unit") @db.VarChar(20)
+  tag                   String?  @db.VarChar(50)
+  remark                String?
+  sourceFile            String   @map("source_file") @db.VarChar(255)
+  sourceSheet           String   @map("source_sheet") @db.VarChar(100)
+  sourceFirstRowNo      Int      @map("source_first_row_no")
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  allSkuValues          String   @default("") @map("all_sku_values")
 
-  organization     Organization        @relation(fields: [orgId], references: [id])
-  category         ProductCategory?    @relation(fields: [categoryId], references: [id])
-  defaultWarehouse Warehouse?          @relation(fields: [defaultWarehouseId], references: [id])
   variants         ProductVariant[]
   salesItems       SalesOrderItem[]
   purchaseItems    PurchaseOrderItem[]
   returnItems      ReturnOrderItem[]
   inventoryLedgers InventoryLedger[]
 
-  @@unique([orgId, no])
-  @@index([orgId, name])
-  @@index([orgId, categoryId])
+  @@index([tenantId])
+  @@index([orgId])
+  @@index([categoryName], map: "products_category_name_idx")
+  @@index([productName], map: "products_product_name_idx")
+  @@index([productNameInitials], map: "products_product_name_initials_idx")
+  @@index([productNameNormalized], map: "products_product_name_normalized_idx")
+  @@index([productNamePinyin], map: "products_product_name_pinyin_idx")
+  @@map("products")
 }
 
 model ProductVariant {
-  id            String   @id @default(cuid())
-  productId     String
-  color         String
-  unit          String
-  imageUrl      String?
-  saleCents     Int      @default(0)
-  costCents     Int      @default(0)
-  openingQty    Decimal  @default(0) @db.Decimal(14, 2)
-  stockLowerQty Decimal  @default(0) @db.Decimal(14, 2)
-  sortOrder     Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id            BigInt   @id @default(autoincrement())
+  tenantId      String?  @map("tenant_id")
+  orgId         String?  @map("org_id")
+  productId     BigInt   @map("product_id")
+  warehouseName String   @map("warehouse_name") @db.VarChar(100)
+  barcode       String?  @db.VarChar(100)
+  skuCode       String?  @map("sku_code") @db.VarChar(50)
+  skuValue      String?  @map("sku_value") @db.VarChar(255)
+  unit          String?  @db.VarChar(20)
+  salePrice     Decimal  @default(0) @map("sale_price") @db.Decimal(18, 2)
+  openingStock  Decimal  @default(0) @map("opening_stock") @db.Decimal(18, 3)
+  minStock      Decimal  @default(0) @map("min_stock") @db.Decimal(18, 3)
+  sourceFile    String   @map("source_file") @db.VarChar(255)
+  sourceSheet   String   @map("source_sheet") @db.VarChar(100)
+  sourceRowNo   Int      @map("source_row_no")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   product           Product             @relation(fields: [productId], references: [id])
   inventoryBalances InventoryBalance[]
@@ -374,15 +516,20 @@ model ProductVariant {
   purchaseItems     PurchaseOrderItem[]
   returnItems       ReturnOrderItem[]
 
-  @@unique([productId, color])
-  @@index([productId])
+  @@index([tenantId])
+  @@index([orgId])
+  @@index([productId], map: "product_sku_product_id_idx")
+  @@index([skuCode], map: "product_sku_sku_code_idx")
+  @@index([warehouseName], map: "product_sku_warehouse_name_idx")
+  @@map("product_sku")
 }
 
 model InventoryBalance {
   id          String   @id @default(cuid())
+  tenantId    String?  @map("tenant_id")
   orgId       String
   warehouseId String
-  variantId   String
+  variantId   BigInt
   stockQty    Decimal  @default(0) @db.Decimal(14, 2)
   reservedQty Decimal  @default(0) @db.Decimal(14, 2)
   updatedAt   DateTime @updatedAt
@@ -390,16 +537,18 @@ model InventoryBalance {
   warehouse Warehouse      @relation(fields: [warehouseId], references: [id])
   variant   ProductVariant @relation(fields: [variantId], references: [id])
 
+  @@index([tenantId])
   @@unique([orgId, warehouseId, variantId])
   @@index([orgId, variantId])
 }
 
 model InventoryLedger {
   id          String              @id @default(cuid())
+  tenantId    String?             @map("tenant_id")
   orgId       String
   warehouseId String
-  productId   String
-  variantId   String
+  productId   BigInt
+  variantId   BigInt
   type        InventoryLedgerType
   refType     String?
   refId       String?
@@ -414,67 +563,81 @@ model InventoryLedger {
   product   Product        @relation(fields: [productId], references: [id])
   variant   ProductVariant @relation(fields: [variantId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, variantId, createdAt])
   @@index([orgId, refType, refId])
 }
 
 model SalesOrder {
-  id            String        @id @default(cuid())
-  orgId         String
-  no            String
-  customerId    BigInt
-  warehouseId   String?
-  orderDate     DateTime
-  orderCents    Int           @default(0)
-  discountCents Int           @default(0)
-  contractCents Int           @default(0)
-  receivedCents Int           @default(0)
-  unpaidCents   Int           @default(0)
-  paymentState  PaymentState  @default(unpaid)
-  shippingState ShippingState @default(unshipped)
-  printState    PrintState    @default(unprinted)
-  remark        String?
-  creator       String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id               BigInt   @id @default(autoincrement())
+  tenantId         String?  @map("tenant_id")
+  orgId            String   @map("org_id")
+  orderNo          String   @map("order_no") @db.VarChar(50)
+  customerId       BigInt   @map("customer_id")
+  warehouseId      String?  @map("warehouse_id")
+  warehouseName    String   @default("默认仓") @map("warehouse_name") @db.VarChar(100)
+  orderDate        DateTime @map("order_date") @db.Date
+  orderAmount      Decimal  @default(0) @map("order_amount") @db.Decimal(18, 2)
+  discountAmount   Decimal  @default(0) @map("discount_amount") @db.Decimal(18, 2)
+  contractAmount   Decimal  @default(0) @map("contract_amount") @db.Decimal(18, 2)
+  receivedAmount   Decimal  @default(0) @map("received_amount") @db.Decimal(18, 2)
+  unreceivedAmount Decimal  @default(0) @map("unreceived_amount") @db.Decimal(18, 2)
+  payStatus        String   @default("unpaid") @map("pay_status") @db.VarChar(20)
+  shippingStatus   String   @default("unshipped") @map("shipping_status") @db.VarChar(20)
+  printStatus      String   @default("unprinted") @map("print_status") @db.VarChar(20)
+  creatorUserId    String?  @map("creator_user_id")
+  creatorName      String?  @map("creator_name") @db.VarChar(50)
+  remark           String?  @db.VarChar(500)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   customer     Customer           @relation(fields: [customerId], references: [id])
   warehouse    Warehouse?         @relation(fields: [warehouseId], references: [id])
   items        SalesOrderItem[]
   fundRecords  FundRecord[]
   receiptItems ReceiptOrderItem[]
+  returnOrders  ReturnOrder[]
 
-  @@unique([orgId, no])
+  @@index([tenantId])
+  @@unique([orgId, orderNo])
   @@index([orgId, customerId, orderDate])
-  @@index([orgId, paymentState])
+  @@index([orgId, payStatus])
+  @@index([orgId, printStatus])
+  @@map("sales_orders")
 }
 
 model SalesOrderItem {
-  id          String   @id @default(cuid())
-  orderId     String
-  productId   String
-  variantId   String
-  productName String
-  color       String
-  unit        String
-  quantity    Decimal  @db.Decimal(14, 2)
-  unitCents   Int      @default(0)
-  amountCents Int      @default(0)
-  createdAt   DateTime @default(now())
+  id               BigInt   @id @default(autoincrement())
+  tenantId         String?  @map("tenant_id")
+  orgId            String   @map("org_id")
+  orderId          BigInt   @map("order_id")
+  productId        BigInt   @map("product_id")
+  variantId        BigInt   @map("variant_id")
+  productName      String   @map("product_name") @db.VarChar(255)
+  colorName        String   @map("color_name") @db.VarChar(100)
+  stockQtySnapshot Decimal? @map("stock_qty_snapshot") @db.Decimal(18, 2)
+  qty              Decimal  @db.Decimal(18, 2)
+  unitName         String   @map("unit_name") @db.VarChar(20)
+  unitPrice        Decimal  @map("unit_price") @db.Decimal(18, 2)
+  amount           Decimal  @db.Decimal(18, 2)
+  createdAt        DateTime @default(now()) @map("created_at")
 
   order   SalesOrder     @relation(fields: [orderId], references: [id])
   product Product        @relation(fields: [productId], references: [id])
   variant ProductVariant @relation(fields: [variantId], references: [id])
 
+  @@index([tenantId])
   @@index([orderId])
   @@index([productId, variantId])
+  @@map("sales_order_items")
 }
 
 model FundRecord {
   id           String         @id @default(cuid())
+  tenantId     String?        @map("tenant_id")
   orgId        String
   customerId   BigInt?
-  orderId      String?
+  orderId      BigInt?
   type         FundRecordType
   amountCents  Int            @default(0)
   balanceCents Int            @default(0)
@@ -485,12 +648,14 @@ model FundRecord {
   customer Customer?   @relation(fields: [customerId], references: [id])
   order    SalesOrder? @relation(fields: [orderId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, customerId, occurredAt])
   @@index([orgId, orderId])
 }
 
 model ReceiptOrder {
   id                  String   @id @default(cuid())
+  tenantId            String?  @map("tenant_id")
   orgId               String   @map("org_id")
   receiptNo           String   @map("receipt_no")
   customerId          BigInt   @map("customer_id")
@@ -509,6 +674,7 @@ model ReceiptOrder {
   account      Account            @relation(fields: [accountId], references: [id])
   items        ReceiptOrderItem[]
 
+  @@index([tenantId])
   @@unique([orgId, receiptNo])
   @@index([orgId, customerId, receiptDate])
   @@index([orgId, accountId])
@@ -517,9 +683,10 @@ model ReceiptOrder {
 
 model ReceiptOrderItem {
   id                     String   @id @default(cuid())
+  tenantId               String?  @map("tenant_id")
   orgId                  String   @map("org_id")
   receiptId              String   @map("receipt_id")
-  salesOrderId           String?  @map("sales_order_id")
+  salesOrderId           BigInt?  @map("sales_order_id")
   contractAmount         Decimal  @map("contract_amount") @db.Decimal(18, 2)
   receivedAmountBefore   Decimal  @map("received_amount_before") @db.Decimal(18, 2)
   unreceivedAmountBefore Decimal  @map("unreceived_amount_before") @db.Decimal(18, 2)
@@ -530,6 +697,7 @@ model ReceiptOrderItem {
   receipt      ReceiptOrder @relation(fields: [receiptId], references: [id])
   salesOrder   SalesOrder?  @relation(fields: [salesOrderId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, receiptId])
   @@index([orgId, salesOrderId])
   @@map("receipt_order_items")
@@ -537,6 +705,7 @@ model ReceiptOrderItem {
 
 model Supplier {
   id                 String   @id @default(cuid())
+  tenantId           String?  @map("tenant_id")
   orgId              String
   name               String
   phone              String?
@@ -551,12 +720,14 @@ model Supplier {
   organization   Organization    @relation(fields: [orgId], references: [id])
   purchaseOrders PurchaseOrder[]
 
+  @@index([tenantId])
   @@unique([orgId, name])
   @@index([orgId, phone])
 }
 
 model PurchaseOrder {
   id            String             @id @default(cuid())
+  tenantId      String?            @map("tenant_id")
   orgId         String
   no            String
   supplierId    String
@@ -574,15 +745,18 @@ model PurchaseOrder {
   warehouse Warehouse?          @relation(fields: [warehouseId], references: [id])
   items     PurchaseOrderItem[]
 
+  @@index([tenantId])
   @@unique([orgId, no])
   @@index([orgId, supplierId, orderDate])
 }
 
 model PurchaseOrderItem {
   id          String   @id @default(cuid())
+  tenantId    String?  @map("tenant_id")
+  orgId       String?  @map("org_id")
   orderId     String
-  productId   String
-  variantId   String
+  productId   BigInt
+  variantId   BigInt
   productName String
   color       String
   unit        String
@@ -595,14 +769,18 @@ model PurchaseOrderItem {
   product Product        @relation(fields: [productId], references: [id])
   variant ProductVariant @relation(fields: [variantId], references: [id])
 
+  @@index([tenantId])
+  @@index([orgId])
   @@index([orderId])
 }
 
 model ReturnOrder {
   id               String           @id @default(cuid())
+  tenantId         String?          @map("tenant_id")
   orgId            String
   no               String
   customerId       BigInt
+  salesOrderId     BigInt?
   warehouseId      String?
   orderDate        DateTime
   returnCents      Int              @default(0)
@@ -613,18 +791,23 @@ model ReturnOrder {
   updatedAt        DateTime         @updatedAt
 
   customer  Customer          @relation(fields: [customerId], references: [id])
+  salesOrder SalesOrder?      @relation(fields: [salesOrderId], references: [id])
   warehouse Warehouse?        @relation(fields: [warehouseId], references: [id])
   items     ReturnOrderItem[]
 
+  @@index([tenantId])
   @@unique([orgId, no])
   @@index([orgId, customerId, orderDate])
+  @@index([orgId, salesOrderId])
 }
 
 model ReturnOrderItem {
   id          String   @id @default(cuid())
+  tenantId    String?  @map("tenant_id")
+  orgId       String?  @map("org_id")
   orderId     String
-  productId   String
-  variantId   String
+  productId   BigInt
+  variantId   BigInt
   productName String
   color       String
   unit        String
@@ -637,11 +820,14 @@ model ReturnOrderItem {
   product Product        @relation(fields: [productId], references: [id])
   variant ProductVariant @relation(fields: [variantId], references: [id])
 
+  @@index([tenantId])
+  @@index([orgId])
   @@index([orderId])
 }
 
 model Message {
   id        String        @id @default(cuid())
+  tenantId  String?       @map("tenant_id")
   orgId     String
   type      MessageType
   status    MessageStatus @default(unread)
@@ -654,11 +840,13 @@ model Message {
 
   organization Organization @relation(fields: [orgId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, status, createdAt])
 }
 
 model ImportExportTask {
   id          String         @id @default(cuid())
+  tenantId    String?        @map("tenant_id")
   orgId       String
   type        ImportTaskType
   status      TaskStatus     @default(pending)
@@ -673,11 +861,13 @@ model ImportExportTask {
 
   organization Organization @relation(fields: [orgId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, type, createdAt])
 }
 
 model AuditLog {
   id        String   @id @default(cuid())
+  tenantId  String?  @map("tenant_id")
   orgId     String
   actorId   String?
   action    String
@@ -689,6 +879,7 @@ model AuditLog {
 
   organization Organization @relation(fields: [orgId], references: [id])
 
+  @@index([tenantId])
   @@index([orgId, entity, entityId])
   @@index([orgId, createdAt])
 }

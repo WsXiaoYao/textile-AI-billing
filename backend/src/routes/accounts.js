@@ -1,28 +1,10 @@
 const { ok, fail } = require('../response')
+const { resolveOrgId: resolveRequestOrgId } = require('../request-context')
 
 const defaultOrgCode = 'org-main'
 
 async function resolveOrgId(prisma, request) {
-  const rawOrgId = String(request.headers['x-org-id'] || defaultOrgCode).trim() || defaultOrgCode
-  const existing = await prisma.organization.findFirst({
-    where: {
-      OR: [
-        { id: rawOrgId },
-        { code: rawOrgId }
-      ]
-    }
-  })
-  if (existing) return existing.id
-
-  const org = await prisma.organization.upsert({
-    where: { code: rawOrgId },
-    update: {},
-    create: {
-      code: rawOrgId,
-      name: rawOrgId === defaultOrgCode ? '聚云掌柜' : rawOrgId
-    }
-  })
-  return org.id
+  return resolveRequestOrgId(prisma, request)
 }
 
 function normalizeText(value) {
@@ -93,6 +75,15 @@ async function accountRoutes(app) {
       reply.code(400)
       return fail('请输入账户名称', { code: 400, traceId: request.id })
     }
+    if (accountName.length > 50) {
+      reply.code(400)
+      return fail('账户名称不能超过50字', { code: 400, traceId: request.id })
+    }
+    const remark = normalizeText(payload.remark)
+    if (remark.length > 120) {
+      reply.code(400)
+      return fail('备注不能超过120字', { code: 400, traceId: request.id })
+    }
 
     const initBalance = normalizeAmount(payload.initBalance !== undefined ? payload.initBalance : payload.init_balance)
     try {
@@ -102,7 +93,7 @@ async function accountRoutes(app) {
           accountName,
           initBalance: initBalance.toFixed(2),
           currentBalance: initBalance.toFixed(2),
-          remark: normalizeText(payload.remark),
+          remark,
           status: payload.status === 'disabled' ? 'disabled' : 'enabled'
         }
       })
@@ -135,6 +126,15 @@ async function accountRoutes(app) {
       reply.code(400)
       return fail('请输入账户名称', { code: 400, traceId: request.id })
     }
+    if (accountName.length > 50) {
+      reply.code(400)
+      return fail('账户名称不能超过50字', { code: 400, traceId: request.id })
+    }
+    const remark = payload.remark === undefined ? existing.remark : normalizeText(payload.remark)
+    if (normalizeText(remark).length > 120) {
+      reply.code(400)
+      return fail('备注不能超过120字', { code: 400, traceId: request.id })
+    }
 
     const status = payload.status || (payload.isActive === false || payload.is_active === false ? 'disabled' : existing.status)
     try {
@@ -142,7 +142,7 @@ async function accountRoutes(app) {
         where: { id: existing.id },
         data: {
           accountName,
-          remark: payload.remark === undefined ? existing.remark : normalizeText(payload.remark),
+          remark,
           status: status === 'disabled' ? 'disabled' : 'enabled'
         }
       })

@@ -1,12 +1,12 @@
 # 纺织开单小工具后端
 
-这是微信小程序的本地后端骨架，用于后续把前端从 `mockAdapter` 平滑切到真实 HTTP 接口。
+这是微信小程序的本地后端骨架。当前请求层已关闭 mock 数据源，未实现的接口会直接返回 404，避免页面误走本地假数据。
 
-当前后端包含两层：
+当前后端包含：
 
 - `auth`：提供微信手机号授权登录、会话查询和退出登录，前端切到 HTTP 后会自动携带 `Authorization`。
-- `mock-bridge`：把 `/api/v1/*` 请求转发到小程序项目现有的 mock store，方便立刻联调。
-- `Prisma + PostgreSQL`：提供真实后端的数据模型基础，后续逐步把 mock 路由替换成数据库事务实现。
+- `customers / customer-categories / sales-orders / accounts`：客户、客户分类、销售单、收款账户等真实数据库接口。
+- `Prisma + PostgreSQL`：真实后端的数据模型和事务实现。
 
 ## 本地环境
 
@@ -44,14 +44,19 @@ curl -X POST http://127.0.0.1:3000/api/v1/auth/wechat-phone-login \
   -d '{"phoneCode":"1358270496","loginCode":"local"}'
 ```
 
-小程序联调时把 `config/env.js` 改成：
+小程序联调使用 `config/env.js` 的真实接口地址：
 
 ```js
-API_MODE: 'http',
 API_BASE_URL: 'http://127.0.0.1:3000/api/v1'
 ```
 
 微信开发者工具需要在本地设置里勾选“不校验合法域名、web-view、TLS 版本以及 HTTPS 证书”。
+
+完整接口文档见：
+
+```text
+../docs/backend-api-reference.md
+```
 
 ## 微信手机号登录
 

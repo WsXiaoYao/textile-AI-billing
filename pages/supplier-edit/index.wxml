@@ -7,17 +7,17 @@
         <view class="form-list">
           <view class="form-row">
             <view class="form-label">供应商名称</view>
-            <input class="form-input" value="{{form.name}}" placeholder="请输入供应商名称" placeholder-class="input-placeholder" bindinput="onNameInput" />
+            <input class="form-input" value="{{form.name}}" placeholder="请输入供应商名称" placeholder-class="input-placeholder" maxlength="80" bindinput="onNameInput" />
           </view>
 
           <view class="form-row">
             <view class="form-label">联系电话</view>
-            <input class="form-input" type="number" value="{{form.phone}}" placeholder="请输入联系电话" placeholder-class="input-placeholder" bindinput="onPhoneInput" />
+            <input class="form-input" type="number" value="{{form.phone}}" placeholder="请输入联系电话" placeholder-class="input-placeholder" maxlength="11" bindinput="onPhoneInput" />
           </view>
 
           <view class="form-row">
             <view class="form-label">地址</view>
-            <input class="form-input" value="{{form.address}}" placeholder="请输入供应商地址" placeholder-class="input-placeholder" bindinput="onAddressInput" />
+            <input class="form-input" value="{{form.address}}" placeholder="请输入供应商地址" placeholder-class="input-placeholder" maxlength="120" bindinput="onAddressInput" />
           </view>
 
           <view class="form-row form-row-tall">

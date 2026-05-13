@@ -1,42 +1,28 @@
 <view class="stock-page">
-  <scroll-view class="stock-scroll" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower">
+  <scroll-view class="stock-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}" bindscroll="onListScroll" bindscrolltolower="onScrollToLower">
     <view class="stock-content">
-      <view class="toolbar-card">
-        <view class="search-row">
-          <input
-            class="search-input"
-            value="{{keyword}}"
-            placeholder="搜索产品、颜色、仓库"
-            placeholder-class="search-placeholder"
-            confirm-type="search"
-            bindinput="onKeywordInput"
-            bindconfirm="onKeywordConfirm"
-          />
-        </view>
-
-        <view class="query-row">
-          <picker
-            class="query-picker query-picker-wide"
-            mode="selector"
-            range="{{warehouseOptions}}"
-            value="{{warehouseIndex}}"
-            bindchange="onWarehouseChange"
-          >
-            <view class="query-action">仓库：{{warehouseOptions[warehouseIndex]}}⌄</view>
-          </picker>
-          <view class="quick-chip {{filters.statusKey == 'low' ? 'quick-chip-active' : ''}}" bindtap="onLowStockTap">低库存</view>
-          <picker class="query-picker" mode="selector" range="{{sortOptions}}" range-key="label" value="{{sortIndex}}" bindchange="onSortChange">
-            <view class="query-action">排序⌄</view>
-          </picker>
-          <view class="query-action" bindtap="onFilterTap">筛选<text wx:if="{{filterCount}}">·{{filterCount}}</text>⌄</view>
-        </view>
-      </view>
+      <order-filter-bar
+        keyword="{{keyword}}"
+        search-placeholder="搜索产品、颜色、仓库"
+        status-tabs="{{statusTabs}}"
+        active-status="{{activeStatus}}"
+        date-title="仓库"
+        date-label="{{warehouseLabel}}"
+        sort-label="{{sortLabel}}"
+        sort-options="{{sortOptions}}"
+        sort-index="{{sortIndex}}"
+        filter-visible="{{false}}"
+        bind:keywordinput="onKeywordInput"
+        bind:keywordconfirm="onKeywordConfirm"
+        bind:statuschange="onStatusChange"
+        bind:datetap="onWarehouseTap"
+        bind:sortchange="onSortChange"
+      />
 
       <view class="summary-card">
         <view class="card-head">
           <view>
             <view class="card-title">库存概览</view>
-            <view class="card-desc">按产品颜色维度查看实时库存与下限。</view>
           </view>
           <view class="summary-count">全部 {{summary.itemCount}} 项</view>
         </view>
@@ -45,13 +31,13 @@
             <view class="summary-label">总价</view>
             <view class="summary-value amount-danger">{{summary.totalValueText}}</view>
           </view>
-          <view class="summary-item summary-item-wide">
-            <view class="summary-label">库存数量</view>
-            <view class="summary-value">{{summary.totalStockText}}</view>
-          </view>
           <view class="summary-item">
             <view class="summary-label">预警数量</view>
             <view class="summary-value amount-primary">{{summary.lowCount}}</view>
+          </view>
+          <view class="summary-item summary-item-wide">
+            <view class="summary-label">库存数量</view>
+            <view class="summary-value">{{summary.totalStockText}}</view>
           </view>
         </view>
         <view class="summary-chips">
@@ -61,7 +47,7 @@
         </view>
       </view>
 
-      <view class="result-card">
+      <view class="result-section">
         <view class="result-head">
           <view class="card-title">筛选结果</view>
           <view class="summary-count">{{itemTotal}} 条</view>
@@ -101,37 +87,5 @@
       </view>
     </view>
   </scroll-view>
-
-  <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
-    <view class="filter-backdrop" bindtap="onCancelFilter"></view>
-    <view class="filter-drawer" catchtap="noop">
-      <view class="filter-header">
-        <view class="filter-title">筛选</view>
-        <view class="filter-selected" wx:if="{{filterDraftCount}}">已选 {{filterDraftCount}} 项</view>
-      </view>
-      <scroll-view class="filter-body" scroll-y>
-        <block wx:for="{{filterViewSections}}" wx:key="key" wx:for-item="section">
-          <view class="filter-section">
-            <view class="filter-section-title">{{section.title}}</view>
-            <view class="filter-chip-row">
-              <block wx:for="{{section.options}}" wx:key="value" wx:for-item="option">
-                <view
-                  class="filter-chip {{option.active ? 'filter-chip-active' : ''}}"
-                  data-key="{{section.key}}"
-                  data-value="{{option.value}}"
-                  bindtap="onFilterOptionTap"
-                >
-                  {{option.label}}
-                </view>
-              </block>
-            </view>
-          </view>
-        </block>
-      </scroll-view>
-      <view class="filter-footer">
-        <view class="filter-reset" bindtap="onResetFilters">重置</view>
-        <view class="filter-done" bindtap="onApplyFilters">完成</view>
-      </view>
-    </view>
-  </view>
+  <back-to-top show="{{showBackTop}}" bottom="calc(132rpx + env(safe-area-inset-bottom))" bind:backtop="onBackTopTap" />
 </view>

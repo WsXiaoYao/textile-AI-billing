@@ -67,6 +67,11 @@
   padding-top: 24rpx;
 }
 
+.form-row-roles {
+  align-items: flex-start;
+  padding: 20rpx 0;
+}
+
 .form-label {
   flex: 0 0 166rpx;
   color: #172033;
@@ -110,6 +115,48 @@
   font-size: 34rpx;
   line-height: 1;
   text-align: right;
+}
+
+.role-select {
+  min-width: 0;
+  flex: 1;
+}
+
+.role-summary {
+  min-height: 40rpx;
+  color: #172033;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 40rpx;
+}
+
+.role-chip-row {
+  margin-top: 14rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+}
+
+.role-chip {
+  min-width: 112rpx;
+  height: 58rpx;
+  padding: 0 20rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1rpx solid #d8e5f6;
+  border-radius: 12rpx;
+  background: #f8fbff;
+  color: #667085;
+  font-size: 24rpx;
+  font-weight: 800;
+  box-sizing: border-box;
+}
+
+.role-chip-active {
+  border-color: #2e7bef;
+  background: #eaf2ff;
+  color: #2e7bef;
 }
 
 .rule-desc {

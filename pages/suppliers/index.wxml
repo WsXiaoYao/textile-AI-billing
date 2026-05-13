@@ -1,5 +1,5 @@
 <view class="supplier-page">
-  <scroll-view class="supplier-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="supplier-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}" bindscroll="onListScroll">
     <view class="supplier-content">
       <view class="toolbar-card">
         <view class="search-row">
@@ -42,7 +42,6 @@
             <view class="supplier-side">
               <view class="side-label">合同金额</view>
               <view class="side-amount">{{item.totalPurchaseText}}</view>
-              <view class="side-link">详情 ›</view>
             </view>
           </view>
         </block>
@@ -59,4 +58,5 @@
     <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
     <view class="bottom-btn bottom-btn-primary" bindtap="onAddSupplierTap">新增供应商</view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="220rpx" bind:backtop="onBackTopTap" />
 </view>

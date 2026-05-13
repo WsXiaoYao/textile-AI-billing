@@ -1,8 +1,17 @@
-const supplierStore = require('../../services/supplier-store')
+const supplierApi = require('../../api/supplier-api')
 
 Page({
   data: {
-    supplier: supplierStore.getSupplier()
+    supplier: {
+      id: '',
+      name: '',
+      phone: '',
+      address: '',
+      remark: '',
+      purchaseRecords: [],
+      purchaseCount: 0,
+      totalPurchaseText: '¥0'
+    }
   },
 
   onLoad(options = {}) {
@@ -14,10 +23,14 @@ Page({
     this.loadDetail()
   },
 
-  loadDetail() {
-    this.setData({
-      supplier: supplierStore.getSupplier(this.supplierId)
-    })
+  async loadDetail() {
+    if (!this.supplierId) return
+    try {
+      const supplier = await supplierApi.getSupplier(this.supplierId)
+      this.setData({ supplier })
+    } catch (error) {
+      wx.showToast({ title: error.message || '供应商加载失败', icon: 'none' })
+    }
   },
 
   onCallTap() {

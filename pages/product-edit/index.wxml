@@ -18,12 +18,12 @@
         <view class="form-list">
           <view class="form-row">
             <view class="form-label">产品名称</view>
-            <input class="form-input" value="{{form.name}}" placeholder="请输入产品名称" placeholder-class="input-placeholder" bindinput="onNameInput" />
+            <input class="form-input" value="{{form.name}}" placeholder="请输入产品名称" placeholder-class="input-placeholder" maxlength="80" bindinput="onNameInput" />
           </view>
 
           <view class="form-row">
             <view class="form-label">产品编号</view>
-            <input class="form-input" value="{{form.no}}" placeholder="请输入产品编号" placeholder-class="input-placeholder" bindinput="onNoInput" />
+            <input class="form-input" value="{{form.no}}" placeholder="请输入产品编号" placeholder-class="input-placeholder" maxlength="50" bindinput="onNoInput" />
           </view>
 
           <picker mode="selector" range="{{categoryOptions}}" value="{{categoryIndex}}" bindchange="onCategoryChange">
@@ -68,7 +68,7 @@
               <view class="variant-main-fields">
                 <view class="variant-field variant-field-name">
                   <view class="field-label">颜色名称</view>
-                  <input class="field-input" value="{{item.color}}" data-index="{{index}}" data-key="color" placeholder="例如 米色" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                  <input class="field-input" value="{{item.color}}" data-index="{{index}}" data-key="color" placeholder="例如 米色" placeholder-class="input-placeholder" maxlength="50" bindinput="onVariantInput" />
                 </view>
                 <picker mode="selector" range="{{unitOptions}}" value="{{item.unitIndex}}" data-index="{{index}}" bindchange="onVariantUnitChange">
                   <view class="variant-unit">
@@ -81,19 +81,19 @@
             <view class="variant-fields">
               <view class="variant-field">
                 <view class="field-label">售价</view>
-                <input class="field-input" type="digit" value="{{item.price}}" data-index="{{index}}" data-key="price" placeholder="0.00" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                <input class="field-input" type="digit" value="{{item.price}}" data-index="{{index}}" data-key="price" placeholder="0.00" placeholder-class="input-placeholder" maxlength="12" bindinput="onVariantInput" />
               </view>
               <view class="variant-field">
                 <view class="field-label">进价</view>
-                <input class="field-input" type="digit" value="{{item.costPrice}}" data-index="{{index}}" data-key="costPrice" placeholder="0.00" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                <input class="field-input" type="digit" value="{{item.costPrice}}" data-index="{{index}}" data-key="costPrice" placeholder="0.00" placeholder-class="input-placeholder" maxlength="12" bindinput="onVariantInput" />
               </view>
               <view class="variant-field">
                 <view class="field-label">期初库存</view>
-                <input class="field-input" type="digit" value="{{item.stockQty}}" data-index="{{index}}" data-key="stockQty" placeholder="0" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                <input class="field-input" type="digit" value="{{item.stockQty}}" data-index="{{index}}" data-key="stockQty" placeholder="0" placeholder-class="input-placeholder" maxlength="12" bindinput="onVariantInput" />
               </view>
               <view class="variant-field">
                 <view class="field-label">库存下限</view>
-                <input class="field-input" type="digit" value="{{item.lowerLimitQty}}" data-index="{{index}}" data-key="lowerLimitQty" placeholder="0" placeholder-class="input-placeholder" bindinput="onVariantInput" />
+                <input class="field-input" type="digit" value="{{item.lowerLimitQty}}" data-index="{{index}}" data-key="lowerLimitQty" placeholder="0" placeholder-class="input-placeholder" maxlength="12" bindinput="onVariantInput" />
               </view>
             </view>
           </view>

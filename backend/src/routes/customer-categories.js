@@ -1,32 +1,20 @@
 const { ok, fail } = require('../response')
+const { resolveOrgId: resolveRequestOrgId } = require('../request-context')
 
 const defaultOrgCode = 'org-main'
 
 async function resolveOrgId(prisma, request) {
-  const rawOrgId = String(request.headers['x-org-id'] || defaultOrgCode).trim() || defaultOrgCode
-  const existing = await prisma.organization.findFirst({
-    where: {
-      OR: [
-        { id: rawOrgId },
-        { code: rawOrgId }
-      ]
-    }
-  })
-  if (existing) return existing.id
-
-  const org = await prisma.organization.upsert({
-    where: { code: rawOrgId },
-    update: {},
-    create: {
-      code: rawOrgId,
-      name: rawOrgId === defaultOrgCode ? '聚云掌柜' : rawOrgId
-    }
-  })
-  return org.id
+  return resolveRequestOrgId(prisma, request)
 }
 
 function normalizeName(value) {
   return String(value || '').trim()
+}
+
+function normalizeSort(value) {
+  const number = Number(value || 0)
+  if (!Number.isFinite(number)) return 0
+  return Math.min(Math.max(Math.floor(number), 0), 9999)
 }
 
 function toDto(category, countMap = {}) {
@@ -112,13 +100,17 @@ async function customerCategoryRoutes(app) {
       reply.code(400)
       return fail('请输入分类名称', { code: 400, traceId: request.id })
     }
+    if (name.length > 50) {
+      reply.code(400)
+      return fail('分类名称不能超过50字', { code: 400, traceId: request.id })
+    }
 
     try {
       const category = await app.prisma.customerCategory.create({
         data: {
           org_id: orgId,
           name,
-          sort_order: Number(payload.sort_order || payload.sortOrder || 0),
+          sort_order: normalizeSort(payload.sort_order || payload.sortOrder),
           is_active: payload.is_active === undefined ? true : Boolean(payload.is_active),
           is_default: Boolean(payload.is_default || payload.isDefault)
         }
@@ -152,6 +144,10 @@ async function customerCategoryRoutes(app) {
       reply.code(400)
       return fail('请输入分类名称', { code: 400, traceId: request.id })
     }
+    if (name.length > 50) {
+      reply.code(400)
+      return fail('分类名称不能超过50字', { code: 400, traceId: request.id })
+    }
 
     try {
       const [category] = await app.prisma.$transaction([
@@ -159,7 +155,7 @@ async function customerCategoryRoutes(app) {
           where: { id: existing.id },
           data: {
             name,
-            sort_order: Number(payload.sort_order !== undefined ? payload.sort_order : payload.sortOrder !== undefined ? payload.sortOrder : existing.sort_order),
+            sort_order: normalizeSort(payload.sort_order !== undefined ? payload.sort_order : payload.sortOrder !== undefined ? payload.sortOrder : existing.sort_order),
             is_active: payload.is_active === undefined && payload.isActive === undefined ? existing.is_active : Boolean(payload.is_active !== undefined ? payload.is_active : payload.isActive),
             is_default: payload.is_default === undefined && payload.isDefault === undefined ? existing.is_default : Boolean(payload.is_default !== undefined ? payload.is_default : payload.isDefault)
           }

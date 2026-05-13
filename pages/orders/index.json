@@ -4,9 +4,11 @@
   "navigationBarTextStyle": "white",
   "backgroundColor": "#F4F7FB",
   "enablePullDownRefresh": true,
+  "onReachBottomDistance": 260,
   "usingComponents": {
     "order-filter-bar": "/components/order-filter-bar/index",
     "order-summary-card": "/components/order-summary-card/index",
-    "sales-order-card": "/components/sales-order-card/index"
+    "sales-order-card": "/components/sales-order-card/index",
+    "back-to-top": "/components/back-to-top/index"
   }
 }

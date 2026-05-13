@@ -2,7 +2,26 @@ const storageKey = 'textile_order_store_v1'
 const customerFundStorageKey = 'textile_customer_funds_v2'
 const customerProfileStorageKey = 'textile_customer_profiles_v2'
 const customerImportTaskStorageKey = 'textile_customer_import_export_tasks_v2'
-const realCustomerSeed = require('../data/customer-seed')
+const fallbackCustomers = [
+  {
+    name: '黔西-龙凤',
+    phone: '19984477803',
+    address: '贵州省毕节市黔西市莲城大道',
+    category: '贵州客户',
+    tag: '贵州客户',
+    area: '贵州',
+    level: 'key'
+  },
+  {
+    name: '测试客户',
+    phone: '1358270496',
+    address: '本地开发测试客户',
+    category: '零售客户',
+    tag: '零售客户',
+    area: '贵州',
+    level: 'normal'
+  }
+]
 
 const today = '2026-04-28'
 
@@ -710,7 +729,7 @@ function getCustomerStatus(customer) {
 function getCustomerList() {
   const customerMap = {}
 
-  realCustomerSeed.forEach(seed => {
+  fallbackCustomers.forEach(seed => {
     customerMap[seed.name] = {
       id: seed.name,
       name: seed.name,

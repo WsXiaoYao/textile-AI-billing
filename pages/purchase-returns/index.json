@@ -6,6 +6,7 @@
   "enablePullDownRefresh": true,
   "usingComponents": {
     "order-filter-bar": "/components/order-filter-bar/index",
-    "order-summary-card": "/components/order-summary-card/index"
+    "order-summary-card": "/components/order-summary-card/index",
+    "back-to-top": "/components/back-to-top/index"
   }
 }

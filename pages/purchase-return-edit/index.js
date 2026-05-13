@@ -1,4 +1,93 @@
-const returnStore = require('../../services/return-store')
+const returnApi = require('../../api/return-api')
+const validator = require('../../utils/form-validation')
+
+const emptyForm = {
+  mode: 'create',
+  id: '',
+  no: '',
+  salesOrderId: '',
+  salesOrderNo: '',
+  sourceText: '未关联销售单',
+  customerId: '',
+  customerName: '',
+  customerPhone: '',
+  customerAddress: '',
+  date: '',
+  warehouseId: '',
+  warehouseName: '',
+  refundCents: 0,
+  refundInput: '0.00',
+  refundText: '¥0.00',
+  returnToPrepay: false,
+  remark: '',
+  items: [],
+  itemAmountCents: 0,
+  itemAmountText: '¥0.00',
+  statusKey: 'pending',
+  statusText: '未退款',
+  statusTone: 'danger'
+}
+
+function formatMoney(cents) {
+  const absCents = Math.abs(Number(cents || 0))
+  const yuan = Math.floor(absCents / 100)
+  const fen = absCents % 100
+  const sign = Number(cents || 0) < 0 ? '-' : ''
+  return `${sign}¥${String(yuan).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${fen ? `.${String(fen).padStart(2, '0')}` : ''}`
+}
+
+function formatAmountInput(cents) {
+  return (Number(cents || 0) / 100).toFixed(2)
+}
+
+function formatNumber(value) {
+  const number = Number(value || 0)
+  if (Number.isInteger(number)) return String(number)
+  return String(Number(number.toFixed(2)))
+}
+
+function parseAmountInput(value) {
+  return Math.round(Number(String(value || '').replace(/[^\d.]/g, '') || 0) * 100)
+}
+
+function parseQty(value) {
+  const number = Number(String(value || '').replace(/[^\d.]/g, ''))
+  return Number.isFinite(number) ? number : 0
+}
+
+function normalizeLine(line, index = 0) {
+  const quantity = Number(line.quantity || 0)
+  const unitPriceCents = Number(line.unitPriceCents || line.unitCents || 0)
+  const amountCents = Math.round(quantity * unitPriceCents)
+  const unit = line.unit || '件'
+  return {
+    ...line,
+    id: line.id || `line-${Date.now()}-${index}`,
+    quantity,
+    quantityInput: formatNumber(quantity),
+    quantityText: `${formatNumber(quantity)} ${unit}`,
+    unitPriceCents,
+    unitPriceInput: formatAmountInput(unitPriceCents),
+    unitPriceText: formatMoney(unitPriceCents),
+    amountCents,
+    amountText: formatMoney(amountCents),
+    stockText: line.stockText || `库存 ${formatNumber(line.stockQty || 0)}${unit}`
+  }
+}
+
+function createLineFromOption(option) {
+  return normalizeLine({
+    id: `line-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    productId: option.productId,
+    variantId: option.variantId,
+    productName: option.productName,
+    color: option.color,
+    unit: option.unit,
+    stockQty: option.stockQty,
+    quantity: 1,
+    unitPriceCents: option.priceCents
+  })
+}
 
 function stripLineViewState(line) {
   const {
@@ -39,7 +128,7 @@ function stripFormViewState(form) {
 }
 
 function normalizeItems(items) {
-  return items.map((item, index) => returnStore.normalizeLine(stripLineViewState(item), index))
+  return items.map((item, index) => normalizeLine(stripLineViewState(item), index))
 }
 
 function buildProductChoices(productOptions) {
@@ -61,7 +150,7 @@ function buildProductChoices(productOptions) {
     const nextOption = {
       ...option,
       stockText: `${option.stockQty}${option.unit}`,
-      priceText: returnStore.formatMoney(option.priceCents)
+      priceText: formatMoney(option.priceCents)
     }
     choiceMap[option.productId].variants.push(nextOption)
     choiceMap[option.productId].searchText = [
@@ -110,17 +199,17 @@ function recalcForm(form, productChoices) {
   const itemAmountCents = items.reduce((sum, item) => sum + item.amountCents, 0)
   return {
     ...form,
-    refundInput: returnStore.formatAmountInput(form.refundCents || 0),
-    refundText: returnStore.formatMoney(form.refundCents || 0),
+    refundInput: formatAmountInput(form.refundCents || 0),
+    refundText: formatMoney(form.refundCents || 0),
     itemAmountCents,
-    itemAmountText: returnStore.formatMoney(itemAmountCents),
+    itemAmountText: formatMoney(itemAmountCents),
     items: items.map(item => getLineOptionView(item, productChoices || []))
   }
 }
 
 Page({
   data: {
-    form: returnStore.getReturnOrderForm(),
+    form: emptyForm,
     customerOptions: [],
     customerIndex: 0,
     warehouseOptions: [],
@@ -138,31 +227,51 @@ Page({
   },
 
   onLoad(options = {}) {
-    this.loadForm(options.id)
+    this.salesOrderId = options.salesOrderId || ''
+    this.loadForm(options.id, this.salesOrderId)
   },
 
   onUnload() {
     this.clearSelectorTimer()
   },
 
-  loadForm(id) {
-    const customerOptions = returnStore.getCustomerOptions()
-    const warehouseOptions = returnStore.getWarehouseOptions()
-    const productOptions = returnStore.getProductOptions()
-    const productChoices = buildProductChoices(productOptions)
-    const form = recalcForm(returnStore.getReturnOrderForm(id), productChoices)
-    const customerIndex = Math.max(0, customerOptions.findIndex(item => item.id === form.customerId || item.name === form.customerName))
-    const warehouseIndex = Math.max(0, warehouseOptions.findIndex(item => item.name === form.warehouseName))
+  async loadForm(id, salesOrderId) {
+    try {
+      const [customerOptions, warehouseOptions, productOptions, formData] = await Promise.all([
+        returnApi.getCustomerOptions(),
+        returnApi.getWarehouseOptions(),
+        returnApi.getProductOptions({ limit: 220 }),
+        returnApi.getReturnOrderForm(id, salesOrderId ? { salesOrderId } : undefined)
+      ])
+      const productChoices = buildProductChoices(productOptions || [])
+      const initialForm = {
+        ...emptyForm,
+        ...(formData || {}),
+        items: (formData && formData.items && formData.items.length)
+          ? formData.items
+          : ((productOptions && productOptions[0]) ? [createLineFromOption(productOptions[0])] : [])
+      }
+      const form = recalcForm(initialForm, productChoices)
+      if (!form.refundCents && form.itemAmountCents) {
+        form.refundCents = form.itemAmountCents
+        form.refundInput = formatAmountInput(form.itemAmountCents)
+        form.refundText = formatMoney(form.itemAmountCents)
+      }
+      const customerIndex = Math.max(0, (customerOptions || []).findIndex(item => item.id === form.customerId || item.name === form.customerName))
+      const warehouseIndex = Math.max(0, (warehouseOptions || []).findIndex(item => item.id === form.warehouseId || item.name === form.warehouseName))
 
-    this.setData({
-      form,
-      customerOptions,
-      customerIndex,
-      warehouseOptions,
-      warehouseIndex,
-      productOptions,
-      productChoices
-    })
+      this.setData({
+        form,
+        customerOptions: customerOptions || [],
+        customerIndex,
+        warehouseOptions: warehouseOptions || [],
+        warehouseIndex,
+        productOptions: productOptions || [],
+        productChoices
+      })
+    } catch (error) {
+      wx.showToast({ title: error.message || '退货单加载失败', icon: 'none' })
+    }
   },
 
   setForm(nextForm) {
@@ -196,7 +305,7 @@ Page({
   onRefundInput(event) {
     this.setForm({
       ...this.data.form,
-      refundCents: returnStore.parseAmountInput(event.detail.value)
+      refundCents: parseAmountInput(validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
     })
   },
 
@@ -214,6 +323,7 @@ Page({
       warehouseIndex,
       form: {
         ...this.data.form,
+        warehouseId: warehouse.id,
         warehouseName: warehouse.name
       }
     })
@@ -222,7 +332,7 @@ Page({
   onRemarkInput(event) {
     this.setForm({
       ...this.data.form,
-      remark: event.detail.value
+      remark: event.detail.value.slice(0, 120)
     })
   },
 
@@ -322,7 +432,7 @@ Page({
 
   onQtyInput(event) {
     const id = event.currentTarget.dataset.id
-    const quantity = returnStore.parseQty(event.detail.value)
+    const quantity = parseQty(validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
     this.setForm({
       ...this.data.form,
       items: this.data.form.items.map(item => item.id === id ? { ...item, quantity } : item)
@@ -331,7 +441,7 @@ Page({
 
   onPriceInput(event) {
     const id = event.currentTarget.dataset.id
-    const unitPriceCents = returnStore.parseAmountInput(event.detail.value)
+    const unitPriceCents = parseAmountInput(validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
     this.setForm({
       ...this.data.form,
       items: this.data.form.items.map(item => item.id === id ? { ...item, unitPriceCents } : item)
@@ -363,7 +473,7 @@ Page({
     }
     this.setForm({
       ...this.data.form,
-      items: this.data.form.items.concat(returnStore.createLineFromOption(option))
+      items: this.data.form.items.concat(createLineFromOption(option))
     })
   },
 
@@ -387,18 +497,33 @@ Page({
     wx.navigateTo({ url: '/pages/purchase-returns/index' })
   },
 
-  onSubmitTap() {
-    const result = returnStore.submitReturnOrderForm(stripFormViewState(this.data.form))
-    if (!result.ok) {
-      wx.showToast({ title: result.message, icon: 'none' })
-      return
-    }
+  async onSubmitTap() {
+    const form = stripFormViewState(this.data.form)
+    const errors = []
+    if (!form.customerId) errors.push('请选择客户')
+    if (!form.warehouseId && !form.warehouseName) errors.push('请选择仓库')
+    validator.maxLength(errors, '备注', form.remark, 120)
+    if (!form.items || !form.items.length) errors.push('请添加退货明细')
+    ;(form.items || []).forEach((item, index) => {
+      if (!item.productId || !item.variantId) errors.push(`第${index + 1}条请选择产品`)
+      if (Number(item.quantity || 0) <= 0) errors.push(`第${index + 1}条退货数量必须大于0`)
+      if (Number(item.unitPriceCents || 0) <= 0) errors.push(`第${index + 1}条退货单价必须大于0`)
+    })
+    const itemAmountCents = (form.items || []).reduce((sum, item) => sum + Math.round(Number(item.quantity || 0) * Number(item.unitPriceCents || 0)), 0)
+    if (Number(form.refundCents || 0) <= 0) errors.push('退款金额必须大于0')
+    if (Number(form.refundCents || 0) > itemAmountCents) errors.push('退款金额不能大于明细金额')
+    if (validator.showFirstError(errors)) return
 
-    wx.showToast({ title: '退货单已提交', icon: 'success' })
-    setTimeout(() => {
-      wx.redirectTo({
-        url: `/pages/purchase-return-detail/index?id=${encodeURIComponent(result.order.id)}`
-      })
-    }, 500)
+    try {
+      const result = await returnApi.submitReturnOrder(form)
+      wx.showToast({ title: '退货单已提交', icon: 'success' })
+      setTimeout(() => {
+        wx.redirectTo({
+          url: `/pages/purchase-return-detail/index?id=${encodeURIComponent((result.order || result).id)}`
+        })
+      }, 500)
+    } catch (error) {
+      wx.showToast({ title: error.message || '提交失败', icon: 'none' })
+    }
   }
 })

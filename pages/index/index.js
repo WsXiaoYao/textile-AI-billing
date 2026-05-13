@@ -1,5 +1,7 @@
-const orderStore = require('../../services/order-store')
+const customerApi = require('../../api/customer-api')
+const aiApi = require('../../api/ai-api')
 const productStore = require('../../services/product-store')
+const { guardTabAccess } = require('../../utils/tabbar')
 
 const today = '2026-04-28'
 
@@ -45,6 +47,14 @@ function formatCompactMoney(cents) {
     ? String(value)
     : value.toFixed(2).replace(/0+$/, '').replace(/\.$/, '')
   return `¥${normalized}`
+}
+
+function formatMoney(cents) {
+  const absCents = Math.abs(Number(cents || 0))
+  const sign = Number(cents || 0) < 0 ? '-' : ''
+  const yuan = Math.floor(absCents / 100)
+  const fen = absCents % 100
+  return `${sign}¥${String(yuan).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${fen ? `.${String(fen).padStart(2, '0')}` : ''}`
 }
 
 function getLineAmountCents(line) {
@@ -116,9 +126,8 @@ function getVariantAliases(product, variant) {
     .filter(alias => alias && (alias.length >= 2 || alias === '灰'))
 }
 
-function findCustomerInText(text) {
+function findCustomerInText(text, customers = []) {
   const normalizedText = normalizeKeyword(text)
-  const customers = orderStore.getCustomerList()
 
   for (const rule of customerAliasRules) {
     if (rule.aliases.some(alias => normalizedText.includes(normalizeKeyword(alias)))) {
@@ -257,7 +266,7 @@ function parseSegmentLines(segment, product, indexSeed) {
   })]
 }
 
-function parseOrderText(text) {
+function parseOrderText(text, customers = []) {
   const products = productStore.getProductList()
     .slice()
     .sort((a, b) => String(b.name || '').length - String(a.name || '').length)
@@ -319,7 +328,7 @@ function parseOrderText(text) {
   })
 
   return {
-    customer: findCustomerInText(text),
+    customer: findCustomerInText(text, customers),
     items,
     pendingItems,
     unrecognizedSegments,
@@ -429,8 +438,8 @@ function normalizeCartLines(lines) {
       quantity: formatQuantity(line.quantityValue, line.unit),
       quantityText: formatQuantity(line.quantityValue, line.unit),
       unitPriceText: formatCompactMoney(line.unitPriceCents),
-      amount: orderStore.formatMoney(amountCents),
-      amountText: orderStore.formatMoney(amountCents),
+      amount: formatMoney(amountCents),
+      amountText: formatMoney(amountCents),
       stockText: `库存 ${line.stockQty}`,
       stockTone: Number(line.stockQty) <= 0 ? 'danger' : 'normal',
       isLast: index === lines.length - 1
@@ -445,7 +454,7 @@ function normalizeCartLines(lines) {
   return {
     cartItems: nextLines,
     totalCents,
-    totalAmount: orderStore.formatMoney(totalCents),
+    totalAmount: formatMoney(totalCents),
     cartItemCount: nextLines.length,
     cartQtyText: `${totalQty}${unit}`
   }
@@ -466,8 +475,8 @@ function toHomeCustomer(customer, index = 0) {
     tag: customer.tag || customer.category || '普通客户',
     phone: customer.phone || '',
     address: customer.address || '',
-    contractAmount: customer.contractText || orderStore.formatMoney(customer.contractCents || 0),
-    receivable: customer.receivableText || orderStore.formatMoney(customer.receivableCents || 0),
+    contractAmount: customer.contractText || formatMoney(customer.contractCents || 0),
+    receivable: customer.receivableText || formatMoney(customer.receivableCents || 0),
     receivableCents: Number(customer.receivableCents || 0),
     prepaidCents: Number(customer.prepaidCents || 0),
     wide: String(customer.name || '').length > 5,
@@ -475,21 +484,21 @@ function toHomeCustomer(customer, index = 0) {
   }
 }
 
-function buildCustomerState(selectedCustomer) {
-  const allCustomers = orderStore.getCustomerList()
+function buildCustomerState(selectedCustomer, sourceCustomers = []) {
+  const allCustomers = sourceCustomers.map(toHomeCustomer)
   const selected = selectedCustomer
     ? toHomeCustomer(selectedCustomer)
-    : toHomeCustomer(allCustomers.find(customer => customer.name === '黔西-龙凤') || allCustomers[0])
+    : (allCustomers.find(customer => customer.name === '黔西-龙凤') || allCustomers[0] || {})
   const quickSource = [selected]
-    .concat(allCustomers.map(toHomeCustomer).filter(customer => customer.name !== selected.name))
+    .concat(allCustomers.filter(customer => customer.name !== selected.name))
     .slice(0, 3)
 
   return {
     currentCustomer: selected,
     customers: quickSource,
-    customerOptions: allCustomers.map(toHomeCustomer),
-    customerMatchedOptions: allCustomers.map(toHomeCustomer),
-    filteredCustomerOptions: allCustomers.slice(0, customerPageSize).map(toHomeCustomer),
+    customerOptions: allCustomers,
+    customerMatchedOptions: allCustomers,
+    filteredCustomerOptions: allCustomers.slice(0, customerPageSize),
     customerListLimit: customerPageSize,
     customerHasMore: allCustomers.length > customerPageSize
   }
@@ -540,6 +549,8 @@ function buildSelectorState(keyword = '', selectedVariantId = '', filter = 'rece
 }
 
 Page({
+  nativeTabBarHidden: false,
+
   data: {
     currentCustomer: {},
     customers: [],
@@ -578,23 +589,45 @@ Page({
   },
 
   onLoad() {
-    const customerState = buildCustomerState()
     this.setData({
-      ...customerState,
       ...buildInitialCartLines()
     })
+    this.loadHomeCustomers()
+  },
+
+  async loadHomeCustomers(selectedCustomer) {
+    try {
+      const result = await customerApi.listCustomers({
+        page: 1,
+        pageSize: 200,
+        sortKey: 'dateDesc'
+      })
+      this.setData({
+        ...buildCustomerState(selectedCustomer, result.list || [])
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '客户数据加载失败',
+        icon: 'none'
+      })
+      this.setData({
+        ...buildCustomerState(selectedCustomer, [])
+      })
+    }
   },
 
   onShow() {
+    if (!guardTabAccess(this, '/pages/index/index')) return
     const app = getApp()
     const selectedCustomer = app.globalData.selectedCustomer
     if (!selectedCustomer) {
+      if (!this.data.customerOptions.length) this.loadHomeCustomers()
       if (!this.hasOpenSheet()) this.restoreNativeTabBar()
       return
     }
 
     app.globalData.selectedCustomer = null
-    const customerState = buildCustomerState(selectedCustomer)
+    const customerState = buildCustomerState(selectedCustomer, this.data.customerOptions)
     this.setData({
       ...customerState,
       activeCustomer: 0,
@@ -620,18 +653,24 @@ Page({
   },
 
   hideNativeTabBar() {
-    if (!wx.hideTabBar) return
+    if (!wx.hideTabBar || this.nativeTabBarHidden) return
+    this.nativeTabBarHidden = true
     wx.hideTabBar({
-      animation: true,
-      fail() {}
+      animation: false,
+      fail: () => {
+        this.nativeTabBarHidden = false
+      }
     })
   },
 
   restoreNativeTabBar() {
-    if (!wx.showTabBar) return
+    if (!wx.showTabBar || !this.nativeTabBarHidden) return
+    this.nativeTabBarHidden = false
     wx.showTabBar({
-      animation: true,
-      fail() {}
+      animation: false,
+      fail: () => {
+        this.nativeTabBarHidden = true
+      }
     })
   },
 
@@ -658,7 +697,7 @@ Page({
     const selected = this.data.customers[index]
     if (!selected) return
 
-    const customerState = buildCustomerState(selected)
+    const customerState = buildCustomerState(selected, this.data.customerOptions)
     this.setData({
       ...customerState,
       activeCustomer: 0,
@@ -721,7 +760,7 @@ Page({
     const selected = this.data.customerOptions.find(customer => customer.id === id)
     if (!selected) return
 
-    const customerState = buildCustomerState(selected)
+    const customerState = buildCustomerState(selected, this.data.customerOptions)
     this.setData({
       ...customerState,
       activeCustomer: 0,
@@ -900,7 +939,7 @@ Page({
     })
   },
 
-  onRecognize() {
+  async onRecognize() {
     const draftText = String(this.data.draftText || '').trim()
     if (!draftText) {
       wx.showToast({
@@ -949,7 +988,7 @@ Page({
       }
       const nextState = {}
       if (confirmedResult.customer) {
-        Object.assign(nextState, buildCustomerState(confirmedResult.customer), { activeCustomer: 0 })
+        Object.assign(nextState, buildCustomerState(confirmedResult.customer, this.data.customerOptions), { activeCustomer: 0 })
       }
       if (confirmedResult.warnings.length) {
         this.setData({
@@ -1002,11 +1041,27 @@ Page({
       return
     }
 
-    const result = parseOrderText(draftText)
+    let result = null
+    try {
+      const backendResult = await aiApi.recognizeSalesIntent({ text: draftText })
+      if (backendResult && Array.isArray(backendResult.items) && backendResult.items.length) {
+        result = {
+          customer: backendResult.customer,
+          items: backendResult.items,
+          pendingItems: backendResult.pendingItems || [],
+          unrecognizedSegments: backendResult.unrecognizedSegments || [],
+          warnings: backendResult.warnings || [],
+          rawText: backendResult.rawText || draftText
+        }
+      }
+    } catch (error) {
+      // The local parser keeps the home page usable when the AI endpoint is not ready.
+    }
+    if (!result) result = parseOrderText(draftText, this.data.customerOptions)
     if (result.pendingItems.length || result.warnings.length) {
       const nextState = {}
       if (result.customer) {
-        Object.assign(nextState, buildCustomerState(result.customer), { activeCustomer: 0 })
+        Object.assign(nextState, buildCustomerState(result.customer, this.data.customerOptions), { activeCustomer: 0 })
       }
       this.setData({
         ...nextState,
@@ -1042,7 +1097,7 @@ Page({
 
     const nextState = {}
     if (result.customer) {
-      Object.assign(nextState, buildCustomerState(result.customer), { activeCustomer: 0 })
+      Object.assign(nextState, buildCustomerState(result.customer, this.data.customerOptions), { activeCustomer: 0 })
     }
 
     const mergedLines = mergeCartLines(this.data.cartItems, result.items)

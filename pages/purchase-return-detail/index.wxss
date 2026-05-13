@@ -27,3 +27,8 @@
 .status-danger {
   color: #d94a55;
 }
+
+.info-link {
+  color: #2e7bef;
+  font-weight: 900;
+}

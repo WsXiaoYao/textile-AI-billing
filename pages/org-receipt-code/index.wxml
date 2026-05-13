@@ -10,7 +10,7 @@
             <image class="receipt-image" wx:if="{{settings.imagePath}}" src="{{settings.imagePath}}" mode="aspectFill" />
             <view class="upload-empty" wx:else>
               <image class="upload-icon" src="/assets/icons/lucide/ui/upload-blue.svg" mode="aspectFit" />
-              <view class="upload-text">上传收款码</view>
+              <view class="upload-text">{{uploading ? '上传中' : '上传收款码'}}</view>
             </view>
           </view>
 
@@ -21,7 +21,7 @@
               value="{{note}}"
               placeholder="门店统一收款码，打印模板与分享票据优先使用。"
               placeholder-class="input-placeholder"
-              maxlength="80"
+              maxlength="500"
               bindinput="onNoteInput"
             />
           </view>
@@ -40,6 +40,6 @@
 
   <view class="bottom-actions">
     <view class="bottom-btn bottom-btn-secondary" bindtap="onCancelTap">取消</view>
-    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">保存收款码</view>
+    <view class="bottom-btn bottom-btn-primary" bindtap="onSaveTap">{{loading ? '保存中' : '保存收款码'}}</view>
   </view>
 </view>

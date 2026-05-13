@@ -7,13 +7,15 @@
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  bottom: calc(104rpx + env(safe-area-inset-bottom));
   z-index: 20;
   min-height: 108rpx;
   padding: 14rpx 24rpx;
   border-top: 1rpx solid #e8edf5;
-  background: rgba(255, 255, 255, 0.97);
+  background: #ffffff;
   box-sizing: border-box;
+  transform: translateZ(0);
+  will-change: transform;
 }
 
 .composer-inner {

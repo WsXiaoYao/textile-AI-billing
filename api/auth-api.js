@@ -8,6 +8,13 @@ function wechatPhoneLogin(payload) {
   })
 }
 
+function getMockOptions() {
+  return dataRequest({
+    method: 'GET',
+    url: '/auth/mock-options'
+  })
+}
+
 function getMe() {
   return dataRequest({
     method: 'GET',
@@ -24,6 +31,7 @@ function logout() {
 
 module.exports = {
   getMe,
+  getMockOptions,
   logout,
   wechatPhoneLogin
 }

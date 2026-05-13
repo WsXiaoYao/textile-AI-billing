@@ -11,7 +11,7 @@
     />
   </view>
 
-  <view class="category-tabs">
+  <view class="category-tabs" wx:if="{{statusTabs.length}}">
     <block wx:for="{{statusTabs}}" wx:key="value">
       <view
         class="category-tab {{item.value == activeStatus ? 'category-tab-active' : ''}}"
@@ -24,12 +24,12 @@
   </view>
 
   <view class="query-row">
-    <view class="date-trigger" bindtap="onDateTap">
+    <view class="date-trigger" wx:if="{{dateVisible}}" bindtap="onDateTap">
       <view class="date-label">{{dateTitle}}</view>
       <view class="date-value">{{dateLabel}}</view>
     </view>
-    <view class="date-arrow">⌄</view>
-    <view class="query-divider"></view>
+    <view class="date-arrow" wx:if="{{dateVisible}}">⌄</view>
+    <view class="query-divider" wx:if="{{dateVisible}}"></view>
     <picker
       class="query-picker"
       mode="selector"
@@ -40,8 +40,8 @@
     >
       <view class="query-action">{{sortLabel}}⌄</view>
     </picker>
-    <view class="query-divider"></view>
-    <view class="query-action" bindtap="onFilterTap">
+    <view class="query-divider" wx:if="{{filterVisible}}"></view>
+    <view class="query-action" wx:if="{{filterVisible}}" bindtap="onFilterTap">
       {{filterLabel}}<text wx:if="{{filterCount}}">·{{filterCount}}</text>⌄
     </view>
   </view>

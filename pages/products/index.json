@@ -4,5 +4,8 @@
   "navigationBarTextStyle": "white",
   "backgroundColor": "#F4F7FB",
   "enablePullDownRefresh": true,
-  "onReachBottomDistance": 280
+  "onReachBottomDistance": 280,
+  "usingComponents": {
+    "back-to-top": "/components/back-to-top/index"
+  }
 }

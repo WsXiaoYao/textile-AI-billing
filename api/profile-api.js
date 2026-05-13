@@ -16,6 +16,9 @@ module.exports = {
   saveReceiptSettings(payload) {
     return dataRequest({ method: 'PUT', url: '/organizations/receipt-settings', data: payload })
   },
+  uploadReceiptCodeImage(payload) {
+    return dataRequest({ method: 'POST', url: '/organizations/receipt-code-image', data: payload })
+  },
   switchOrganization(orgId) {
     return dataRequest({ method: 'POST', url: '/organizations/switch', data: { orgId } })
   }

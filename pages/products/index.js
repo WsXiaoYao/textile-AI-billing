@@ -148,7 +148,9 @@ Page({
     filterViewSections: [],
     filterDraftCount: 0,
     filterDrawerVisible: false,
-    filterDrawerActive: false
+    filterDrawerActive: false,
+    productScrollTop: 0,
+    showBackTop: false
   },
 
   onLoad(options = {}) {
@@ -174,6 +176,18 @@ Page({
 
   onReachBottom() {
     this.loadMoreProducts()
+  },
+
+  onProductScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
+    this.setData({
+      productScrollTop: this.data.productScrollTop === 0 ? 1 : 0,
+      showBackTop: false
+    })
   },
 
   onUnload() {

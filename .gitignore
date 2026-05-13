@@ -34,3 +34,4 @@ artifacts/
 .cache/
 .tmp/
 tmp/
+backend/uploads/

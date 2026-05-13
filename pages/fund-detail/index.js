@@ -1,15 +1,23 @@
-const orderStore = require('../../services/order-store')
+const customerApi = require('../../api/customer-api')
 
 Page({
   data: {
     detail: null
   },
 
-  onLoad(options = {}) {
+  async onLoad(options = {}) {
     const id = decodeURIComponent(options.id || '')
-    this.setData({
-      detail: orderStore.getFundDetail(id)
-    })
+    if (!id) return
+    try {
+      const detail = await customerApi.getFundDetail(id)
+      this.setData({ detail })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '流水详情加载失败',
+        icon: 'none'
+      })
+      this.setData({ detail: null })
+    }
   },
 
   onBackTap() {

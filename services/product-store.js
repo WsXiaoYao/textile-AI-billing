@@ -3,7 +3,43 @@ const productTaskStorageKey = 'textile_product_import_export_tasks_v1'
 const productCategoryStorageKey = 'textile_product_categories_v1'
 const variantDefaultImage = '/assets/products/variant-default.svg'
 const productDefaultImage = '/assets/products/product-default.svg'
-const productSeed = require('../data/product-seed')
+const productSeed = [
+  {
+    id: '829',
+    name: '25玛寸布',
+    no: '829',
+    category: '寸布',
+    warehouse: '默认仓',
+    unit: '米',
+    variants: [
+      { id: '829-1', color: '25玛-米色', unit: '米', stockQty: 0, lowerLimitQty: 0, priceCents: 150, swatch: '#F4E8D0' },
+      { id: '829-2', color: '25玛-深灰', unit: '米', stockQty: 0, lowerLimitQty: 0, priceCents: 150, swatch: '#3F4652' }
+    ]
+  },
+  {
+    id: '831',
+    name: '280祥云',
+    no: '831',
+    category: '法国绒',
+    warehouse: '默认仓',
+    unit: '米',
+    variants: [
+      { id: '831-1', color: 'H513-米', unit: '米', stockQty: 0, lowerLimitQty: 0, priceCents: 4200, swatch: '#F4E8D0' },
+      { id: '831-2', color: 'H515-浅灰', unit: '米', stockQty: 0, lowerLimitQty: 0, priceCents: 4200, swatch: '#B7C0CA' }
+    ]
+  },
+  {
+    id: '807',
+    name: '15米塑料打版膜',
+    no: '807',
+    category: '其他辅料',
+    warehouse: '默认仓',
+    unit: '件',
+    variants: [
+      { id: '807-1', color: '默认', unit: '件', stockQty: 0, lowerLimitQty: 0, priceCents: 1950, swatch: '#DDE6F0' }
+    ]
+  }
+]
 
 let cachedProducts
 let cachedTasks

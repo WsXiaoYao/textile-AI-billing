@@ -1,28 +1,41 @@
-const profileStore = require('../../services/profile-store')
+const profileApi = require('../../api/profile-api')
+const authSession = require('../../utils/auth-session')
 
 Page({
   data: {
     keyword: '',
     organizations: [],
-    selectedOrgId: ''
+    selectedOrgId: '',
+    loading: false,
+    switching: false
   },
 
   onLoad() {
-    const current = profileStore.getCurrentOrg()
-    this.setData({
-      selectedOrgId: current.id
-    }, () => {
-      this.loadOrganizations()
-    })
+    this.loadOrganizations()
   },
 
-  loadOrganizations() {
-    this.setData({
-      organizations: profileStore.getOrganizations(this.data.keyword).map(org => ({
-        ...org,
-        selected: org.id === this.data.selectedOrgId
-      }))
-    })
+  async loadOrganizations() {
+    this.setData({ loading: true })
+    try {
+      const result = await profileApi.listOrganizations({ keyword: this.data.keyword })
+      const list = Array.isArray(result) ? result : result.list || []
+      const current = list.find(org => org.active) || list[0] || {}
+      const selectedOrgId = this.data.selectedOrgId || current.id || ''
+      this.setData({
+        selectedOrgId,
+        organizations: list.map(org => ({
+          ...org,
+          selected: org.id === selectedOrgId
+        }))
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '组织列表加载失败',
+        icon: 'none'
+      })
+    } finally {
+      this.setData({ loading: false })
+    }
   },
 
   onKeywordInput(event) {
@@ -49,10 +62,23 @@ Page({
     wx.switchTab({ url: '/pages/profile/index' })
   },
 
-  onConfirmTap() {
-    const target = profileStore.switchOrganization(this.data.selectedOrgId)
+  async onConfirmTap() {
+    if (!this.data.selectedOrgId || this.data.switching) return
+    const target = this.data.organizations.find(org => org.id === this.data.selectedOrgId)
+    this.setData({ switching: true })
+    try {
+      const auth = await profileApi.switchOrganization(this.data.selectedOrgId)
+      authSession.mergeAuth(auth)
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '组织切换失败',
+        icon: 'none'
+      })
+      this.setData({ switching: false })
+      return
+    }
     wx.showToast({
-      title: `已切换到${target.name}`,
+      title: `已切换到${target ? target.name : '新组织'}`,
       icon: 'success'
     })
     setTimeout(() => {

@@ -5,6 +5,7 @@
   "backgroundColor": "#F4F7FB",
   "enablePullDownRefresh": true,
   "usingComponents": {
-    "order-filter-bar": "/components/order-filter-bar/index"
+    "order-filter-bar": "/components/order-filter-bar/index",
+    "back-to-top": "/components/back-to-top/index"
   }
 }

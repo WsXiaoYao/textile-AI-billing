@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  height: calc(104rpx + env(safe-area-inset-bottom));
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.tabbar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  min-height: calc(104rpx + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+  display: flex;
+  align-items: stretch;
+  border-top: 1rpx solid #d9e1ec;
+  background: #ffffff;
+  box-shadow: 0 -6rpx 18rpx rgba(17, 32, 53, 0.05);
+  pointer-events: auto;
+  transform: translateZ(0);
+}
+
+.tabbar-item {
+  min-width: 0;
+  flex: 1;
+  height: 104rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tabbar-icon {
+  width: 44rpx;
+  height: 44rpx;
+}
+
+.tabbar-text {
+  margin-top: 4rpx;
+  color: #7a869a;
+  font-size: 22rpx;
+  font-weight: 700;
+  line-height: 32rpx;
+}
+
+.tabbar-item.is-active .tabbar-text {
+  color: #2f6fe4;
+}

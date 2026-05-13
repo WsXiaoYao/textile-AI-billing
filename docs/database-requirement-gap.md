@@ -49,6 +49,31 @@
 | `accounts.current_balance` | 按收款金额增加账户余额 |
 | `customers` 汇总金额 | 更新已收、未收、预收金额 |
 
+### 产品主档与 SKU
+
+当前 `products`、`product_sku` 已按后端同事提供的 `product.sql` 作为主口径。
+
+| 同事 SQL 字段 | 当前 Prisma 字段 | 状态 |
+| --- | --- | --- |
+| `products.id` | `Product.id` | 已对齐，BigInt 自增 |
+| `product_code` | `productCode` | 已对齐，唯一 |
+| `product_name` | `productName` | 已对齐 |
+| `product_name_normalized` | `productNameNormalized` | 已对齐 |
+| `product_name_pinyin` | `productNamePinyin` | 已对齐 |
+| `product_name_initials` | `productNameInitials` | 已对齐 |
+| `category_name` | `categoryName` | 已对齐，产品分类先按名称快照 |
+| `default_unit` | `defaultUnit` | 已对齐 |
+| `all_sku_values` | `allSkuValues` | 已对齐，并通过触发器从 SKU 自动同步 |
+| `product_sku.product_id` | `ProductVariant.productId` | 已对齐 |
+| `warehouse_name` | `warehouseName` | 已对齐 |
+| `sku_code` | `skuCode` | 已对齐 |
+| `sku_value` | `skuValue` | 已对齐 |
+| `sale_price` | `salePrice` | 已对齐，Decimal(18,2) |
+| `opening_stock` | `openingStock` | 已对齐，Decimal(18,3) |
+| `min_stock` | `minStock` | 已对齐，Decimal(18,3) |
+
+说明：同事 SQL 中的 trigram 模糊搜索索引依赖 PostgreSQL `pg_trgm` 扩展；当前本地 PostgreSQL 未安装该扩展文件，脚本会跳过高级模糊索引，但保留普通索引、触发器和中文视图。
+
 ### 中文查看
 
 为了方便在 Navicat 等数据库工具查看，已创建中文字段视图：
@@ -60,6 +85,35 @@
 | `accounts_cn` | `accounts` |
 | `receipt_orders_cn` | `receipt_orders` |
 | `receipt_order_items_cn` | `receipt_order_items` |
+| `products_cn` | `products` |
+| `product_sku_cn` | `product_sku` |
+| `sales_orders_cn` | `sales_orders` |
+| `sales_order_items_cn` | `sales_order_items` |
+
+### 销售单与销售单明细
+
+当前 `sales_orders`、`sales_order_items` 已按需求说明书的销售单字段收敛，并保留小程序接口兼容 DTO。
+
+| 需求字段 | 当前字段 | 状态 |
+| --- | --- | --- |
+| `order_no` | `order_no` | 已对齐 |
+| `customer_id` | `customer_id` | 已对齐，关联 `customers.id` |
+| `order_date` | `order_date` | 已对齐 |
+| `warehouse_id` | `warehouse_id` | 已保留，当前允许为空 |
+| `order_amount` | `order_amount` | 已对齐，Decimal(18,2) |
+| `discount_amount` | `discount_amount` | 已对齐，Decimal(18,2) |
+| `contract_amount` | `contract_amount` | 已对齐，Decimal(18,2) |
+| `received_amount` | `received_amount` | 已对齐，Decimal(18,2) |
+| `unreceived_amount` | `unreceived_amount` | 已对齐，Decimal(18,2) |
+| `pay_status` | `pay_status` | 已对齐 |
+| `print_status` | `print_status` | 已对齐 |
+| `creator_user_id` | `creator_user_id` | 已对齐，当前用户 ID 仍沿用字符串 |
+| `color_name` | `sales_order_items.color_name` | 已对齐 |
+| `stock_qty_snapshot` | `sales_order_items.stock_qty_snapshot` | 已对齐 |
+| `qty` | `sales_order_items.qty` | 已对齐 |
+| `unit_name` | `sales_order_items.unit_name` | 已对齐 |
+| `unit_price` | `sales_order_items.unit_price` | 已对齐，Decimal(18,2) |
+| `amount` | `sales_order_items.amount` | 已对齐，Decimal(18,2) |
 
 ## 仍有差异
 
@@ -87,33 +141,6 @@
 | 表 | 字段 |
 | --- | --- |
 | `org_settings` | `org_id/payment_qrcode_url/qrcode_remark/created_at/updated_at` |
-
-### 销售单字段
-
-当前销售单仍是早期小程序字段，接口能跑通，但字段名还没有完全按需求说明书收敛。
-
-| 需求字段 | 当前字段 | 差异 |
-| --- | --- | --- |
-| `order_no` | `no` | 名称不同 |
-| `order_amount` | `orderCents` | 当前按分存整数 |
-| `discount_amount` | `discountCents` | 当前按分存整数 |
-| `contract_amount` | `contractCents` | 当前按分存整数 |
-| `received_amount` | `receivedCents` | 当前按分存整数 |
-| `unreceived_amount` | `unpaidCents` | 当前按分存整数 |
-| `pay_status` | `paymentState` | 枚举名不同 |
-| `print_status` | `printState` | 枚举名不同 |
-| `creator_user_id` | `creator` | 当前只是文本 |
-
-### 销售单明细字段
-
-| 需求字段 | 当前字段 | 差异 |
-| --- | --- | --- |
-| `color_name` | `color` | 名称不同 |
-| `stock_qty_snapshot` | 未建 | 缺少下单时库存快照 |
-| `qty` | `quantity` | 名称不同 |
-| `unit_name` | `unit` | 名称不同 |
-| `unit_price` | `unitCents` | 当前按分存整数 |
-| `amount` | `amountCents` | 当前按分存整数 |
 
 ### 退货单字段
 

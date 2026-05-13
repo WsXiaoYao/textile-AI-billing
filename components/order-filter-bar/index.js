@@ -24,6 +24,10 @@ Component({
       type: String,
       value: '销售日期'
     },
+    dateVisible: {
+      type: Boolean,
+      value: true
+    },
     sortLabel: {
       type: String,
       value: '排序'
@@ -39,6 +43,10 @@ Component({
     filterLabel: {
       type: String,
       value: '筛选'
+    },
+    filterVisible: {
+      type: Boolean,
+      value: true
     },
     filterCount: {
       type: Number,

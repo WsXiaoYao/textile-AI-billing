@@ -1,4 +1,4 @@
-const employeeStore = require('../../services/employee-store')
+const employeeApi = require('../../api/employee-api')
 
 const statusTabs = [
   { label: '全部', value: 'all' },
@@ -14,8 +14,12 @@ Page({
     statusTabs,
     roleFilterId: '',
     roleFilterName: '',
+    roles: [],
     employees: [],
-    displayedEmployees: []
+    displayedEmployees: [],
+    scrollTop: 0,
+    showBackTop: false,
+    loading: false
   },
 
   onLoad() {
@@ -32,9 +36,40 @@ Page({
     })
   },
 
-  loadEmployees(callback) {
-    this.employees = employeeStore.getEmployeeList()
-    this.applyFilters(callback)
+  onListScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
+    this.setData({
+      scrollTop: this.data.scrollTop === 0 ? 1 : 0,
+      showBackTop: false
+    })
+  },
+
+  async loadEmployees(callback) {
+    this.setData({ loading: true })
+    try {
+      const [roles, result] = await Promise.all([
+        employeeApi.getRoleList(),
+        employeeApi.listEmployees()
+      ])
+      this.employees = Array.isArray(result && result.list) ? result.list : []
+      this.setData({
+        roles: Array.isArray(roles) ? roles : []
+      }, () => {
+        this.applyFilters(callback)
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '员工加载失败',
+        icon: 'none'
+      })
+      if (callback) callback()
+    } finally {
+      this.setData({ loading: false })
+    }
   },
 
   onKeywordInput(event) {
@@ -64,7 +99,11 @@ Page({
   },
 
   openRoleFilter() {
-    const roles = employeeStore.getRoleList()
+    const roles = this.data.roles || []
+    if (!roles.length) {
+      wx.showToast({ title: '暂无角色可筛选', icon: 'none' })
+      return
+    }
     wx.showActionSheet({
       itemList: ['全部角色'].concat(roles.map(role => role.name)),
       success: res => {
@@ -114,10 +153,14 @@ Page({
     const activeStatus = this.data.activeStatus
     const roleFilterId = this.data.roleFilterId
     const displayedEmployees = (this.employees || []).filter(employee => {
-      if (keyword && !employee.searchText.includes(keyword)) return false
+      const searchText = String(employee.searchText || '').toLowerCase()
+      if (keyword && !searchText.includes(keyword)) return false
       if (activeStatus === 'enabled') return employee.statusKey === 'enabled'
       if (activeStatus === 'disabled') return employee.statusKey === 'disabled'
-      if (activeStatus === 'role' && roleFilterId) return employee.roleId === roleFilterId
+      if (activeStatus === 'role' && roleFilterId) {
+        const roleIds = Array.isArray(employee.roleIds) ? employee.roleIds : [employee.roleId].filter(Boolean)
+        return roleIds.includes(roleFilterId)
+      }
       return true
     })
 

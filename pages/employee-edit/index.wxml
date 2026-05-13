@@ -7,21 +7,29 @@
         <view class="form-list">
           <view class="form-row">
             <view class="form-label">用户名</view>
-            <input class="form-input" value="{{form.name}}" placeholder="请输入员工姓名" placeholder-class="input-placeholder" bindinput="onNameInput" />
+            <input class="form-input" value="{{form.name}}" placeholder="请输入员工姓名" placeholder-class="input-placeholder" maxlength="30" bindinput="onNameInput" />
           </view>
 
           <view class="form-row">
             <view class="form-label">手机号</view>
-            <input class="form-input" type="number" value="{{form.phone}}" placeholder="请输入手机号" placeholder-class="input-placeholder" bindinput="onPhoneInput" />
+            <input class="form-input" type="number" value="{{form.phone}}" placeholder="请输入手机号" placeholder-class="input-placeholder" maxlength="11" bindinput="onPhoneInput" />
           </view>
 
-          <picker mode="selector" range="{{roles}}" range-key="name" value="{{roleIndex}}" bindchange="onRoleChange">
-            <view class="form-row">
-              <view class="form-label">角色</view>
-              <view class="form-picker-value">{{form.roleName}}</view>
-              <view class="form-chevron">›</view>
+          <view class="form-row form-row-roles">
+            <view class="form-label">角色</view>
+            <view class="role-select">
+              <view class="role-summary">{{form.roleName}}</view>
+              <view class="role-chip-row">
+                <block wx:for="{{roles}}" wx:key="id">
+                  <view
+                    class="role-chip {{item.selected ? 'role-chip-active' : ''}}"
+                    data-id="{{item.id}}"
+                    bindtap="onRoleToggle"
+                  >{{item.name}}</view>
+                </block>
+              </view>
             </view>
-          </picker>
+          </view>
 
           <picker mode="selector" range="{{statusOptions}}" range-key="label" value="{{statusIndex}}" bindchange="onStatusChange">
             <view class="form-row">
@@ -51,11 +59,11 @@
           <view class="card-title">权限提醒</view>
           <view class="role-link" bindtap="onRolePermissionTap">查看角色</view>
         </view>
-        <view class="rule-desc">仓库权限会影响库存、采购、销售单数据可见范围。</view>
+        <view class="rule-desc">员工可拥有多个角色，系统会合并菜单权限；仓库权限仅影响采购、库存、仓库等仓库维度数据。</view>
         <view class="rule-list">
-          <view class="rule-item">1. 员工可绑定多个仓库。</view>
-          <view class="rule-item">2. 禁用后员工需重新登录。</view>
-          <view class="rule-item">3. 查看数据时仅展示授权仓库内容。</view>
+          <view class="rule-item">1. 多角色权限取并集，例如采购 + 仓管。</view>
+          <view class="rule-item">2. 员工可绑定多个仓库。</view>
+          <view class="rule-item">3. 禁用后员工需重新登录。</view>
         </view>
       </view>
     </view>
@@ -63,6 +71,6 @@
 
   <view class="bottom-actions">
     <view wx:if="{{showDisable}}" class="bottom-btn bottom-btn-warning" bindtap="onDisableTap">禁用员工</view>
-    <view class="bottom-btn bottom-btn-primary {{showDisable ? '' : 'bottom-btn-full'}}" bindtap="onSaveTap">保存员工</view>
+    <view class="bottom-btn bottom-btn-primary {{showDisable ? '' : 'bottom-btn-full'}}" bindtap="onSaveTap">{{loading ? '保存中' : '保存员工'}}</view>
   </view>
 </view>

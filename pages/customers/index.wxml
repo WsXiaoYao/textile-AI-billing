@@ -44,6 +44,7 @@
   </view>
 
   <view class="customer-fab" bindtap="onAddCustomerTap">新增客户</view>
+  <back-to-top show="{{showBackTop}}" bottom="224rpx" bind:backtop="onBackTopTap" />
 
   <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
     <view class="filter-backdrop" bindtap="onCancelFilter"></view>

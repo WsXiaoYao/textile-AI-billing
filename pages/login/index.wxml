@@ -1,26 +1,106 @@
 <view class="login-page">
-  <view class="login-hero">
-    <view class="brand-mark">聚</view>
-    <view class="brand-copy">
-      <view class="brand-name">聚云掌柜</view>
-      <view class="brand-desc">使用微信手机号登录后，可以同步组织、员工与仓库权限。</view>
+  <view class="login-hero-band">
+    <view class="login-hero">
+      <view class="brand-mark">聚</view>
+      <view class="brand-copy">
+        <view class="brand-label">纺织开单工作台</view>
+        <view class="brand-name">聚云掌柜</view>
+      </view>
     </view>
+
+    <view class="hero-title">用微信手机号进入组织</view>
+    <view class="hero-desc">自动匹配员工身份、角色权限和可用仓库。</view>
   </view>
 
-  <view class="login-card">
-    <view class="card-title">微信手机号登录</view>
-    <view class="card-desc">手机号作为账号唯一标识，后端会自动匹配员工档案；没有员工档案时，本地开发环境会创建默认组织账号。</view>
-    <view wx:if="{{isMockMode}}" class="dev-tip">当前为 mock 开发模式，建议先用模拟登录验证小程序登录链路；真实手机号授权请用真机预览测试。</view>
-    <button wx:if="{{isMockMode}}" class="primary-btn" disabled="{{loading}}" bindtap="onMockLogin">{{loading ? '登录中' : '开发环境模拟登录'}}</button>
+  <view class="login-panel">
+    <view class="panel-kicker">手机号授权</view>
+    <view class="panel-title">确认后进入当前组织</view>
+    <view class="panel-desc">仅用于识别员工账号，不会公开展示给客户。</view>
+
+    <view class="auth-flow">
+      <view class="flow-item">
+        <view class="flow-icon flow-blue">1</view>
+        <view class="flow-copy">
+          <view class="flow-title">手机号核验</view>
+          <view class="flow-desc">微信安全能力</view>
+        </view>
+      </view>
+      <view class="flow-item">
+        <view class="flow-icon flow-green">2</view>
+        <view class="flow-copy">
+          <view class="flow-title">匹配员工</view>
+          <view class="flow-desc">同步角色权限</view>
+        </view>
+      </view>
+      <view class="flow-item">
+        <view class="flow-icon flow-amber">3</view>
+        <view class="flow-copy">
+          <view class="flow-title">进入工作台</view>
+          <view class="flow-desc">开单与库存</view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{isMockMode}}" class="mock-login-section">
+      <picker value="{{mockTenantIndex}}" range="{{mockTenants}}" range-key="name" bindchange="onMockTenantChange">
+        <view class="mock-account-picker">
+          <view class="mock-picker-main">
+            <view class="mock-picker-label">测试租户</view>
+            <view class="mock-picker-name">{{selectedMockTenant.name}}</view>
+            <view class="mock-picker-desc">{{selectedMockTenant.orgName}} · {{selectedMockTenant.code}}</view>
+          </view>
+          <view class="mock-picker-arrow">⌄</view>
+        </view>
+      </picker>
+
+      <picker value="{{mockAccountIndex}}" range="{{mockTenantAccounts}}" range-key="label" bindchange="onMockAccountChange">
+        <view class="mock-account-picker">
+          <view class="mock-picker-main">
+            <view class="mock-picker-label">登录用户</view>
+            <view class="mock-picker-name">{{selectedMockAccount.label}}</view>
+            <view class="mock-picker-desc">{{selectedMockAccount.phone}} · {{selectedMockAccount.role}} · {{selectedMockAccount.desc}}</view>
+          </view>
+          <view class="mock-picker-arrow">⌄</view>
+        </view>
+      </picker>
+    </view>
+
+    <view wx:else class="real-login-summary">
+      <view class="mock-account-picker">
+        <view class="mock-picker-main">
+          <view class="mock-picker-label">正式登录</view>
+          <view class="mock-picker-name">手机号自动匹配租户</view>
+          <view class="mock-picker-desc">后端会根据当前微信手机号查找员工所属组织。</view>
+        </view>
+      </view>
+    </view>
+
+    <button wx:if="{{isMockMode}}" class="primary-btn" disabled="{{loading}}" bindtap="onMockLogin">{{loading ? '登录中' : '开发环境登录'}}</button>
+
     <button
-      class="{{isMockMode ? 'ghost-btn' : 'primary-btn'}}"
+      wx:else
+      class="primary-btn"
       loading="{{loading}}"
       disabled="{{loading}}"
       open-type="getPhoneNumber"
       bindgetphonenumber="onGetPhoneNumber"
     >
-      {{loading ? '登录中' : '真实微信授权登录'}}
+      {{loading ? '登录中' : '微信手机号一键登录'}}
     </button>
+
+    <button
+      wx:if="{{isMockMode}}"
+      class="dev-btn"
+      disabled="{{loading}}"
+      bindtap="onGetPhoneNumber"
+    >
+      真机微信授权登录
+    </button>
+
+    <view wx:if="{{isMockMode}}" class="dev-tip">本地后端已开启模拟微信登录；真机联调时再切换正式授权。</view>
+
     <button class="plain-btn" disabled="{{loading}}" bindtap="goBack">暂不登录</button>
   </view>
+
+  <view class="login-footer">登录即代表当前手机号用于员工身份和仓库权限校验。</view>
 </view>

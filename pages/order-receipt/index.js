@@ -1,7 +1,22 @@
-const orderStore = require('../../services/order-store')
+const orderApi = require('../../api/order-api')
+const validator = require('../../utils/form-validation')
 
-const today = '2026-04-28'
+const today = '2026-05-11'
 const pickerStartDate = '2024-01-01'
+
+function formatMoney(cents, options = {}) {
+  const value = Number(cents || 0)
+  const absCents = Math.abs(value)
+  const yuan = Math.floor(absCents / 100)
+  const fen = absCents % 100
+  const sign = value < 0 ? '-' : ''
+  const prefix = options.plus && value > 0 ? '+' : ''
+  return `${prefix}${sign}¥${String(yuan).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${fen ? `.${String(fen).padStart(2, '0')}` : ''}`
+}
+
+function formatAmountInput(cents) {
+  return (Number(cents || 0) / 100).toFixed(2)
+}
 
 function parseYuanToCents(value) {
   const normalized = String(value || '').replace(/[^\d.]/g, '')
@@ -16,10 +31,21 @@ function parseYuanToCents(value) {
 
 Page({
   data: {
-    order: orderStore.getReceiptOrder('XS202604180003'),
-    receiptCents: 32000,
-    amountInput: '320.00',
-    receiptText: '¥320',
+    order: {
+      id: '',
+      no: '',
+      customer: '',
+      contractText: '¥0.00',
+      receivedText: '¥0.00',
+      unpaidText: '¥0.00',
+      unpaidCents: 0,
+      defaultReceiptCents: 0,
+      receiptDate: today,
+      remark: '补录本单收款。'
+    },
+    receiptCents: 0,
+    amountInput: '0.00',
+    receiptText: '¥0.00',
     afterUnpaidText: '¥0.00',
     resultHint: '保存后只更新当前销售单，并生成收款记录。',
     resultTone: 'success',
@@ -31,27 +57,39 @@ Page({
     pickerEndDate: today
   },
 
-  onLoad(options = {}) {
-    this.orderId = options.id || 'XS202604180003'
-    const order = orderStore.getReceiptOrder(this.orderId)
-    const receiptCents = order.defaultReceiptCents
+  async onLoad(options = {}) {
+    this.orderId = options.id || ''
+    await this.loadReceiptContext()
+  },
 
-    this.setData({
-      order,
-      receiptCents,
-      amountInput: orderStore.formatAmountInput(receiptCents),
-      receiptDate: order.receiptDate,
-      remark: order.remark
-    }, () => {
-      this.updateReceiptResult(receiptCents)
-    })
+  async loadReceiptContext() {
+    if (!this.orderId) return
+    try {
+      const order = await orderApi.getReceiptContext(this.orderId)
+      const receiptCents = order.defaultReceiptCents
+      this.setData({
+        order,
+        receiptCents,
+        amountInput: formatAmountInput(receiptCents),
+        receiptDate: order.receiptDate,
+        remark: order.remark
+      }, () => {
+        this.updateReceiptResult(receiptCents)
+      })
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '收款信息加载失败',
+        icon: 'none'
+      })
+    }
   },
 
   onAmountInput(event) {
-    const receiptCents = parseYuanToCents(event.detail.value)
+    const amountInput = validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 })
+    const receiptCents = parseYuanToCents(amountInput)
     this.setData({
       receiptCents,
-      amountInput: event.detail.value
+      amountInput
     }, () => {
       this.updateReceiptResult(receiptCents)
     })
@@ -60,7 +98,7 @@ Page({
   onAmountBlur() {
     if (!this.data.amountInput) return
     this.setData({
-      amountInput: orderStore.formatAmountInput(this.data.receiptCents)
+      amountInput: formatAmountInput(this.data.receiptCents)
     })
   },
 
@@ -68,7 +106,7 @@ Page({
     const receiptCents = this.data.order.unpaidCents
     this.setData({
       receiptCents,
-      amountInput: orderStore.formatAmountInput(receiptCents)
+      amountInput: formatAmountInput(receiptCents)
     }, () => {
       this.updateReceiptResult(receiptCents)
     })
@@ -82,7 +120,7 @@ Page({
 
   onRemarkInput(event) {
     this.setData({
-      remark: event.detail.value
+      remark: event.detail.value.slice(0, 120)
     })
   },
 
@@ -104,8 +142,8 @@ Page({
     }
 
     this.setData({
-      receiptText: orderStore.formatMoney(receiptCents, { plus: true }),
-      afterUnpaidText: orderStore.formatMoney(afterUnpaidCents),
+      receiptText: formatMoney(receiptCents, { plus: true }),
+      afterUnpaidText: formatMoney(afterUnpaidCents),
       amountError,
       resultHint,
       resultTone,
@@ -121,7 +159,11 @@ Page({
     wx.switchTab({ url: '/pages/orders/index' })
   },
 
-  onConfirmTap() {
+  async onConfirmTap() {
+    const errors = []
+    validator.maxLength(errors, '备注', this.data.remark, 120)
+    if (validator.showFirstError(errors)) return
+
     if (!this.data.canSubmit) {
       wx.showToast({
         title: this.data.amountError || '请检查收款金额',
@@ -130,21 +172,28 @@ Page({
       return
     }
 
-    orderStore.recordReceipt(this.data.order.id, {
-      amountCents: this.data.receiptCents,
-      date: this.data.receiptDate,
-      remark: this.data.remark || '本单收款已回写销售单详情。'
-    })
+    try {
+      await orderApi.recordReceipt(this.data.order.id, {
+        amountCents: this.data.receiptCents,
+        date: this.data.receiptDate,
+        remark: this.data.remark || '本单收款已回写销售单详情。'
+      })
 
-    wx.showToast({
-      title: '收款已记录',
-      icon: 'success'
-    })
+      wx.showToast({
+        title: '收款已记录',
+        icon: 'success'
+      })
 
-    setTimeout(() => {
-      if (getCurrentPages().length > 1) {
-        wx.navigateBack()
-      }
-    }, 500)
+      setTimeout(() => {
+        if (getCurrentPages().length > 1) {
+          wx.navigateBack()
+        }
+      }, 500)
+    } catch (error) {
+      wx.showToast({
+        title: error.message || '收款失败',
+        icon: 'none'
+      })
+    }
   }
 })

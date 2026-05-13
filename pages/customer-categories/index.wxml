@@ -11,10 +11,6 @@
           bindinput="onKeywordInput"
         />
       </view>
-      <view class="action-row">
-        <view class="action-btn action-btn-secondary" bindtap="onBackTap">返回</view>
-        <view class="action-btn action-btn-primary" bindtap="onAddCategoryTap">新增分类</view>
-      </view>
     </view>
 
     <view class="summary-card">
@@ -55,6 +51,8 @@
     </view>
   </view>
 
+  <view class="category-fab" bindtap="onAddCategoryTap">新增分类</view>
+
   <view wx:if="{{editorVisible}}" class="dialog-mask" catchtap="onCloseEditor">
     <view class="dialog-panel" catchtap="noop">
       <view class="dialog-handle"></view>
@@ -67,11 +65,11 @@
       <view class="dialog-form-card">
         <view class="dialog-field">
           <view class="dialog-label">分类名称</view>
-          <input class="dialog-input" value="{{form.name}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" bindinput="onNameInput" />
+          <input class="dialog-input" value="{{form.name}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" maxlength="50" bindinput="onNameInput" />
         </view>
         <view class="dialog-field">
           <view class="dialog-label">排序</view>
-          <input class="dialog-input" type="number" value="{{form.sortOrder}}" placeholder="数字越小越靠前" placeholder-class="search-placeholder" bindinput="onSortInput" />
+          <input class="dialog-input" type="number" value="{{form.sortOrder}}" placeholder="数字越小越靠前" placeholder-class="search-placeholder" maxlength="4" bindinput="onSortInput" />
         </view>
         <view class="dialog-field dialog-switch-field">
           <view>

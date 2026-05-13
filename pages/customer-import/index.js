@@ -23,6 +23,21 @@ function writeTextFile(fileName, content) {
   })
 }
 
+function readLocalFile(filePath, encoding = 'utf8') {
+  return new Promise((resolve, reject) => {
+    if (!wx.getFileSystemManager) {
+      reject(new Error('当前环境不支持读取本地文件'))
+      return
+    }
+    wx.getFileSystemManager().readFile({
+      filePath,
+      encoding,
+      success: res => resolve(res.data || ''),
+      fail: reject
+    })
+  })
+}
+
 function chooseCustomerFile() {
   return new Promise((resolve, reject) => {
     if (!wx.chooseMessageFile) {
@@ -33,7 +48,7 @@ function chooseCustomerFile() {
     wx.chooseMessageFile({
       count: 1,
       type: 'file',
-      extension: ['csv', 'xlsx', 'xls'],
+      extension: ['csv', 'xlsx'],
       success: res => resolve(res.tempFiles && res.tempFiles[0]),
       fail: reject
     })
@@ -147,33 +162,34 @@ Page({
       .then(file => {
         if (!file) return
         const extension = getExtension(file.name)
-        const allowTypes = ['csv', 'xlsx', 'xls']
+        const allowTypes = ['csv', 'xlsx']
 
         if (!allowTypes.includes(extension)) {
           wx.showToast({
-            title: '请选择 Excel 或 CSV',
+            title: '请选择 XLSX 或 CSV',
             icon: 'none'
           })
           return
         }
-
-        customerApi.addImportTask({
+        const contentPromise = readLocalFile(file.path || file.tempFilePath, extension === 'csv' ? 'utf8' : 'base64')
+        contentPromise.then(content => customerApi.addImportTask({
           title: `客户导入：${file.name}`,
           desc: `已选择 ${extension.toUpperCase()} 文件，大小 ${formatFileSize(file.size)}。`,
-          statusText: '待上传',
+          statusText: '解析中',
           statusTone: 'warning',
           filePath: file.path || '',
           fileName: file.name || '',
           fileSize: file.size || 0,
           fileType: extension,
+          content,
           actionType: 'import'
-        })
+        }))
           .then(task => {
             this.addLocalTask({
               ...task,
               title: task.title || `客户导入：${file.name}`,
               desc: task.desc || `已选择 ${extension.toUpperCase()} 文件，大小 ${formatFileSize(file.size)}。`,
-              statusText: task.statusText || '待上传',
+              statusText: task.statusText || '已解析',
               statusTone: task.statusTone || 'warning',
               filePath: file.path || ''
             })

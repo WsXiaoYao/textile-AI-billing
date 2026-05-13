@@ -29,12 +29,19 @@
         />
       </view>
     </block>
+    <view class="list-footer" wx:if="{{hasMore || loadingMore}}">
+      {{loadingMore ? '加载中' : '继续上滑加载'}}
+    </view>
+    <view class="list-footer list-footer-muted" wx:elif="{{total}}">
+      已显示 {{filteredOrders.length}} / {{total}} 单
+    </view>
   </view>
 
   <view class="empty-state" wx:else>
-    <view class="empty-title">没有匹配的订单</view>
-    <view class="empty-desc">换个客户、单号或筛选条件再试试。</view>
+    <view class="empty-title">{{loading ? '正在加载订单' : '没有匹配的订单'}}</view>
+    <view class="empty-desc">{{loading ? '正在读取真实销售单数据。' : '换个客户、单号或筛选条件再试试。'}}</view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="calc(132rpx + env(safe-area-inset-bottom))" bind:backtop="onBackTopTap" />
 
   <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
     <view class="filter-backdrop" bindtap="onCancelFilter"></view>

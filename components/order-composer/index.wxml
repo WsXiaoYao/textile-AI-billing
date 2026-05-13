@@ -1,4 +1,4 @@
-<view class="order-composer safe-bottom">
+<view class="order-composer">
   <view class="composer-inner">
     <input
       class="composer-input"

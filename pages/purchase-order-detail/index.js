@@ -1,8 +1,21 @@
-const purchaseStore = require('../../services/purchase-store')
+const purchaseApi = require('../../api/purchase-api')
 
 Page({
   data: {
-    order: purchaseStore.getPurchaseOrder()
+    order: {
+      id: '',
+      no: '',
+      supplierName: '',
+      date: '',
+      warehouseName: '',
+      remark: '',
+      items: [],
+      itemCount: 0,
+      orderAmountText: '¥0',
+      discountText: '¥0',
+      contractAmountText: '¥0',
+      creator: ''
+    }
   },
 
   onLoad(options = {}) {
@@ -14,10 +27,14 @@ Page({
     this.loadDetail()
   },
 
-  loadDetail() {
-    this.setData({
-      order: purchaseStore.getPurchaseOrder(this.orderId)
-    })
+  async loadDetail() {
+    if (!this.orderId) return
+    try {
+      const order = await purchaseApi.getPurchaseOrder(this.orderId)
+      this.setData({ order })
+    } catch (error) {
+      wx.showToast({ title: error.message || '采购单加载失败', icon: 'none' })
+    }
   },
 
   onBackTap() {

@@ -1,11 +1,9 @@
 <view class="purchase-page">
-  <scroll-view class="purchase-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <scroll-view class="purchase-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{scrollTop}}" bindscroll="onListScroll">
     <view class="purchase-content">
       <order-filter-bar
         keyword="{{keyword}}"
         search-placeholder="搜索采购单号、供应商"
-        status-tabs="{{statusTabs}}"
-        active-status="{{activeStatus}}"
         date-title="采购日期"
         date-label="{{dateLabel}}"
         sort-label="{{sortLabel}}"
@@ -14,7 +12,6 @@
         filter-count="{{filterCount}}"
         bind:keywordinput="onKeywordInput"
         bind:keywordconfirm="onKeywordConfirm"
-        bind:statuschange="onStatusChange"
         bind:datetap="onDateTap"
         bind:sortchange="onSortChange"
         bind:filtertap="onFilterTap"
@@ -26,14 +23,12 @@
             <view class="order-main">
               <view class="order-title-row">
                 <view class="supplier-name">{{item.supplierName}}</view>
-                <view class="status-pill status-{{item.statusTone}}">{{item.statusText}}</view>
               </view>
               <view class="order-meta">{{item.no}} · {{item.date}} · {{item.creator}}</view>
               <view class="order-warehouse">{{item.warehouseName}}</view>
             </view>
             <view class="order-side">
               <view class="order-amount">{{item.orderAmountText}}</view>
-              <view class="detail-btn">查看详情</view>
             </view>
           </view>
         </block>
@@ -46,8 +41,42 @@
     </view>
   </scroll-view>
 
+  <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
+    <view class="filter-backdrop" bindtap="onCancelFilter"></view>
+    <view class="filter-drawer" catchtap="noop">
+      <view class="filter-header">
+        <view class="filter-title">筛选</view>
+        <view class="filter-selected" wx:if="{{filterDraftCount}}">已选 {{filterDraftCount}} 项</view>
+      </view>
+      <scroll-view class="filter-body" scroll-y>
+        <block wx:for="{{filterViewSections}}" wx:key="key" wx:for-item="section">
+          <view class="filter-section">
+            <view class="filter-section-title">{{section.title}}</view>
+            <view class="filter-chip-grid">
+              <block wx:for="{{section.options}}" wx:key="value" wx:for-item="option">
+                <view
+                  class="filter-chip {{option.active ? 'filter-chip-active' : ''}} {{option.disabled ? 'filter-chip-disabled' : ''}}"
+                  data-key="{{section.key}}"
+                  data-value="{{option.value}}"
+                  bindtap="onFilterOptionTap"
+                >
+                  {{option.label}}
+                </view>
+              </block>
+            </view>
+          </view>
+        </block>
+      </scroll-view>
+      <view class="filter-footer">
+        <view class="filter-reset" bindtap="onResetFilters">重置</view>
+        <view class="filter-done" bindtap="onApplyFilters">完成</view>
+      </view>
+    </view>
+  </view>
+
   <view class="bottom-actions">
     <view class="bottom-btn bottom-btn-secondary" bindtap="onBackTap">返回</view>
     <view class="bottom-btn bottom-btn-primary" bindtap="onAddTap">新建采购单</view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="220rpx" bind:backtop="onBackTopTap" />
 </view>

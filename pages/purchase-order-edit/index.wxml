@@ -61,13 +61,13 @@
                 <view class="color-chip" data-id="{{item.id}}" bindtap="openProductSelector">{{item.color}}⌄</view>
                 <view class="qty-control">
                   <view class="qty-btn" data-id="{{item.id}}" data-delta="-1" bindtap="onStepTap">−</view>
-                  <input class="qty-input" value="{{item.quantityInput}}" type="digit" data-id="{{item.id}}" bindinput="onQtyInput" />
+                  <input class="qty-input" value="{{item.quantityInput}}" type="digit" maxlength="10" data-id="{{item.id}}" bindinput="onQtyInput" />
                   <view class="qty-btn" data-id="{{item.id}}" data-delta="1" bindtap="onStepTap">＋</view>
                 </view>
                 <view class="line-unit">{{item.unit}}</view>
                 <view class="price-box">
                   <text>¥</text>
-                  <input class="price-input" value="{{item.unitPriceInput}}" type="digit" data-id="{{item.id}}" bindinput="onPriceInput" />
+                  <input class="price-input" value="{{item.unitPriceInput}}" type="digit" maxlength="12" data-id="{{item.id}}" bindinput="onPriceInput" />
                 </view>
               </view>
             </view>

@@ -415,6 +415,24 @@ npm run backend:comment:customers
 npm run backend:view:customers-cn
 ```
 
+如果改了产品表、SKU 表、产品中文视图或产品搜索索引：
+
+```bash
+npm run backend:setup:products
+```
+
+如果改了销售单、销售单明细或销售单中文视图：
+
+```bash
+npm run backend:setup:sales-orders
+```
+
+如果需要重置本地销售单模拟数据：
+
+```bash
+npm run backend:seed:sales-orders
+```
+
 新增写接口建议补一个 `app.inject` 验证脚本，至少验证：
 
 1. 错误入参会返回 400。

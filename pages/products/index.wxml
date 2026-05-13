@@ -79,7 +79,7 @@
       </block>
     </scroll-view>
 
-    <scroll-view class="product-scroll" scroll-y enhanced show-scrollbar="{{false}}" bindscrolltolower="onScrollToLower">
+    <scroll-view class="product-scroll" scroll-y enhanced show-scrollbar="{{false}}" scroll-top="{{productScrollTop}}" bindscroll="onProductScroll" bindscrolltolower="onScrollToLower">
       <view class="product-list" wx:if="{{filteredTotal}}">
         <block wx:for="{{displayedProducts}}" wx:key="id">
           <view class="product-card" data-id="{{item.id}}" bindtap="onOpenProduct">
@@ -117,6 +117,7 @@
       </view>
     </scroll-view>
   </view>
+  <back-to-top show="{{showBackTop}}" bottom="calc(132rpx + env(safe-area-inset-bottom))" bind:backtop="onBackTopTap" />
 
   <view class="filter-layer {{filterDrawerActive ? 'filter-layer-active' : ''}}" wx:if="{{filterDrawerVisible}}">
     <view class="filter-backdrop" bindtap="onCancelFilter"></view>

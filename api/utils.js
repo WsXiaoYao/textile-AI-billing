@@ -15,6 +15,14 @@ function normalizeResponse(body) {
     }
   }
 
+  if (body && typeof body === 'object' && typeof body.statusCode === 'number') {
+    return {
+      code: body.statusCode,
+      message: body.message || body.error || '接口请求失败',
+      data: body.data || null
+    }
+  }
+
   return {
     code: 0,
     message: 'ok',

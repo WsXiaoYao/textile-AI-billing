@@ -10,8 +10,8 @@ module.exports = {
   getReturnOrder(id) {
     return dataRequest({ method: 'GET', url: `/return-orders/${encodeURIComponent(id)}` })
   },
-  getReturnOrderForm(id) {
-    return dataRequest({ method: 'GET', url: `/return-orders/${encodeURIComponent(id)}/form` })
+  getReturnOrderForm(id, params) {
+    return dataRequest({ method: 'GET', url: `/return-orders/${encodeURIComponent(id)}/form`, data: params })
   },
   getReturnSummary(params) {
     return dataRequest({ method: 'GET', url: '/return-orders/summary', data: params })

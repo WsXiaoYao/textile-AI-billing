@@ -1,4 +1,4 @@
-const returnStore = require('../../services/return-store')
+const returnApi = require('../../api/return-api')
 
 const statusTabs = [
   { label: '全部', value: 'all' },
@@ -54,6 +54,32 @@ function inDateRange(orderDate, dateValue, referenceDate) {
   return true
 }
 
+function formatMoney(cents) {
+  const amount = Number(cents || 0) / 100
+  return `¥${amount.toFixed(2)}`
+}
+
+function buildSummary(orders) {
+  const list = orders || []
+  const pendingCount = list.filter(item => item.statusKey === 'pending' || item.statusKey === 'partial').length
+  const prepayCents = list.filter(item => item.returnToPrepay).reduce((sum, item) => sum + Number(item.refundCents || 0), 0)
+  const refundCents = list.reduce((sum, item) => sum + Number(item.refundCents || 0), 0)
+  return {
+    title: '退货概览',
+    metrics: [
+      { key: 'pending', label: '待处理', value: `${pendingCount}单`, tone: pendingCount ? 'danger' : 'success' },
+      { key: 'prepay', label: '计入预收', value: formatMoney(prepayCents), tone: 'primary' },
+      { key: 'refund', label: '退货金额', value: formatMoney(refundCents), tone: 'danger' }
+    ],
+    pendingCount,
+    prepayCents,
+    refundCents,
+    pendingText: `${pendingCount}单`,
+    prepayText: formatMoney(prepayCents),
+    refundText: formatMoney(refundCents)
+  }
+}
+
 Page({
   data: {
     keyword: '',
@@ -69,9 +95,11 @@ Page({
     customerIndex: 0,
     warehouseOptions: [{ id: '', name: '按仓库' }],
     warehouseIndex: 0,
-    summary: returnStore.getReturnSummary([]),
+    summary: buildSummary([]),
     returns: [],
-    displayedReturns: []
+    displayedReturns: [],
+    scrollTop: 0,
+    showBackTop: false
   },
 
   onLoad() {
@@ -88,14 +116,36 @@ Page({
     })
   },
 
-  loadReturns(callback) {
-    this.returns = returnStore.getReturnOrderList()
+  onListScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
     this.setData({
-      customerOptions: [{ id: '', name: '客户筛选' }].concat(returnStore.getCustomerOptions()),
-      warehouseOptions: [{ id: '', name: '按仓库' }].concat(returnStore.getWarehouseOptions())
-    }, () => {
-      this.applyFilters(callback)
+      scrollTop: this.data.scrollTop === 0 ? 1 : 0,
+      showBackTop: false
     })
+  },
+
+  async loadReturns(callback) {
+    try {
+      const [result, customers, warehouses] = await Promise.all([
+        returnApi.listReturnOrders(),
+        returnApi.getCustomerOptions(),
+        returnApi.getWarehouseOptions()
+      ])
+      this.returns = result.list || []
+      this.setData({
+        customerOptions: [{ id: '', name: '客户筛选' }].concat(customers || []),
+        warehouseOptions: [{ id: '', name: '按仓库' }].concat(warehouses || [])
+      }, () => {
+        this.applyFilters(callback)
+      })
+    } catch (error) {
+      wx.showToast({ title: error.message || '退货单加载失败', icon: 'none' })
+      if (callback) callback()
+    }
   },
 
   onKeywordInput(event) {
@@ -212,10 +262,10 @@ Page({
     const referenceDate = getReferenceDate(this.returns || [])
     const sortOption = sortOptions[this.data.sortIndex] || sortOptions[0]
     const displayedReturns = (this.returns || []).filter(order => {
-      if (keyword && !order.searchText.includes(keyword)) return false
+      if (keyword && !(order.searchText || '').includes(keyword)) return false
       if (activeStatus !== 'all' && order.statusKey !== activeStatus) return false
       if (customer.id && order.customerId !== customer.id && order.customerName !== customer.name) return false
-      if (warehouse.id && order.warehouseName !== warehouse.name) return false
+      if (warehouse.id && order.warehouseId !== warehouse.id && order.warehouseName !== warehouse.name) return false
       if (!inDateRange(order.date, this.data.dateValue, referenceDate)) return false
       return true
     })
@@ -229,7 +279,7 @@ Page({
 
     this.setData({
       displayedReturns,
-      summary: returnStore.getReturnSummary(displayedReturns),
+      summary: buildSummary(displayedReturns),
       filterCount: (customer.id ? 1 : 0) + (warehouse.id ? 1 : 0)
     }, callback)
   }

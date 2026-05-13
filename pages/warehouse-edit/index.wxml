@@ -8,15 +8,15 @@
         <view class="form-list">
           <view class="form-row">
             <view class="form-label">仓库名称</view>
-            <input class="form-input" value="{{form.name}}" placeholder="请输入仓库名称" placeholder-class="input-placeholder" bindinput="onNameInput" />
+            <input class="form-input" value="{{form.name}}" placeholder="请输入仓库名称" placeholder-class="input-placeholder" maxlength="50" bindinput="onNameInput" />
           </view>
           <view class="form-row">
             <view class="form-label">仓管</view>
-            <input class="form-input" value="{{form.keeper}}" placeholder="请输入仓管姓名" placeholder-class="input-placeholder" bindinput="onKeeperInput" />
+            <input class="form-input" value="{{form.keeper}}" placeholder="请输入仓管姓名" placeholder-class="input-placeholder" maxlength="30" bindinput="onKeeperInput" />
           </view>
           <view class="form-row">
             <view class="form-label">地址</view>
-            <input class="form-input" value="{{form.address}}" placeholder="请输入仓库地址" placeholder-class="input-placeholder" bindinput="onAddressInput" />
+            <input class="form-input" value="{{form.address}}" placeholder="请输入仓库地址" placeholder-class="input-placeholder" maxlength="120" bindinput="onAddressInput" />
           </view>
           <picker mode="selector" range="{{defaultOptions}}" value="{{defaultIndex}}" bindchange="onDefaultChange">
             <view class="form-row">

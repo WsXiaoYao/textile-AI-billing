@@ -161,6 +161,7 @@
           value="{{remark}}"
           placeholder="{{prepayMode ? '填写预收说明，例如客户转账备注' : '填写收款说明，例如线下补录收款'}}"
           placeholder-class="input-placeholder"
+          maxlength="120"
           bindinput="onRemarkInput"
         />
       </view>

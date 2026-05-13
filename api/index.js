@@ -1,5 +1,6 @@
 module.exports = {
   account: require('./account-api'),
+  ai: require('./ai-api'),
   auth: require('./auth-api'),
   customer: require('./customer-api'),
   customerCategory: require('./customer-category-api'),

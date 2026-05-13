@@ -67,6 +67,7 @@
             value="{{remark}}"
             placeholder="填写本单线下已收、补录收款等说明"
             placeholder-class="input-placeholder"
+            maxlength="120"
             bindinput="onRemarkInput"
           />
         </view>

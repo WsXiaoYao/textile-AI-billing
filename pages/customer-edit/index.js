@@ -1,5 +1,6 @@
 const customerApi = require('../../api/customer-api')
 const categoryApi = require('../../api/customer-category-api')
+const validator = require('../../utils/form-validation')
 
 const fieldLimits = {
   name: 120,
@@ -126,7 +127,7 @@ Page({
   },
 
   onPhoneInput(event) {
-    this.updateField('phone', event.detail.value)
+    this.updateField('phone', validator.digitsOnly(event.detail.value, 11))
   },
 
   onAddressInput(event) {
@@ -134,7 +135,7 @@ Page({
   },
 
   onOpeningInput(event) {
-    this.updateField('openingReceivable', String(event.detail.value || '').replace(/[^\d.]/g, ''))
+    this.updateField('openingReceivable', validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 }))
   },
 
   onRemarkInput(event) {

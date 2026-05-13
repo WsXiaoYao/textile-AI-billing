@@ -84,7 +84,7 @@
   min-height: 152rpx;
   padding: 22rpx;
   display: flex;
-  gap: 18rpx;
+  gap: 14rpx;
 }
 
 .supplier-main {
@@ -147,10 +147,11 @@
 }
 
 .supplier-side {
-  flex: 0 0 142rpx;
+  flex: 0 0 176rpx;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  justify-content: center;
 }
 
 .side-label {
@@ -161,21 +162,13 @@
 
 .side-amount {
   margin-top: 4rpx;
-  max-width: 150rpx;
+  max-width: 176rpx;
   color: #d94a55;
-  font-size: 29rpx;
+  font-size: 28rpx;
   font-weight: 900;
-  line-height: 38rpx;
+  line-height: 36rpx;
   text-align: right;
-  overflow-wrap: break-word;
-}
-
-.side-link {
-  margin-top: 14rpx;
-  color: #2e7bef;
-  font-size: 23rpx;
-  font-weight: 900;
-  line-height: 32rpx;
+  white-space: nowrap;
 }
 
 .empty-state {

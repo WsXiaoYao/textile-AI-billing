@@ -1,10 +1,4 @@
-const purchaseStore = require('../../services/purchase-store')
-
-const statusTabs = [
-  { label: '全部', value: 'all' },
-  { label: '草稿', value: 'draft' },
-  { label: '已提交', value: 'submitted' }
-]
+const purchaseApi = require('../../api/purchase-api')
 
 const dateOptions = [
   { label: '全部日期', value: 'all' },
@@ -19,6 +13,50 @@ const sortOptions = [
   { label: '金额 从高到低', value: 'amountDesc' },
   { label: '供应商 A-Z', value: 'supplierAsc' }
 ]
+
+const emptyFilters = {
+  supplierId: '',
+  warehouseId: ''
+}
+
+const filterDrawerAnimationMs = 240
+
+function cloneFilters(filters) {
+  return {
+    supplierId: filters.supplierId || '',
+    warehouseId: filters.warehouseId || ''
+  }
+}
+
+function buildFilterSections(filters, supplierOptions = [], warehouseOptions = []) {
+  const suppliers = (supplierOptions || [])
+    .filter(item => item.id)
+    .map(item => ({
+      label: item.name,
+      value: item.id,
+      active: filters.supplierId === item.id
+    }))
+  const warehouses = (warehouseOptions || [])
+    .filter(item => item.id)
+    .map(item => ({
+      label: item.name,
+      value: item.id,
+      active: filters.warehouseId === item.id
+    }))
+
+  return [
+    {
+      key: 'supplierId',
+      title: '供应商',
+      options: suppliers.length ? suppliers : [{ label: '暂无供应商', value: '__empty__', disabled: true }]
+    },
+    {
+      key: 'warehouseId',
+      title: '仓库',
+      options: warehouses.length ? warehouses : [{ label: '暂无仓库', value: '__empty__', disabled: true }]
+    }
+  ]
+}
 
 function getDateTime(dateText) {
   const parts = String(dateText || '').split('-').map(Number)
@@ -56,20 +94,24 @@ function inDateRange(orderDate, dateValue, referenceDate) {
 Page({
   data: {
     keyword: '',
-    activeStatus: 'all',
-    statusTabs,
-    dateValue: 'week',
-    dateLabel: '本周',
+    dateValue: 'all',
+    dateLabel: '全部日期',
     sortOptions,
     sortIndex: 0,
     sortLabel: '排序',
     filterCount: 0,
     supplierOptions: [{ id: '', name: '供应商筛选' }],
-    supplierIndex: 0,
     warehouseOptions: [{ id: '', name: '按仓库' }],
-    warehouseIndex: 0,
+    filters: cloneFilters(emptyFilters),
+    filterDraft: cloneFilters(emptyFilters),
+    filterViewSections: buildFilterSections(emptyFilters),
+    filterDraftCount: 0,
+    filterDrawerVisible: false,
+    filterDrawerActive: false,
     orders: [],
-    displayedOrders: []
+    displayedOrders: [],
+    scrollTop: 0,
+    showBackTop: false
   },
 
   onLoad(options = {}) {
@@ -87,25 +129,58 @@ Page({
     })
   },
 
-  loadOrders(callback) {
-    const suppliers = [{ id: '', name: '供应商筛选' }].concat(purchaseStore.getSupplierOptions())
-    const warehouses = [{ id: '', name: '按仓库' }].concat(purchaseStore.getWarehouseOptions())
-    this.orders = purchaseStore.getPurchaseOrderList()
-    const supplierIndex = this.initialSupplierId
-      ? Math.max(0, suppliers.findIndex(supplier => supplier.id === this.initialSupplierId))
-      : this.data.supplierIndex
-    const nextDateState = this.initialSupplierId
-      ? { dateValue: 'all', dateLabel: '全部日期' }
-      : {}
+  onListScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
     this.setData({
-      supplierOptions: suppliers,
-      supplierIndex,
-      warehouseOptions: warehouses,
-      ...nextDateState
-    }, () => {
-      this.applyFilters(callback)
+      scrollTop: this.data.scrollTop === 0 ? 1 : 0,
+      showBackTop: false
     })
-    this.initialSupplierId = ''
+  },
+
+  onUnload() {
+    this.clearFilterDrawerTimer()
+  },
+
+  async loadOrders(callback) {
+    try {
+      const [supplierOptions, warehouseOptions, orderResult] = await Promise.all([
+        purchaseApi.getSupplierOptions(),
+        purchaseApi.getWarehouseOptions(),
+        purchaseApi.listPurchaseOrders()
+      ])
+      const suppliers = [{ id: '', name: '供应商筛选' }].concat(supplierOptions || [])
+      const warehouses = [{ id: '', name: '按仓库' }].concat(warehouseOptions || [])
+      this.orders = orderResult.list || []
+      const filters = this.initialSupplierId
+        ? { ...this.data.filters, supplierId: this.initialSupplierId }
+        : this.data.filters
+      const nextInitialState = this.initialSupplierId
+        ? {
+            filters,
+          filterDraft: cloneFilters(filters),
+          filterCount: this.countFilters(filters),
+          dateValue: 'all',
+          dateLabel: '全部日期'
+          }
+        : {}
+      this.setData({
+        supplierOptions: suppliers,
+        warehouseOptions: warehouses,
+        filterViewSections: buildFilterSections(this.data.filterDraft, suppliers, warehouses),
+        ...nextInitialState
+      }, () => {
+        this.applyFilters(callback)
+      })
+      this.initialSupplierId = ''
+    } catch (error) {
+      wx.showToast({ title: error.message || '采购单加载失败', icon: 'none' })
+      this.orders = []
+      this.applyFilters(callback)
+    }
   },
 
   onKeywordInput(event) {
@@ -116,14 +191,6 @@ Page({
 
   onKeywordConfirm() {
     this.applyFilters()
-  },
-
-  onStatusChange(event) {
-    this.setData({
-      activeStatus: event.detail.value || 'all'
-    }, () => {
-      this.applyFilters()
-    })
   },
 
   onDateTap() {
@@ -153,32 +220,94 @@ Page({
   },
 
   onFilterTap() {
-    wx.showActionSheet({
-      itemList: ['供应商筛选', '仓库筛选', '清空筛选'],
-      success: res => {
-        if (res.tapIndex === 0) {
-          this.openSupplierFilter()
-          return
+    this.clearFilterDrawerTimer()
+    const filterDraft = cloneFilters(this.data.filters)
+    this.setData({
+      filterDraft,
+      filterViewSections: buildFilterSections(filterDraft, this.data.supplierOptions, this.data.warehouseOptions),
+      filterDraftCount: this.countFilters(filterDraft),
+      filterDrawerVisible: true,
+      filterDrawerActive: false
+    }, () => {
+      wx.nextTick(() => {
+        if (this.data.filterDrawerVisible) {
+          this.setData({ filterDrawerActive: true })
         }
-        if (res.tapIndex === 1) {
-          this.openWarehouseFilter()
-          return
-        }
-        this.setData({
-          supplierIndex: 0,
-          warehouseIndex: 0
-        }, () => {
-          this.applyFilters()
-        })
-      }
+      })
     })
+  },
+
+  onFilterOptionTap(event) {
+    const { key, value } = event.currentTarget.dataset
+    if (value === '__empty__') return
+    const filterDraft = cloneFilters(this.data.filterDraft)
+    filterDraft[key] = filterDraft[key] === value ? '' : value
+    this.setData({
+      filterDraft,
+      filterViewSections: buildFilterSections(filterDraft, this.data.supplierOptions, this.data.warehouseOptions),
+      filterDraftCount: this.countFilters(filterDraft)
+    })
+  },
+
+  onResetFilters() {
+    const filterDraft = cloneFilters(emptyFilters)
+    this.setData({
+      filterDraft,
+      filterViewSections: buildFilterSections(filterDraft, this.data.supplierOptions, this.data.warehouseOptions),
+      filterDraftCount: 0
+    })
+  },
+
+  onApplyFilters() {
+    const filters = cloneFilters(this.data.filterDraft)
+    this.setData({
+      filters,
+      filterCount: this.countFilters(filters)
+    }, () => {
+      this.applyFilters()
+      this.closeFilterDrawer()
+    })
+  },
+
+  onCancelFilter() {
+    this.closeFilterDrawer()
+  },
+
+  closeFilterDrawer() {
+    if (!this.data.filterDrawerVisible) return
+    this.clearFilterDrawerTimer()
+    this.setData({ filterDrawerActive: false })
+    this.filterDrawerTimer = setTimeout(() => {
+      this.setData({ filterDrawerVisible: false })
+      this.filterDrawerTimer = null
+    }, filterDrawerAnimationMs)
+  },
+
+  clearFilterDrawerTimer() {
+    if (!this.filterDrawerTimer) return
+    clearTimeout(this.filterDrawerTimer)
+    this.filterDrawerTimer = null
+  },
+
+  noop() {},
+
+  countFilters(filters) {
+    return Object.keys(filters || {}).filter(key => Boolean(filters[key])).length
   },
 
   openSupplierFilter() {
     wx.showActionSheet({
       itemList: this.data.supplierOptions.map(item => item.name),
       success: res => {
-        this.setData({ supplierIndex: Number(res.tapIndex || 0) }, () => {
+        const supplier = this.data.supplierOptions[Number(res.tapIndex || 0)] || {}
+        const filters = {
+          ...this.data.filters,
+          supplierId: supplier.id || ''
+        }
+        this.setData({
+          filters,
+          filterCount: this.countFilters(filters)
+        }, () => {
           this.applyFilters()
         })
       }
@@ -189,7 +318,15 @@ Page({
     wx.showActionSheet({
       itemList: this.data.warehouseOptions.map(item => item.name),
       success: res => {
-        this.setData({ warehouseIndex: Number(res.tapIndex || 0) }, () => {
+        const warehouse = this.data.warehouseOptions[Number(res.tapIndex || 0)] || {}
+        const filters = {
+          ...this.data.filters,
+          warehouseId: warehouse.id || ''
+        }
+        this.setData({
+          filters,
+          filterCount: this.countFilters(filters)
+        }, () => {
           this.applyFilters()
         })
       }
@@ -216,16 +353,13 @@ Page({
 
   applyFilters(callback) {
     const keyword = this.data.keyword.trim().toLowerCase()
-    const supplier = this.data.supplierOptions[this.data.supplierIndex] || {}
-    const warehouse = this.data.warehouseOptions[this.data.warehouseIndex] || {}
-    const activeStatus = this.data.activeStatus
+    const filters = this.data.filters || emptyFilters
     const referenceDate = getReferenceDate(this.orders || [])
     const sortOption = sortOptions[this.data.sortIndex] || sortOptions[0]
     const displayedOrders = (this.orders || []).filter(order => {
       if (keyword && !order.searchText.includes(keyword)) return false
-      if (activeStatus !== 'all' && order.statusKey !== activeStatus) return false
-      if (supplier.id && order.supplierId !== supplier.id) return false
-      if (warehouse.id && order.warehouseName !== warehouse.name) return false
+      if (filters.supplierId && order.supplierId !== filters.supplierId) return false
+      if (filters.warehouseId && order.warehouseId !== filters.warehouseId) return false
       if (!inDateRange(order.date, this.data.dateValue, referenceDate)) return false
       return true
     })
@@ -239,7 +373,7 @@ Page({
 
     this.setData({
       displayedOrders,
-      filterCount: (supplier.id ? 1 : 0) + (warehouse.id ? 1 : 0)
+      filterCount: this.countFilters(filters)
     }, callback)
   }
 })

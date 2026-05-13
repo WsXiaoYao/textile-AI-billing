@@ -1,0 +1,8 @@
+<view
+  wx:if="{{show}}"
+  class="back-top"
+  style="bottom: {{bottom}};"
+  catchtap="onTap"
+>
+  ↑
+</view>

@@ -1,4 +1,5 @@
 const customerApi = require('../../api/customer-api')
+const validator = require('../../utils/form-validation')
 
 const today = '2026-04-28'
 const pickerStartDate = '2024-01-01'
@@ -52,12 +53,14 @@ function buildReceiptPreview(source, receiptCents, options = {}) {
   const availablePrepaidCents = Number(source.availablePrepaidCents || 0)
   const usePrepaid = Boolean(options.usePrepaid)
   const prepayMode = Boolean(options.prepayMode)
-  const usePrepaidCents = usePrepaid ? Math.min(availablePrepaidCents, totalUnpaidCents) : 0
-  const distributionCents = prepayMode ? usePrepaidCents : Number(receiptCents || 0) + usePrepaidCents
+  const usePrepaidCents = prepayMode ? 0 : usePrepaid ? Math.min(availablePrepaidCents, totalUnpaidCents) : 0
+  const cashAllocatedCents = prepayMode ? 0 : Math.min(Number(receiptCents || 0), Math.max(totalUnpaidCents - usePrepaidCents, 0))
+  const overpaidCents = prepayMode ? Number(receiptCents || 0) : Math.max(Number(receiptCents || 0) - cashAllocatedCents, 0)
+  const distributionCents = prepayMode ? 0 : cashAllocatedCents + usePrepaidCents
   const afterUnpaidCents = Math.max(totalUnpaidCents - distributionCents, 0)
   const prepaidAfterCents = prepayMode
-    ? availablePrepaidCents - usePrepaidCents + Number(receiptCents || 0)
-    : availablePrepaidCents - usePrepaidCents
+    ? availablePrepaidCents + Number(receiptCents || 0)
+    : availablePrepaidCents - usePrepaidCents + overpaidCents
 
   return {
     ...source,
@@ -65,6 +68,8 @@ function buildReceiptPreview(source, receiptCents, options = {}) {
     usePrepaid,
     prepayMode,
     usePrepaidCents,
+    cashAllocatedCents,
+    overpaidCents,
     afterUnpaidCents,
     prepaidAfterCents,
     receiptText: formatMoney(receiptCents),
@@ -74,7 +79,6 @@ function buildReceiptPreview(source, receiptCents, options = {}) {
     previewRows: prepayMode
       ? [
           { label: '收款前累计欠款', value: formatMoney(totalUnpaidCents), tone: 'normal' },
-          { label: '使用预收款', value: formatMoney(-usePrepaidCents), tone: 'primary' },
           { label: '本次转入预收款', value: formatMoney(receiptCents, { plus: true }), tone: 'success' },
           { label: '收款后累计欠款', value: formatMoney(afterUnpaidCents), tone: afterUnpaidCents ? 'danger' : 'success' },
           { label: '预收款余额', value: formatMoney(prepaidAfterCents), tone: prepaidAfterCents ? 'success' : 'normal' }
@@ -82,6 +86,8 @@ function buildReceiptPreview(source, receiptCents, options = {}) {
       : [
           { label: '收款前累计欠款', value: formatMoney(totalUnpaidCents), tone: 'normal' },
           { label: '本次收款', value: formatMoney(-receiptCents), tone: 'success' },
+          ...(usePrepaidCents > 0 ? [{ label: '使用预收款', value: formatMoney(-usePrepaidCents), tone: 'primary' }] : []),
+          ...(overpaidCents > 0 ? [{ label: '转入预收款', value: formatMoney(overpaidCents, { plus: true }), tone: 'primary' }] : []),
           { label: '收款后累计欠款', value: formatMoney(afterUnpaidCents), tone: afterUnpaidCents ? 'danger' : 'success' },
           { label: '预收款余额', value: formatMoney(prepaidAfterCents), tone: prepaidAfterCents ? 'success' : 'normal' }
         ]
@@ -132,10 +138,11 @@ Page({
   },
 
   onAmountInput(event) {
-    const receiptCents = parseYuanToCents(event.detail.value)
+    const amountInput = validator.normalizeDecimalInput(event.detail.value, { maxDecimal: 2 })
+    const receiptCents = parseYuanToCents(amountInput)
     this.setData({
       receiptCents,
-      amountInput: event.detail.value
+      amountInput
     }, () => {
       this.updateReceiptResult(receiptCents)
     })
@@ -166,7 +173,7 @@ Page({
   },
 
   onRemarkInput(event) {
-    this.setData({ remark: event.detail.value })
+    this.setData({ remark: event.detail.value.slice(0, 120) })
   },
 
   onUsePrepaidChange(event) {
@@ -199,17 +206,15 @@ Page({
       usePrepaid: this.data.usePrepaid,
       prepayMode: this.data.prepayMode
     })
-    const totalUnpaidCents = receipt.totalUnpaidCents
-    const distributionCents = this.data.prepayMode ? receipt.usePrepaidCents : receiptCents + receipt.usePrepaidCents
+    const distributionCents = this.data.prepayMode ? 0 : receipt.cashAllocatedCents + receipt.usePrepaidCents
+    const effectiveCents = distributionCents + Number(receipt.overpaidCents || 0)
     let amountError = ''
 
     if (this.data.prepayMode && receiptCents <= 0) {
       amountError = '请输入收款金额'
-    } else if (!this.data.prepayMode && distributionCents <= 0) {
+    } else if (!this.data.prepayMode && effectiveCents <= 0) {
       amountError = '请输入收款金额或使用预收款'
-    } else if (!this.data.prepayMode && distributionCents > totalUnpaidCents) {
-      amountError = '本次收款和预收冲抵不能超过客户当前未收'
-    } else if (!this.data.prepayMode && !receipt.orderCount) {
+    } else if (!this.data.prepayMode && !receipt.orderCount && receiptCents <= 0) {
       amountError = '当前客户没有待收销售单'
     }
 
@@ -235,6 +240,10 @@ Page({
   },
 
   async onConfirmTap() {
+    const errors = []
+    validator.maxLength(errors, '备注', this.data.remark, 120)
+    if (validator.showFirstError(errors)) return
+
     if (!this.data.canSubmit) {
       wx.showToast({
         title: this.data.amountError || '请检查收款金额',

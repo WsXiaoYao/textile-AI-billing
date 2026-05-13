@@ -1,13 +1,13 @@
 <view class="profile-page">
   <view class="profile-hero">
-    <view class="user-avatar">王</view>
+    <view class="user-avatar">{{profile.user.avatarText}}</view>
     <view class="user-main">
       <view class="user-name">{{profile.user.name}}</view>
       <view class="user-meta">{{profile.user.role}} · {{profile.user.phone}}</view>
     </view>
-    <view class="switch-action" bindtap="onSwitchOrgTap">
+    <view class="switch-action" bindtap="onSwitchAccountTap">
       <image class="switch-icon" src="/assets/icons/lucide/ui/refresh-cw-white.svg" mode="aspectFit" />
-      <view class="switch-text">组织切换</view>
+      <view class="switch-text">切换账号</view>
     </view>
   </view>
 
@@ -26,7 +26,7 @@
     </view>
   </view>
 
-  <view class="profile-card">
+  <view wx:if="{{profile.settings.length}}" class="profile-card">
     <view class="section-title">常用设置</view>
     <view class="tool-row">
       <block wx:for="{{profile.settings}}" wx:key="key">
@@ -41,7 +41,7 @@
     </view>
   </view>
 
-  <view class="profile-card help-card">
+  <view wx:if="{{profile.helps.length}}" class="profile-card help-card">
     <view class="section-title">帮助中心</view>
     <view class="tool-row help-row">
       <block wx:for="{{profile.helps}}" wx:key="key">

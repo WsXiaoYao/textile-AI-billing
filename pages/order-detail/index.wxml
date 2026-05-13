@@ -40,6 +40,28 @@
       </view>
 
       <view class="detail-card">
+        <view class="return-head">
+          <view>
+            <view class="card-title">退货处理</view>
+            <view class="card-desc">{{detail.returnInfo.desc}}</view>
+          </view>
+          <view class="return-total" wx:if="{{detail.returnInfo.count}}">{{detail.returnInfo.totalText}}</view>
+        </view>
+        <view class="return-records" wx:if="{{detail.returnInfo.list.length}}">
+          <block wx:for="{{detail.returnInfo.list}}" wx:key="id">
+            <view class="return-record" data-id="{{item.id}}" bindtap="onOpenReturnOrder">
+              <view class="return-record-main">
+                <view class="return-record-no">{{item.no}}</view>
+                <view class="return-record-date">{{item.date}} · {{item.statusText}}</view>
+              </view>
+              <view class="return-record-amount">{{item.amountText}}</view>
+            </view>
+          </block>
+        </view>
+        <view class="small-btn small-btn-secondary return-action" bindtap="onReturnTap">发起退货</view>
+      </view>
+
+      <view class="detail-card">
         <view class="card-title">基础信息</view>
         <view class="info-row">
           <view class="info-label">单号</view>

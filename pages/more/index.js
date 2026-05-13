@@ -1,13 +1,16 @@
+const { filterByPermission } = require('../../utils/permissions')
+const { guardTabAccess } = require('../../utils/tabbar')
+
 const sections = [
   {
     title: '商品与库存',
     desc: '经营主数据和库存动作统一从这里进入',
     tone: 'primary',
     items: [
-      { key: 'products', title: '产品管理', icon: '/assets/icons/lucide/ui/layout-grid-blue.svg' },
-      { key: 'categories', title: '产品分类', icon: '/assets/icons/lucide/ui/list-dark.svg' },
-      { key: 'stock-summary', title: '库存总览', icon: '/assets/icons/lucide/ui/gauge-dark.svg' },
-      { key: 'warehouses', title: '仓库管理', icon: '/assets/icons/lucide/ui/warehouse-dark.svg' }
+      { key: 'products', title: '产品管理', icon: '/assets/icons/lucide/ui/layout-grid-blue.svg', permissions: ['products:read'] },
+      { key: 'categories', title: '产品分类', icon: '/assets/icons/lucide/ui/list-dark.svg', permissions: ['products:read'] },
+      { key: 'stock-summary', title: '库存总览', icon: '/assets/icons/lucide/ui/gauge-dark.svg', permissions: ['inventory:read'] },
+      { key: 'warehouses', title: '仓库管理', icon: '/assets/icons/lucide/ui/warehouse-dark.svg', permissions: ['warehouses:read'] }
     ]
   },
   {
@@ -15,10 +18,10 @@ const sections = [
     desc: '供应商、采购和退换按业务链路进入',
     tone: 'warning',
     items: [
-      { key: 'customer-categories', title: '客户分类', icon: '/assets/icons/lucide/ui/users-orange.svg' },
-      { key: 'suppliers', title: '供应商', icon: '/assets/icons/lucide/ui/handshake-dark.svg' },
-      { key: 'purchase-orders', title: '采购单', icon: '/assets/icons/lucide/ui/shopping-bag-orange.svg' },
-      { key: 'purchase-returns', title: '退货单', icon: '/assets/icons/lucide/ui/undo-2-dark.svg' }
+      { key: 'customer-categories', title: '客户分类', icon: '/assets/icons/lucide/ui/users-orange.svg', permissions: ['customers:read'] },
+      { key: 'suppliers', title: '供应商', icon: '/assets/icons/lucide/ui/handshake-dark.svg', permissions: ['suppliers:read'] },
+      { key: 'purchase-orders', title: '采购单', icon: '/assets/icons/lucide/ui/shopping-bag-orange.svg', permissions: ['purchase:read'] },
+      { key: 'purchase-returns', title: '退货单', icon: '/assets/icons/lucide/ui/undo-2-dark.svg', permissions: ['returns:read'] }
     ]
   },
   {
@@ -26,16 +29,28 @@ const sections = [
     desc: '统计和报表',
     tone: 'warning',
     items: [
-      { key: 'receivable-report', title: '销售欠款总览', icon: '/assets/icons/lucide/ui/receipt-orange.svg' },
-      { key: 'product-sales-report', title: '产品销售总览', icon: '/assets/icons/lucide/ui/target-orange.svg' },
-      { key: 'customer-sales-report', title: '客户销售总览', icon: '/assets/icons/lucide/ui/users-orange.svg' }
+      { key: 'receivable-report', title: '销售欠款总览', icon: '/assets/icons/lucide/ui/receipt-orange.svg', permissions: ['reports:read', 'sales:read'] },
+      { key: 'product-sales-report', title: '产品销售总览', icon: '/assets/icons/lucide/ui/target-orange.svg', permissions: ['reports:read', 'sales:read'] },
+      { key: 'customer-sales-report', title: '客户销售总览', icon: '/assets/icons/lucide/ui/users-orange.svg', permissions: ['reports:read', 'customers:read'] }
     ]
   }
 ]
 
 Page({
   data: {
-    sections
+    sections: []
+  },
+
+  onShow() {
+    if (!guardTabAccess(this, '/pages/more/index')) return
+    this.setData({
+      sections: sections
+        .map(section => ({
+          ...section,
+          items: filterByPermission(section.items)
+        }))
+        .filter(section => section.items.length)
+    })
   },
 
   onToolTap(event) {

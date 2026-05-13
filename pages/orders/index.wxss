@@ -1,6 +1,6 @@
 .orders-page {
   min-height: 100vh;
-  padding: 24rpx 24rpx 40rpx;
+  padding: 24rpx 24rpx calc(156rpx + env(safe-area-inset-bottom));
   background: #f4f7fb;
   box-sizing: border-box;
 }
@@ -19,6 +19,20 @@
 .order-card-item {
   display: block;
   width: 100%;
+}
+
+.list-footer {
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667085;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.list-footer-muted {
+  color: #98a2b3;
 }
 
 .empty-state {

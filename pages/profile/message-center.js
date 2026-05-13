@@ -1,3 +1,4 @@
+const messageApi = require('../../api/message-api')
 const messageStore = require('../../services/message-store')
 
 const filters = [
@@ -28,14 +29,31 @@ Page({
     this.loadMessages(() => wx.stopPullDownRefresh())
   },
 
-  loadMessages(callback) {
+  async loadMessages(callback) {
     const activeFilter = this.data.activeFilter
     const activeFilterItem = filters.find(item => item.key === activeFilter) || filters[0]
-    this.setData({
-      activeFilterLabel: activeFilterItem.label,
-      messages: messageStore.getMessages(activeFilter),
-      stats: messageStore.getMessageStats()
-    }, callback)
+    try {
+      const [result, stats] = await Promise.all([
+        messageApi.listMessages({ filter: activeFilter }),
+        messageApi.getMessageStats()
+      ])
+      const messages = Array.isArray(result) ? result : result.list || []
+      this.setData({
+        activeFilterLabel: activeFilterItem.label,
+        messages,
+        stats
+      }, callback)
+    } catch (error) {
+      this.setData({
+        activeFilterLabel: activeFilterItem.label,
+        messages: messageStore.getMessages(activeFilter),
+        stats: messageStore.getMessageStats()
+      }, callback)
+      wx.showToast({
+        title: error.message || '消息加载失败',
+        icon: 'none'
+      })
+    }
   },
 
   onFilterTap(event) {
@@ -48,9 +66,14 @@ Page({
     wx.navigateTo({ url: `/pages/profile/message-detail?id=${encodeURIComponent(id)}` })
   },
 
-  onMarkAllReadTap() {
-    messageStore.markAllRead()
-    wx.showToast({ title: '已全部标记为已读', icon: 'none' })
+  async onMarkAllReadTap() {
+    try {
+      await messageApi.markAllRead()
+      wx.showToast({ title: '已全部标记为已读', icon: 'none' })
+    } catch (error) {
+      messageStore.markAllRead()
+      wx.showToast({ title: error.message || '已更新本地状态', icon: 'none' })
+    }
     this.loadMessages()
   },
 

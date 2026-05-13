@@ -1,4 +1,5 @@
 const productStore = require('../../services/product-store')
+const validator = require('../../utils/form-validation')
 
 function getUserFilePath(fileName) {
   const safeName = fileName.replace(/[\\/:*?"<>|]/g, '-')
@@ -151,7 +152,7 @@ Page({
     this.setData({
       categoryForm: {
         ...this.data.categoryForm,
-        label: event.detail.value
+        label: event.detail.value.slice(0, 50)
       }
     })
   },
@@ -170,7 +171,19 @@ Page({
   },
 
   onSaveCategoryTap() {
-    const result = productStore.saveCategoryForm(this.data.categoryForm)
+    const categoryForm = {
+      ...this.data.categoryForm,
+      label: validator.trimText(this.data.categoryForm.label)
+    }
+    const errors = []
+    validator.requireText(errors, '分类名称', categoryForm.label)
+    validator.maxLength(errors, '分类名称', categoryForm.label, 50)
+    if (validator.showFirstError(errors)) {
+      this.setData({ categoryForm })
+      return
+    }
+
+    const result = productStore.saveCategoryForm(categoryForm)
     if (!result.ok) {
       wx.showToast({ title: result.message, icon: 'none' })
       return

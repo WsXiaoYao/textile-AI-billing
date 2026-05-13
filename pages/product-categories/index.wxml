@@ -68,7 +68,7 @@
       <view class="dialog-form-card">
         <view class="dialog-field">
           <view class="dialog-label">分类名称</view>
-          <input class="dialog-input" value="{{categoryForm.label}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" bindinput="onCategoryLabelInput" />
+          <input class="dialog-input" value="{{categoryForm.label}}" placeholder="请输入分类名称" placeholder-class="search-placeholder" maxlength="50" bindinput="onCategoryLabelInput" />
         </view>
         <picker mode="selector" range="{{parentOptions}}" range-key="labelText" value="{{parentIndex}}" bindchange="onParentChange">
           <view class="dialog-field dialog-picker">

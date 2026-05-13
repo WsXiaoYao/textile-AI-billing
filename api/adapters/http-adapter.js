@@ -32,12 +32,12 @@ function request(options = {}) {
         ...(options.header || {})
       },
       success(res) {
+        const normalized = normalizeResponse(res.data)
         if (res.statusCode < 200 || res.statusCode >= 300) {
-          reject(new Error(`接口请求失败：HTTP ${res.statusCode}`))
+          reject(new Error(normalized.message || `接口请求失败：HTTP ${res.statusCode}`))
           return
         }
 
-        const normalized = normalizeResponse(res.data)
         if (normalized.code !== 0) {
           reject(new Error(normalized.message || '接口请求失败'))
           return

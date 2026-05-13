@@ -1,4 +1,4 @@
-const inventoryStore = require('../../services/inventory-store')
+const inventoryApi = require('../../api/inventory-api')
 
 const sortOptions = [
   { label: '库存预警优先', value: 'lowFirst' },
@@ -8,16 +8,22 @@ const sortOptions = [
   { label: '产品名称 A-Z', value: 'nameAsc' }
 ]
 
+const statusTabs = [
+  { label: '全部', value: 'all' },
+  { label: '低库存', value: 'low' },
+  { label: '无库存', value: 'empty' },
+  { label: '有库存', value: 'positive' }
+]
+
 const initialLimit = 18
 const pageSize = 16
-const filterDrawerAnimationMs = 240
 
 const emptyFilters = {
   warehouseName: '全部',
   statusKey: 'low',
   showLower: true,
-  showCost: false,
-  showSale: false
+  showCost: true,
+  showSale: true
 }
 
 function cloneFilters(filters) {
@@ -41,52 +47,8 @@ function getStatusLabel(value) {
   return map[value] || '全部库存'
 }
 
-function buildFilterTags(filters) {
-  const tags = []
-  tags.push(filters.warehouseName && filters.warehouseName !== '全部' ? filters.warehouseName : '全部仓')
-  tags.push(getStatusLabel(filters.statusKey))
-  if (filters.showCost) tags.push('显示成本')
-  if (filters.showSale) tags.push('显示售价')
-  if (filters.showLower) tags.push('库存下限')
-  return tags
-}
-
-function buildFilterSections(filters, warehouseOptions) {
-  return [
-    {
-      key: 'statusKey',
-      title: '库存状态',
-      options: [
-        { label: '全部', value: 'all' },
-        { label: '低库存', value: 'low' },
-        { label: '无库存', value: 'empty' },
-        { label: '有库存', value: 'positive' }
-      ]
-    },
-    {
-      key: 'warehouseName',
-      title: '仓库',
-      options: warehouseOptions.map(value => ({ label: value, value }))
-    },
-    {
-      key: 'displayField',
-      title: '展示字段',
-      options: [
-        { label: '库存下限', value: 'showLower' },
-        { label: '成本均价', value: 'showCost' },
-        { label: '参考售价', value: 'showSale' }
-      ]
-    }
-  ].map(section => ({
-    ...section,
-    options: section.options.map(option => {
-      let active = false
-      if (section.key === 'displayField') active = Boolean(filters[option.value])
-      if (section.key === 'warehouseName') active = filters.warehouseName === option.value
-      if (section.key === 'statusKey') active = filters.statusKey === option.value
-      return { ...option, active }
-    })
-  }))
+function getActiveStatus(value) {
+  return statusTabs.some(item => item.value === value) ? value : 'all'
 }
 
 Page({
@@ -98,20 +60,27 @@ Page({
     renderCount: 0,
     hasMore: false,
     loadingMore: false,
-    summary: inventoryStore.getInventorySummary(emptyFilters),
+    summary: {
+      itemCount: 0,
+      totalStockText: '0',
+      totalValueText: '¥0.00',
+      lowCount: 0,
+      emptyCount: 0,
+      stockedCount: 0
+    },
     warehouseOptions: ['全部'],
     warehouseIndex: 0,
     sortOptions,
     sortIndex: 0,
     sortValue: 'lowFirst',
+    sortLabel: '排序',
+    statusTabs,
+    activeStatus: getActiveStatus(emptyFilters.statusKey),
+    warehouseLabel: '全部',
     filters: cloneFilters(emptyFilters),
     filterDraft: cloneFilters(emptyFilters),
-    filterTags: buildFilterTags(emptyFilters),
-    filterCount: 1,
-    filterDraftCount: 1,
-    filterViewSections: [],
-    filterDrawerVisible: false,
-    filterDrawerActive: false
+    scrollTop: 0,
+    showBackTop: false
   },
 
   onLoad() {
@@ -132,23 +101,38 @@ Page({
     this.loadMoreItems()
   },
 
-  onUnload() {
-    this.clearFilterDrawerTimer()
+  onListScroll(event) {
+    const showBackTop = Number(event.detail.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
   },
 
-  loadInventory(callback) {
-    const warehouseOptions = inventoryStore.getWarehouseOptions()
-    const filters = cloneFilters(this.data.filters)
-    if (!warehouseOptions.includes(filters.warehouseName)) filters.warehouseName = '全部'
+  onBackTopTap() {
     this.setData({
-      warehouseOptions,
-      warehouseIndex: Math.max(0, warehouseOptions.indexOf(filters.warehouseName)),
-      filters,
-      filterTags: buildFilterTags(filters),
-      filterCount: this.countFilters(filters)
-    }, () => {
-      this.applyFilters(callback)
+      scrollTop: this.data.scrollTop === 0 ? 1 : 0,
+      showBackTop: false
     })
+  },
+
+  async loadInventory(callback) {
+    try {
+      const warehouseOptions = await inventoryApi.getWarehouseOptions()
+      const safeOptions = Array.isArray(warehouseOptions) && warehouseOptions.length ? warehouseOptions : ['全部']
+      const filters = cloneFilters(this.data.filters)
+      if (!safeOptions.includes(filters.warehouseName)) filters.warehouseName = '全部'
+      this.setData({
+        warehouseOptions: safeOptions,
+        warehouseIndex: Math.max(0, safeOptions.indexOf(filters.warehouseName)),
+        filters,
+        filterDraft: cloneFilters(filters),
+        activeStatus: getActiveStatus(filters.statusKey),
+        warehouseLabel: filters.warehouseName
+      }, () => {
+        this.applyFilters(callback)
+      })
+    } catch (error) {
+      wx.showToast({ title: error.message || '库存加载失败', icon: 'none' })
+      if (typeof callback === 'function') callback()
+    }
   },
 
   onKeywordInput(event) {
@@ -161,109 +145,54 @@ Page({
     this.applyFilters()
   },
 
-  onWarehouseChange(event) {
-    const warehouseIndex = Number(event.detail.value)
-    const warehouseName = this.data.warehouseOptions[warehouseIndex] || '全部'
+  onStatusChange(event) {
+    const statusKey = event.detail.value || 'all'
     const filters = {
       ...this.data.filters,
-      warehouseName
+      statusKey
     }
     this.setData({
-      warehouseIndex,
       filters,
-      filterTags: buildFilterTags(filters),
-      filterCount: this.countFilters(filters)
+      activeStatus: getActiveStatus(statusKey),
+      filterDraft: cloneFilters(filters)
     }, () => {
       this.applyFilters()
     })
   },
 
-  onLowStockTap() {
-    const filters = {
-      ...this.data.filters,
-      statusKey: this.data.filters.statusKey === 'low' ? 'all' : 'low'
-    }
-    this.setData({
-      filters,
-      filterTags: buildFilterTags(filters),
-      filterCount: this.countFilters(filters)
-    }, () => {
-      this.applyFilters()
+  onWarehouseTap() {
+    wx.showActionSheet({
+      itemList: this.data.warehouseOptions,
+      success: res => {
+        const warehouseIndex = Number(res.tapIndex || 0)
+        const warehouseName = this.data.warehouseOptions[warehouseIndex] || '全部'
+        const filters = {
+          ...this.data.filters,
+          warehouseName
+        }
+        this.setData({
+          warehouseIndex,
+          warehouseLabel: warehouseName,
+          filters,
+          filterDraft: cloneFilters(filters)
+        }, () => {
+          this.applyFilters()
+        })
+      }
     })
   },
 
   onSortChange(event) {
-    const sortIndex = Number(event.detail.value)
+    const sortIndex = Number(event.detail.index)
     const selected = sortOptions[sortIndex]
     if (!selected) return
     this.setData({
       sortIndex,
-      sortValue: selected.value
+      sortValue: selected.value,
+      sortLabel: '排序'
     }, () => {
       this.applyFilters()
     })
-  },
-
-  onFilterTap() {
-    this.clearFilterDrawerTimer()
-    const filterDraft = cloneFilters(this.data.filters)
-    this.setData({
-      filterDraft,
-      filterViewSections: buildFilterSections(filterDraft, this.data.warehouseOptions),
-      filterDraftCount: this.countFilters(filterDraft),
-      filterDrawerVisible: true,
-      filterDrawerActive: false
-    }, () => {
-      wx.nextTick(() => {
-        if (this.data.filterDrawerVisible) this.setData({ filterDrawerActive: true })
-      })
-    })
-  },
-
-  onFilterOptionTap(event) {
-    const { key, value } = event.currentTarget.dataset
-    const filterDraft = cloneFilters(this.data.filterDraft)
-    if (key === 'displayField') {
-      filterDraft[value] = !filterDraft[value]
-    } else if (key === 'warehouseName') {
-      filterDraft.warehouseName = filterDraft.warehouseName === value ? '全部' : value
-    } else if (key === 'statusKey') {
-      filterDraft.statusKey = filterDraft.statusKey === value ? 'all' : value
-    }
-    this.setData({
-      filterDraft,
-      filterViewSections: buildFilterSections(filterDraft, this.data.warehouseOptions),
-      filterDraftCount: this.countFilters(filterDraft)
-    })
-  },
-
-  onResetFilters() {
-    const filterDraft = cloneFilters({
-      ...emptyFilters,
-      statusKey: 'all'
-    })
-    this.setData({
-      filterDraft,
-      filterViewSections: buildFilterSections(filterDraft, this.data.warehouseOptions),
-      filterDraftCount: this.countFilters(filterDraft)
-    })
-  },
-
-  onApplyFilters() {
-    const filters = cloneFilters(this.data.filterDraft)
-    this.setData({
-      filters,
-      warehouseIndex: Math.max(0, this.data.warehouseOptions.indexOf(filters.warehouseName)),
-      filterTags: buildFilterTags(filters),
-      filterCount: this.countFilters(filters)
-    }, () => {
-      this.applyFilters()
-      this.closeFilterDrawer()
-    })
-  },
-
-  onCancelFilter() {
-    this.closeFilterDrawer()
   },
 
   onOpenAdjust(event) {
@@ -276,9 +205,9 @@ Page({
     this.loadMoreItems()
   },
 
-  noop() {},
-
-  applyFilters(callback) {
+  async applyFilters(callback) {
+    const requestSeq = (this.inventoryRequestSeq || 0) + 1
+    this.inventoryRequestSeq = requestSeq
     const filters = {
       ...this.data.filters,
       keyword: this.data.keyword,
@@ -290,13 +219,23 @@ Page({
       statusKey: 'all',
       sortKey: 'lowFirst'
     }
-    const items = inventoryStore.queryInventory(filters)
-    this.filteredItems = items
-    this.setData({
-      summary: inventoryStore.getInventorySummary(overviewFilters)
-    }, () => {
-      this.resetWindow(callback)
-    })
+    try {
+      const [result, summary] = await Promise.all([
+        inventoryApi.queryInventory(filters),
+        inventoryApi.getInventorySummary(overviewFilters)
+      ])
+      if (requestSeq !== this.inventoryRequestSeq) return
+      const items = Array.isArray(result) ? result : (result && result.list) || []
+      this.filteredItems = items
+      this.setData({
+        summary: summary || this.data.summary
+      }, () => {
+        this.resetWindow(callback)
+      })
+    } catch (error) {
+      wx.showToast({ title: error.message || '库存加载失败', icon: 'none' })
+      if (typeof callback === 'function') callback()
+    }
   },
 
   resetWindow(callback) {
@@ -326,28 +265,5 @@ Page({
     })
   },
 
-  countFilters(filters) {
-    let count = 0
-    if (filters.warehouseName && filters.warehouseName !== '全部') count += 1
-    if (filters.statusKey && filters.statusKey !== 'all') count += 1
-    if (filters.showCost) count += 1
-    if (filters.showSale) count += 1
-    return count
-  },
-
-  closeFilterDrawer() {
-    if (!this.data.filterDrawerVisible) return
-    this.clearFilterDrawerTimer()
-    this.setData({ filterDrawerActive: false })
-    this.filterDrawerTimer = setTimeout(() => {
-      this.setData({ filterDrawerVisible: false })
-      this.filterDrawerTimer = null
-    }, filterDrawerAnimationMs)
-  },
-
-  clearFilterDrawerTimer() {
-    if (!this.filterDrawerTimer) return
-    clearTimeout(this.filterDrawerTimer)
-    this.filterDrawerTimer = null
-  }
+  noop() {}
 })

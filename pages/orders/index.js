@@ -1,4 +1,5 @@
-const orderStore = require('../../services/order-store')
+const orderApi = require('../../api/order-api')
+const { guardTabAccess } = require('../../utils/tabbar')
 
 const sortOptions = [
   { label: '销售日期 从新到旧', value: 'dateDesc' },
@@ -79,9 +80,10 @@ const emptyFilters = {
   creator: ''
 }
 
-const today = '2026-04-28'
+const today = '2026-05-11'
 const pickerStartDate = '2024-01-01'
 const filterDrawerAnimationMs = 240
+const orderPageSize = 12
 
 const defaultDateRange = {
   preset: 'custom',
@@ -124,11 +126,22 @@ function getPresetRange(value) {
   const rangeMap = {
     custom: { preset: 'custom', start: '2025-02-17', end: today },
     today: { preset: 'today', start: today, end: today },
-    yesterday: { preset: 'yesterday', start: '2026-04-27', end: '2026-04-27' },
-    month: { preset: 'month', start: '2026-04-01', end: today },
-    lastMonth: { preset: 'lastMonth', start: '2026-03-01', end: '2026-03-31' }
+    yesterday: { preset: 'yesterday', start: '2026-05-10', end: '2026-05-10' },
+    month: { preset: 'month', start: '2026-05-01', end: today },
+    lastMonth: { preset: 'lastMonth', start: '2026-04-01', end: '2026-04-30' }
   }
   return rangeMap[value] || rangeMap.custom
+}
+
+function emptySummary() {
+  return {
+    title: '订单概览',
+    metrics: [
+      { key: 'unreceived', label: '未收金额', value: '¥0.00', tone: 'danger' },
+      { key: 'special', label: '特殊状态', value: '0单', tone: 'primary' },
+      { key: 'closed', label: '已结清', value: '0单', tone: 'success' }
+    ]
+  }
 }
 
 Page({
@@ -136,7 +149,12 @@ Page({
     keyword: '',
     orders: [],
     filteredOrders: [],
-    summary: orderStore.getOrderSummary(),
+    page: 1,
+    total: 0,
+    hasMore: false,
+    loading: false,
+    loadingMore: false,
+    summary: emptySummary(),
     sortOptions,
     sortValue: 'dateDesc',
     sortIndex: 0,
@@ -160,36 +178,61 @@ Page({
     panelType: '',
     panelPosition: 'bottom',
     panelRound: false,
-    panelStyle: ''
+    panelStyle: '',
+    showBackTop: false
   },
 
   onLoad() {
+    this.skipNextShowLoad = true
     this.loadOrders()
   },
 
   onShow() {
-    this.consumePendingKeyword()
-    this.loadOrders()
+    if (!guardTabAccess(this, '/pages/orders/index')) return
+    if (this.skipNextShowLoad) {
+      this.skipNextShowLoad = false
+      return
+    }
+    const consumed = this.consumePendingKeyword()
+    if (!consumed) this.loadOrders(null, { reset: true })
   },
 
   onPullDownRefresh() {
     this.loadOrders(() => {
       wx.stopPullDownRefresh()
-    })
+    }, { reset: true })
+  },
+
+  onReachBottom() {
+    this.loadMoreOrders()
+  },
+
+  onPageScroll(event) {
+    const showBackTop = Number(event.scrollTop || 0) > 700
+    if (showBackTop !== this.data.showBackTop) this.setData({ showBackTop })
+  },
+
+  onBackTopTap() {
+    wx.pageScrollTo({ scrollTop: 0, duration: 240 })
+    this.setData({ showBackTop: false })
   },
 
   onUnload() {
     this.clearFilterDrawerTimer()
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer)
+      this.searchTimer = null
+    }
   },
 
   onKeywordInput(event) {
     this.setData({ keyword: event.detail.value }, () => {
-      this.applyFilters()
+      this.scheduleReload()
     })
   },
 
   onKeywordConfirm() {
-    this.applyFilters()
+    this.loadOrders(null, { reset: true })
   },
 
   onStatusChange(event) {
@@ -201,7 +244,7 @@ Page({
       filters,
       filterCount: this.countFilters(filters)
     }, () => {
-      this.applyFilters()
+      this.loadOrders(null, { reset: true })
     })
   },
 
@@ -244,7 +287,7 @@ Page({
       sortValue: selected.value,
       sortLabel: '排序'
     }, () => {
-      this.applyFilters()
+      this.loadOrders(null, { reset: true })
     })
   },
 
@@ -275,7 +318,7 @@ Page({
       filters,
       filterCount: this.countFilters(filters)
     }, () => {
-      this.applyFilters()
+      this.loadOrders(null, { reset: true })
       this.closeFilterDrawer()
     })
   },
@@ -326,7 +369,7 @@ Page({
       dateLabel: formatDateLabel(dateRange),
       panelVisible: false
     }, () => {
-      this.applyFilters()
+      this.loadOrders(null, { reset: true })
     })
   },
 
@@ -345,7 +388,7 @@ Page({
   consumePendingKeyword() {
     const app = getApp()
     const keyword = app.globalData.orderKeyword
-    if (!keyword) return
+    if (!keyword) return false
 
     app.globalData.orderKeyword = ''
     const filters = cloneFilters(emptyFilters)
@@ -362,17 +405,76 @@ Page({
       dateLabel: formatDateLabel(defaultDateRange),
       sortValue: 'dateDesc',
       sortIndex: 0
+    }, () => {
+      this.loadOrders(null, { reset: true })
     })
+    return true
   },
 
-  loadOrders(callback) {
-    this.setData({
-      orders: orderStore.getOrderList(),
-      summary: orderStore.getOrderSummary()
-    }, () => {
-      this.applyFilters()
+  buildOrderQuery(page) {
+    const filters = this.data.filters
+    const dateRange = this.data.dateRange
+    return {
+      page,
+      pageSize: orderPageSize,
+      keyword: this.data.keyword.trim(),
+      sortKey: this.data.sortValue,
+      startDate: dateRange.start,
+      endDate: dateRange.end,
+      paymentState: filters.paymentState,
+      deliveryState: filters.deliveryState,
+      printState: filters.printState,
+      creator: filters.creator
+    }
+  },
+
+  async loadOrders(callback, options = {}) {
+    const reset = options.reset !== false
+    const page = reset ? 1 : Math.max(Number(this.data.page || 1) + 1, 1)
+    if (this.data.loading || this.data.loadingMore) return
+    this.setData(reset ? { loading: true } : { loadingMore: true })
+    try {
+      const [ordersResult, summary] = await Promise.all([
+        orderApi.listOrders(this.buildOrderQuery(page)),
+        reset ? orderApi.getOrderSummary(this.buildOrderQuery(1)) : Promise.resolve(this.data.summary)
+      ])
+      const nextOrders = reset ? (ordersResult.list || []) : this.data.orders.concat(ordersResult.list || [])
+      this.setData({
+        orders: nextOrders,
+        filteredOrders: nextOrders,
+        summary: summary || emptySummary(),
+        page: ordersResult.page || page,
+        total: ordersResult.total || nextOrders.length,
+        hasMore: Boolean(ordersResult.hasMore),
+        loading: false,
+        loadingMore: false
+      }, () => {
+        if (callback) callback()
+      })
+    } catch (error) {
+      this.setData({
+        loading: false,
+        loadingMore: false
+      })
+      wx.showToast({
+        title: error.message || '订单加载失败',
+        icon: 'none'
+      })
       if (callback) callback()
-    })
+    }
+  },
+
+  loadMoreOrders() {
+    if (!this.data.hasMore || this.data.loading || this.data.loadingMore) return
+    this.loadOrders(null, { reset: false })
+  },
+
+  scheduleReload() {
+    if (this.searchTimer) clearTimeout(this.searchTimer)
+    this.searchTimer = setTimeout(() => {
+      this.searchTimer = null
+      this.loadOrders(null, { reset: true })
+    }, 300)
   },
 
   closeFilterDrawer() {
@@ -392,27 +494,7 @@ Page({
   },
 
   applyFilters() {
-    const keyword = this.data.keyword.trim().toLowerCase()
-    const filters = this.data.filters
-    const dateRange = this.data.dateRange
-    const filteredOrders = this.sortOrders(this.data.orders.filter(order => {
-      const text = [
-        order.no,
-        order.customer,
-        order.goodsSummary,
-        order.creator,
-        order.printText,
-        order.deliveryText,
-        order.statusText,
-        order.chips.map(item => item.text).join(' ')
-      ].join(' ').toLowerCase()
-
-      return (!keyword || text.includes(keyword)) &&
-        this.isDateMatched(order, dateRange) &&
-        this.isFilterMatched(order, filters)
-    }))
-
-    this.setData({ filteredOrders })
+    this.loadOrders(null, { reset: true })
   },
 
   sortOrders(list) {
